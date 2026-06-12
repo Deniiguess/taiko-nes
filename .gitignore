@@ -4,4 +4,4 @@ code.o
 *.png
 *.aseprite
 *.dbg
-.compile
+compile
