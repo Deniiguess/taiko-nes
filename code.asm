@@ -204,6 +204,8 @@ score: .res 6
 combo: .res 4
 drum_roll: .res 3
 
+input: .res 1
+
 end_song_timer: .res 1
 
 slot_number: .res 2
@@ -5359,62 +5361,6 @@ inc_dbp:
   STA drum_bank_positon
   RTS
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-.segment "RODATA"
-
 main_g_pal:
   .byte $0F, $21, $16, $20
   .byte $0F, $17, $27, $20
@@ -5423,7 +5369,7 @@ main_g_pal:
 
   .byte $0F, $27, $16, $20
   .byte $0F, $21, $00, $20
-  .byte $0F, $30, $30, $2D
+  .byte $0F, $20, $20, $2D
   .byte $0F, $0F, $0F, $0F
 
 drum_input_sprites:
@@ -5435,16 +5381,16 @@ drum_input_sprites:
   .byte $78, $38, %01000010, $1C
 
 dinp_don_pal:
-  .byte $30, $30, $36, $36, $36, $26, $26, $26, $16, $16, $16
+  .byte $20, $20, $36, $36, $36, $26, $26, $26, $16, $16, $16
 
 dinp_don_pal_two:
-  .byte $30, $26, $26, $26
+  .byte $20, $26, $26, $26
 
 dinp_kat_pal:
-  .byte $30, $30, $31, $31, $31, $21, $21, $21, $11, $11, $11
+  .byte $20, $20, $31, $31, $31, $21, $21, $21, $11, $11, $11
 
 dinp_kat_pal_two:
-  .byte $30, $21, $21, $21
+  .byte $20, $21, $21, $21
 
 bar_sprite_data_pool:
   .byte $3F, $0E, $22, $00, $4F, $0E, $22, $00
