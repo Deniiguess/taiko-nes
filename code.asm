@@ -1343,7 +1343,7 @@ scenes_hi:
   LDA #$00
   STA $203
 
-  LDA #20
+  LDA #10
   STA end_song_timer
 
   LDA PPUSTATUS
@@ -1645,7 +1645,7 @@ scenes_hi:
 
   LDA PPUCTRL
   STA PPUCTRL_kept
-  AND #%01111011
+  AND #%01111000
   STA PPUCTRL
 
   ; disable sprite 0 hit
@@ -1658,6 +1658,9 @@ scenes_hi:
   unload_sprites:
   LDA #$F0
   STA $200, X
+  INX
+  INX
+  INX
   INX
   BNE unload_sprites
 
@@ -4110,6 +4113,15 @@ controller_highlight_sprite_data:
 
   JMP load_song_sel
   :
+
+  CMP #$09
+  BNE :+
+  LDA #$02
+  STA fade_time
+  LDA #$01
+  STA fade_type
+  :
+
   RTS
 .endproc
 
