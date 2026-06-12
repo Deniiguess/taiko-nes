@@ -91,8 +91,8 @@ dmc_data:
 .byte $4e, $45, $53, $1a ; Magic string that always begins an iNES header
 .byte $07        ; Number of 16KB PRG-ROM banks
 .byte $02        ; Number of 8KB CHR-ROM banks
-.byte %00110011  ; MMMM (Mapper, 0), Alt nametable (Off), 512-byte trainer (Off), Contains PRG-RAM (Off), Mirroring (Horizontal)
-.byte %00010000  ; MMMM (Mapper, 0), NN (NES 2.0 Format, Off), Hint Screen Data (PlayChoice-10, Off), VS Unisystem (Off)
+.byte %00110011  ; MMMM (Mapper, 19), Alt nametable (Off), 512-byte trainer (Off), Contains PRG-RAM (On), Mirroring (Horizontal)
+.byte %00010000  ; MMMM (Mapper, 19), NN (NES 2.0 Format, Off), Hint Screen Data (PlayChoice-10, Off), VS Unisystem (Off)
 .byte $01        ; PRG-RAM size
 .byte $00        ; NTSC (0) or PAL (1)
 
@@ -139,8 +139,8 @@ drum_spawn_position: .res 4
 bg_attr: .res 1
 bg_attr_position: .res 5
 
-drum_bank_positon: .res 2
 tiles_remaining: .res 1
+drum_bank_positon: .res 2
 
 bar_x: .res 1
 
@@ -1332,6 +1332,26 @@ scenes_hi:
   INX
   INX
   BNE put_sprites_offscreen
+
+  ; reset necessary values
+  LDA #$00
+  reset_PRGRAM:
+  STA $6000, X
+  STA $6100, X
+  INX
+  BNE reset_PRGRAM
+
+  reset_positions:
+  STA position_8px, X
+  INX
+  CPX #$0E
+  BNE reset_positions
+
+  ; reset misc bit 2
+  ; otherwise drum inputs will be offsynced by -8px
+  LDA misc
+  AND #%11111101
+  STA misc
 
   ; set sprite 0 for scrolling
   LDA #$68
