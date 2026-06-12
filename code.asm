@@ -1648,10 +1648,29 @@ scenes_hi:
   AND #%01111011
   STA PPUCTRL
 
+  ; disable sprite 0 hit
+  LDA misc
+  AND #$FE
+  STA misc
+
   :
   LDA misc
   AND #$80
   BNE :-
+
+  ; reset scrolling
+  LDA #$00
+  STA PPUSCROLL_X
+  STA PPUSCROLL_Y
+  STA PPUSCROLL_X_speed
+  STA PPUSCROLL_Y_speed
+
+  LDA #$02
+  STA scene
+
+  ; load PRG banks
+  LDA #$01
+  STA $E000
 
   ; load CHR banks
   LDA #$00
