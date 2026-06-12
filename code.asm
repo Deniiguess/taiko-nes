@@ -1653,6 +1653,14 @@ scenes_hi:
   AND #$FE
   STA misc
 
+  ; unload all sprites
+  LDX #$00
+  unload_sprites:
+  LDA #$F0
+  STA $200, X
+  INX
+  BNE unload_sprites
+
   :
   LDA misc
   AND #$80
