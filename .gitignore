@@ -1,0 +1,7 @@
+taiko.nes
+code.o
+*.nss
+*.png
+*.aseprite
+*.dbg
+.compile

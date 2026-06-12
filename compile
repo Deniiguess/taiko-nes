@@ -1,0 +1,4 @@
+cd ..
+cc65/bin/ca65 -g taiko/code.asm
+cc65/bin/ld65 taiko/code.o -C taiko/nes.cfg --dbgfile taiko/taiko.dbg -o taiko/taiko.nes
+cd taiko
