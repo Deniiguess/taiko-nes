@@ -2558,7 +2558,7 @@ c_h_base_sprite = $208
   LDA controller_highlight_sprite_data, X
   STA c_h_base_sprite, X
   INX
-  CPX #$1C
+  CPX #$14
   BNE load_c_h_sprites
 
   INC frame_timer_1s
@@ -2582,7 +2582,7 @@ c_h_base_sprite = $208
   INX
   INX
   INX
-  CPX #$18
+  CPX #$14
   BNE unload_c_h_sprites
   :
 
@@ -2615,7 +2615,7 @@ c_h_base_sprite = $208
   INX
   INX
   INX
-  CPX #$18
+  CPX #$14
   BNE sync_c_h_height
 
   LDA $204
