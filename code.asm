@@ -126,6 +126,8 @@ PPUCTRL_kept: .res 1
 PPUCTRL_kept_2: .res 1
 
 draw_length: .res 1
+draw_how_many_times: .res 1
+draw_attribute_location: .res 2
 
 fade_intensity: .res 1
 fade_time: .res 2
@@ -302,7 +304,7 @@ dbank7:
 
 dbank8:
 .byte $C6, $08
-.byte $07, $10, $10, $00
+.byte %00010110, $10, $00
 
 .segment "START"
 
@@ -350,9 +352,8 @@ loop:
   JMP leave_nmi
   :
 
-  LDA frame_timer ; load frame_timer to A to alternate PAL write and BG write
-  AND #%00000001 ; check if 0 or 1
-  BEQ draw_background_branch ; if its 1, update the palette
+  LDA draw_how_many_times ; load draw_how_many_times to A
+  BNE draw_background_branch ; if its 0, draw palettes
 
   JSR draw_palette
   JMP escape_draw_palette
@@ -548,28 +549,43 @@ loop:
 
   draw_background_sub_loop:
   LDA draw, Y ; loads draw length byte to A
-  BEQ dont_draw_bg ; if the length is 0, stop drawing bg
+  BNE :+ ; if the length is 0, stop drawing bg
+  DEC draw_how_many_times
+  RTS
+  :
 
   STA draw_length ; store A to draw_length
   INY ; next byte
 
+  LDA draw, Y ; loads attributes to A
+  AND #%00000111 ; check if the RLE bit is 1
+  TAX
+
+  LDA draw_attribute_locations_lo, X
+  STA draw_attribute_location
+  LDA draw_attribute_locations_hi, X
+  STA draw_attribute_location+1
+
+  JMP (draw_attribute_location)
+
+
+
+
+  draw_background_no:
+
+  INY ; next byte
   LDA PPUSTATUS
   LDA draw, Y ; loads PPU high byte to A
   STA PPUADDR ; stores A to PPUADDR high byte
   INY ; next byte
   LDA draw, Y ; loads PPU low byte to A
   STA PPUADDR ; stores A to PPUADDR low byte
-  INY ; next byte
-
-  LDA draw, Y ; loads attributes to A
-  AND #%00000010 ; check if the RLE bit is 1
-  BNE draw_background_RLE ; branch if yes
 
   draw_background_loop:
-  INY ; next byte
-
   LDX draw_length ; loads draw_length to X
   BEQ draw_background_exit ; if not 0, loop
+
+  INY ; next byte
 
   LDA draw, Y ; loads the tile byte
   STA PPUDATA
@@ -581,14 +597,24 @@ loop:
 
 
 
+
   draw_background_RLE:
 
+  INY ; next byte
+  LDA PPUSTATUS
+  LDA draw, Y ; loads PPU high byte to A
+  STA PPUADDR ; stores A to PPUADDR high byte
+  INY ; next byte
+  LDA draw, Y ; loads PPU low byte to A
+  STA PPUADDR ; stores A to PPUADDR low byte
+
+  draw_background_NO_PPU_RLE:
   INY ; next byte
 
   draw_background_loop_RLE:
 
   LDX draw_length ; loads draw_length to X
-  BEQ draw_background_exit_RLE ; if not 0, loop
+  BEQ draw_background_exit ; if not 0, loop
 
   LDA draw, Y ; loads the tile byte
   STA PPUDATA
@@ -600,27 +626,45 @@ loop:
 
 
 
+  draw_background_VER:
+  LDA PPUCTRL
+  ORA #%00000100
+  STA $2000
+  JMP draw_background_no
+
+  draw_background_VER_NO_PPU:
+  LDA PPUCTRL
+  ORA #%00000100
+  STA $2000
+  JMP draw_background_loop
+
+  draw_background_VER_RLE:
+  LDA PPUCTRL
+  ORA #%00000100
+  STA $2000
+  JMP draw_background_RLE
+
+  draw_background_VER_NO_PPU_RLE:
+  LDA PPUCTRL
+  ORA #%00000100
+  STA $2000
+  JMP draw_background_NO_PPU_RLE
+
   draw_background_exit:
+  LDA PPUCTRL
+  STA $2000
 
-  JMP draw_background_sub_loop ; end of section, go back to draw_background_sub_loop
-
-  draw_background_exit_RLE:
   INY ; next byte
   JMP draw_background_sub_loop ; end of section, go back to draw_background_sub_loop
 
-  dont_draw_bg:
-  LDA PPUCTRL_kept ; load PPUCTRL_kept to A (normal PPUCTRL changes)
-  AND #%00000100 ; check if the PPU increasing is 32
-  BNE change_line ; if yes, go to change_line
 
-  RTS
 
-  ; changes PPU increasing to 1 for palette updating
-  change_line:
-  LDA PPUCTRL
-  EOR #%00000100
-  STA PPUCTRL
-  RTS
+
+  draw_attribute_locations_lo:
+  .lobytes draw_background_no, draw_background_loop, draw_background_RLE, draw_background_NO_PPU_RLE, draw_background_VER, draw_background_VER_NO_PPU, draw_background_VER_RLE, draw_background_VER_NO_PPU_RLE
+
+  draw_attribute_locations_hi:
+  .hibytes draw_background_no, draw_background_loop, draw_background_RLE, draw_background_NO_PPU_RLE, draw_background_VER, draw_background_VER_NO_PPU, draw_background_VER_RLE, draw_background_VER_NO_PPU_RLE
 .endproc
 
 .proc draw_palette
@@ -759,19 +803,6 @@ loop:
   STA bg_attr
 
   dont_do_main_stuff:
-
-  LDA PPUCTRL_kept ; load PPUCTRL_kept to A (normal PPUCTRL changes)
-  AND #%00000100 ; check if the PPU increasing is 32
-  BNE change_line_pal ; if yes, go to change_line_pal
-
-  RTS
-
-  ; changes PPU increasing to 32 for background (if enabled beforehand)
-  change_line_pal:
-  LDA PPUCTRL
-  ORA #%00000100
-  STA PPUCTRL
-
   RTS
 .endproc
 
@@ -1249,7 +1280,7 @@ vblankwait2:
 
   JSR load_title_screen
 
-  LDA #%10110100  ; turn on NMIs, sprites use first pattern table
+  LDA #%10110000  ; turn on NMIs, sprites use first pattern table
   STA PPUCTRL
   STA PPUCTRL_kept
   STA PPUCTRL_kept_2
@@ -1410,10 +1441,10 @@ scenes_hi:
   STA draw+5
   STA draw+10
   STA draw+15
-  LDA #%00000010
-  STA draw+8
-  STA draw+13
-  STA draw+18
+  LDA #%00000110
+  STA draw+6
+  STA draw+11
+  STA draw+16
 
   ; prepare the drum spawn positions
   ; for spawning and dispawning
@@ -1541,7 +1572,7 @@ scenes_hi:
   BPL :-
 
   LDA PPUCTRL
-  ORA #%10000100
+  ORA #%10000000
   STA PPUCTRL_kept
   STA PPUCTRL
   STA $2000
@@ -1684,6 +1715,13 @@ scenes_hi:
   INX
   BNE unload_sprites
 
+  ; rest draw memory bytes
+  LDA #$00
+  reset_draw:
+  STA draw, X
+  INX
+  BPL reset_draw
+
   :
   LDA misc
   AND #$80
@@ -1787,7 +1825,7 @@ scenes_hi:
   BPL :-
 
   LDA PPUCTRL
-  ORA #%10000100
+  ORA #%10000000
   STA PPUCTRL_kept
   STA PPUCTRL
   STA $2000
@@ -1870,7 +1908,7 @@ scenes_hi:
   STA $B000
 
   ; load nametable banks
-  ; load PPU nametables
+  ; and load PPU nametables
   LDA #$E0
   STA $C800
   STA $D800
@@ -1939,7 +1977,7 @@ scenes_hi:
   BPL :-
 
   LDA PPUCTRL
-  ORA #%10000100
+  ORA #%10000000
   STA PPUCTRL_kept
   STA PPUCTRL
   STA $2000
@@ -2199,8 +2237,16 @@ title_palette:
 
   LDA #$00
   LDX song_sel_position
+  LDY #$00
+
+  draw_stars:
+  LDA song_stars, X
+
+  CLC
+  ;SBC #$
+
+
   LDY song_difficulty_position, X
-  ;DEY
   :
   CPX #$00
   BEQ :+
@@ -2232,11 +2278,78 @@ title_palette:
   RTS
 
   song_address_start_lo:
-  .lobytes dbank1, dbank2, dbank3, dbank4, dbank5, dbank6, dbank7, dbank8, dbank1, dbank2, dbank3, dbank4, dbank5, dbank6, dbank7, dbank8, dbank1, dbank2, dbank3, dbank4, dbank5, dbank6, dbank7, dbank8, dbank1, dbank2, dbank3, dbank4, dbank5, dbank6, dbank7, dbank8, dbank1, dbank2, dbank3, dbank4, dbank5, dbank6, dbank7, dbank8, dbank1, dbank2, dbank3, dbank4, dbank5, dbank6, dbank7, dbank8, dbank1, dbank2, dbank3, dbank4, dbank5, dbank6, dbank7, dbank8, dbank1, dbank2, dbank3, dbank4, dbank5, dbank6, dbank7, dbank8, dbank1, dbank2, dbank3, dbank4, dbank5, dbank6, dbank7, dbank8
+  .lobytes dbank1, dbank2, dbank3, dbank4
+  .lobytes dbank5, dbank6, dbank7, dbank8
+  .lobytes dbank1, dbank2, dbank3, dbank4
+  .lobytes dbank5, dbank6, dbank7, dbank8
+  .lobytes dbank1, dbank2, dbank3, dbank4
+  .lobytes dbank5, dbank6, dbank7, dbank8
 
   song_address_start_hi:
-  .hibytes dbank1, dbank2, dbank3, dbank4, dbank5, dbank6, dbank7, dbank8, dbank1, dbank2, dbank3, dbank4, dbank5, dbank6, dbank7, dbank8, dbank1, dbank2, dbank3, dbank4, dbank5, dbank6, dbank7, dbank8, dbank1, dbank2, dbank3, dbank4, dbank5, dbank6, dbank7, dbank8, dbank1, dbank2, dbank3, dbank4, dbank5, dbank6, dbank7, dbank8, dbank1, dbank2, dbank3, dbank4, dbank5, dbank6, dbank7, dbank8, dbank1, dbank2, dbank3, dbank4, dbank5, dbank6, dbank7, dbank8, dbank1, dbank2, dbank3, dbank4, dbank5, dbank6, dbank7, dbank8, dbank1, dbank2, dbank3, dbank4, dbank5, dbank6, dbank7, dbank8
+  .hibytes dbank1, dbank2, dbank3, dbank4
+  .hibytes dbank5, dbank6, dbank7, dbank8
+  .hibytes dbank1, dbank2, dbank3, dbank4
+  .hibytes dbank5, dbank6, dbank7, dbank8
+  .hibytes dbank1, dbank2, dbank3, dbank4
+  .hibytes dbank5, dbank6, dbank7, dbank8
 
+  song_stars:
+  .byte $00, $00, $00, $00
+  .byte $00, $00, $00, $00
+  .byte $00, $00, $00, $00
+  .byte $00, $00, $00, $00
+  .byte $00, $00, $00, $00
+  .byte $00, $00, $00, $00
+
+  song_author_1:
+  .byte $00, $00, $00, $00, $00, $00
+  song_author_2:
+  .byte $00, $00, $00, $00, $00, $00
+  song_author_3:
+  .byte $00, $00, $00, $00, $00, $00
+  song_author_4:
+  .byte $00, $00, $00, $00, $00, $00
+  song_author_5:
+  .byte $00, $00, $00, $00, $00, $00
+  song_author_6:
+  .byte $00, $00, $00, $00, $00, $00
+  song_author_7:
+  .byte $00, $00, $00, $00, $00, $00
+  song_author_8:
+  .byte $00, $00, $00, $00, $00, $00
+  song_author_9:
+  .byte $00, $00, $00, $00, $00, $00
+  song_author_10:
+  .byte $00, $00, $00, $00, $00, $00
+  song_author_11:
+  .byte $00, $00, $00, $00, $00, $00
+  song_author_12:
+  .byte $00, $00, $00, $00, $00, $00
+
+  song_chartr_1:
+  .byte $00, $00, $00, $00, $00, $00
+  song_chartr_2:
+  .byte $00, $00, $00, $00, $00, $00
+  song_chartr_3:
+  .byte $00, $00, $00, $00, $00, $00
+  song_chartr_4:
+  .byte $00, $00, $00, $00, $00, $00
+  song_chartr_5:
+  .byte $00, $00, $00, $00, $00, $00
+  song_chartr_6:
+  .byte $00, $00, $00, $00, $00, $00
+  song_chartr_7:
+  .byte $00, $00, $00, $00, $00, $00
+  song_chartr_8:
+  .byte $00, $00, $00, $00, $00, $00
+  song_chartr_9:
+  .byte $00, $00, $00, $00, $00, $00
+  song_chartr_10:
+  .byte $00, $00, $00, $00, $00, $00
+  song_chartr_11:
+  .byte $00, $00, $00, $00, $00, $00
+  song_chartr_12:
+  .byte $00, $00, $00, $00, $00, $00
 .endproc
 
 .proc update_START
@@ -2751,12 +2864,12 @@ controller_highlight_sprite_data:
   AND #$01
   BEQ dont_reset_clear_drum
   LDA #$00
-  STA draw+6
   STA draw+7
-  STA draw+11
+  STA draw+8
   STA draw+12
-  STA draw+16
+  STA draw+13
   STA draw+17
+  STA draw+18
   dont_reset_clear_drum:
 
   ; update the DON input
@@ -2993,6 +3106,9 @@ controller_highlight_sprite_data:
   JMP exit_input
 
   clear_drum:
+  LDA #$01
+  STA draw_how_many_times
+
   ; load the pool positions to X and Y
   LDX drum_hit_pool_pos+1
   LDY drum_hit_pool_frame_pos+1
@@ -3025,9 +3141,9 @@ controller_highlight_sprite_data:
   loop_disappearing:
   ; set the drum disappear positions to the draw buffer
   LDA drum_disappear_position
-  STA draw+7, Y
+  STA draw+8, Y
   LDA drum_disappear_position+1
-  STA draw+6, Y
+  STA draw+7, Y
 
   ; if X is 0, get out of the loop
   CPX #$00
@@ -3345,13 +3461,15 @@ controller_highlight_sprite_data:
   PHA
 
   ; update blanking tiles
+  LDA #$01
+  STA draw_how_many_times
   LDA #$04
   STA draw+0
-  LDA drum_spawn_position+3
+  LDA #%00000110
   STA draw+1
-  LDA drum_spawn_position+2
+  LDA drum_spawn_position+3
   STA draw+2
-  LDA #%00000010
+  LDA drum_spawn_position+2
   STA draw+3
 
   LDA misc
@@ -3644,6 +3762,9 @@ controller_highlight_sprite_data:
 
 
   load_don:
+  LDA #$01
+  STA draw_how_many_times
+
   LDA (drum_bank_positon, X)
   AND #%00000100
   LSR A
@@ -3693,6 +3814,9 @@ controller_highlight_sprite_data:
   JMP load_big_kat
 
   load_kat:
+  LDA #$01
+  STA draw_how_many_times
+
   LDA (drum_bank_positon, X)
   AND #%00000100
   LSR A
@@ -3740,6 +3864,9 @@ controller_highlight_sprite_data:
   JMP leave_attr_roll_2
 
   load_rol:
+  LDA #$01
+  STA draw_how_many_times
+
   LDA #$1E
   STA roll_length+2
 
@@ -3826,6 +3953,9 @@ controller_highlight_sprite_data:
 
 
   load_big_kat:
+  LDA #$01
+  STA draw_how_many_times
+
   JSR prepare_data_big
 
   LDY #$40
@@ -3850,6 +3980,9 @@ controller_highlight_sprite_data:
   JMP done_drawing_small_kat
 
   load_big_don:
+  LDA #$01
+  STA draw_how_many_times
+
   JSR prepare_data_big
 
   LDY #$38
@@ -3874,6 +4007,9 @@ controller_highlight_sprite_data:
   JMP done_drawing_small_don
 
   load_big_rol:
+  LDA #$01
+  STA draw_how_many_times
+
   LDA #%01100000
   STA stop_save
 
@@ -3881,14 +4017,19 @@ controller_highlight_sprite_data:
   STA drum_data_pool
   STA drum_data_pool+7
   STA drum_data_pool+14
-  ; PPU high byte
-  LDA drum_spawn_position+1
+  ; attributes
+  LDA #%00000100
   STA drum_data_pool+1
   STA drum_data_pool+8
   STA drum_data_pool+15
+  ; PPU high byte
+  LDA drum_spawn_position+1
+  STA drum_data_pool+2
+  STA drum_data_pool+9
+  STA drum_data_pool+16
   ; PPU low byte
   LDA drum_spawn_position
-  STA drum_data_pool+2
+  STA drum_data_pool+3
   TAY
   INY
   TYA
@@ -3898,7 +4039,7 @@ controller_highlight_sprite_data:
   PHA
   LDA drum_spawn_position+1
   EOR #%00000100
-  STA drum_data_pool+8
+  STA drum_data_pool+9
   LDA drum_spawn_position
   PLA
   SEC
@@ -3906,7 +4047,7 @@ controller_highlight_sprite_data:
 
   dont_change_screen_big_roll_1:
 
-  STA drum_data_pool+9
+  STA drum_data_pool+10
   LDA drum_spawn_position
   CLC
   ADC #$02
@@ -3916,14 +4057,14 @@ controller_highlight_sprite_data:
   PHA
   LDA drum_spawn_position+1
   EOR #%00000100
-  STA drum_data_pool+15
+  STA drum_data_pool+16
   LDA drum_spawn_position
   PLA
   SEC
   SBC #$20
 
   dont_change_screen_big_roll_2:
-  STA drum_data_pool+16
+  STA drum_data_pool+17
 
   ; tiles
   LDY #$50
@@ -3992,20 +4133,23 @@ controller_highlight_sprite_data:
   LDA #$02
   STA drum_data_pool ; length 1
   STA drum_data_pool+6 ; length 2
-  LDA drum_spawn_position+1 ; high byte PPU loc
+  LDA #%00000100 ; attributes
   STA drum_data_pool+1 ; 1
   STA drum_data_pool+7 ; 2
+  LDA drum_spawn_position+1 ; high byte PPU loc
+  STA drum_data_pool+2 ; 1
+  STA drum_data_pool+8 ; 2
   LDA drum_spawn_position ; low byte PPU loc
   CLC
   ADC #$20 ; add 20 (+1 height tile)
-  STA drum_data_pool+2 ; 1
+  STA drum_data_pool+3 ; 1
   CMP #$3F
   BCC dont_change_screen_small
 
   PHA ; push A to stack
   LDA drum_spawn_position+1 ; load high byte PPU location
   EOR #%00000100 ; flip 3rd bit (next screen)
-  STA drum_data_pool+7 ; store to drum part 2
+  STA drum_data_pool+9 ; store to drum part 2
   LDA drum_spawn_position ; load low byte PPU location
   PLA ; pull A from stack
   SEC
@@ -4014,7 +4158,7 @@ controller_highlight_sprite_data:
   dont_change_screen_small:
   TAY
   INY
-  STY drum_data_pool+8 ; 2
+  STY drum_data_pool+9 ; 2
 
   RTS
 
@@ -4024,14 +4168,19 @@ controller_highlight_sprite_data:
   STA drum_data_pool
   STA drum_data_pool+7
   STA drum_data_pool+14
-  ; PPU high byte
-  LDA drum_spawn_position+1
+  ; attributes
+  LDA #%00000100
   STA drum_data_pool+1
   STA drum_data_pool+8
   STA drum_data_pool+15
+  ; PPU high byte
+  LDA drum_spawn_position+1
+  STA drum_data_pool+2
+  STA drum_data_pool+9
+  STA drum_data_pool+16
   ; PPU low byte
   LDA drum_spawn_position
-  STA drum_data_pool+2
+  STA drum_data_pool+3
   TAY
   INY
   TYA
@@ -4049,7 +4198,7 @@ controller_highlight_sprite_data:
 
   dont_change_screen_big_1:
 
-  STA drum_data_pool+9
+  STA drum_data_pool+10
   LDA drum_spawn_position
   CLC
   ADC #$22
@@ -4059,14 +4208,14 @@ controller_highlight_sprite_data:
   PHA
   LDA drum_spawn_position+1
   EOR #%00000100
-  STA drum_data_pool+15
+  STA drum_data_pool+16
   LDA drum_spawn_position
   PLA
   SEC
   SBC #$20
 
   dont_change_screen_big_2:
-  STA drum_data_pool+16
+  STA drum_data_pool+17
 
   RTS
 
@@ -4080,6 +4229,9 @@ controller_highlight_sprite_data:
   JMP escape_spawn_roll
 
   spawn_roll:
+  LDA #$01
+  STA draw_how_many_times
+
   LDA stop_save
   ROL
   TAY
@@ -4097,12 +4249,14 @@ controller_highlight_sprite_data:
 
   LDA #$02
   STA drum_data_pool ; length
+  LDA #%00000100
+  STA drum_data_pool+1
   LDA drum_spawn_position+1 ; high byte PPU loc
-  STA drum_data_pool+1 ; 1
+  STA drum_data_pool+2 ; 1
   LDA drum_spawn_position ; low byte PPU loc
   CLC
   ADC #$20 ; add 20 (+1 height tile)
-  STA drum_data_pool+2 ; 1
+  STA drum_data_pool+3 ; 1
 
   ; tiles
   LDY #$4C
@@ -4136,10 +4290,12 @@ controller_highlight_sprite_data:
   spawn_roll_big:
   LDA #$03
   STA drum_data_pool ; length
+  LDA #%00000100
+  STA drum_data_pool+1
   LDA drum_spawn_position+1 ; high byte PPU loc
-  STA drum_data_pool+1 ; 1
-  LDA drum_spawn_position ; low byte PPU loc
   STA drum_data_pool+2 ; 1
+  LDA drum_spawn_position ; low byte PPU loc
+  STA drum_data_pool+3 ; 1
 
   ; tiles
   LDY #$59
@@ -4175,17 +4331,22 @@ controller_highlight_sprite_data:
 
 
   spawn_roll_last:
+  LDA #$01
+  STA draw_how_many_times
+
   LDY roll_size
   BNE spawn_roll_last_big
 
   LDA #$02
   STA drum_data_pool ; length
+  LDA #%00000100
+  STA drum_data_pool+1
   LDA drum_spawn_position+1 ; high byte PPU loc
-  STA drum_data_pool+1 ; 1
+  STA drum_data_pool+2 ; 1
   LDA drum_spawn_position ; low byte PPU loc
   CLC
   ADC #$20 ; add 20 (+1 height tile)
-  STA drum_data_pool+2 ; 1
+  STA drum_data_pool+3 ; 1
 
   ; tiles
   LDY #$4E
@@ -4217,10 +4378,12 @@ controller_highlight_sprite_data:
   spawn_roll_last_big:
   LDA #$03
   STA drum_data_pool ; length
+  LDA #%00000100
+  STA drum_data_pool+1
   LDA drum_spawn_position+1 ; high byte PPU loc
-  STA drum_data_pool+1 ; 1
-  LDA drum_spawn_position ; low byte PPU loc
   STA drum_data_pool+2 ; 1
+  LDA drum_spawn_position ; low byte PPU loc
+  STA drum_data_pool+3 ; 1
 
   ; tiles
   LDY #$5C
