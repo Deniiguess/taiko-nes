@@ -14,12 +14,6 @@ BTN_A       = %10000000
 CONTROLLER1 = $4016
 CONTROLLER2 = $4017
 
-PPUSCROLL_X_SPRITE_UPDATE = 0 ; add code to scroll sprites with PPUSCROLL_X
-PPUSCROLL_Y_SPRITE_UPDATE = 0 ; add code to scroll sprites with PPUSCROLL_Y
-HAVE_ALL_BYTES_TABLE = 0 ; waste 256 bytes for a table of all bytes
-TWO_CONTROLLERS = 0 ; add extra button check code for player 2
-SPLIT_X_SCROLLING = 1 ; add sprite 0 checking for split X scrolling
-
 ; FAMISTUDIO_CFG_NTSC_SUPPORT  = 1 ; for NTSC
 ; FAMISTUDIO_CFG_PAL_SUPPORT   = 1 ; for PAL
 
@@ -105,11 +99,6 @@ palette: .res 32
 .segment "ZEROPAGE"
 BTN_Hold: .res 2
 BTN_Press: .res 3
-
-.if TWO_CONTROLLERS
-BTN_Hold_2: .res 1
-BTN_Press_2: .res 3
-.endif
 
 PPUCTRL: .res 1
 PPUMASK: .res 1
@@ -891,195 +880,9 @@ done_checking_a_press: ; stop checking a button
   BCC check_presses ; check if the carry flag is 1, if not, loop
 
   ; carry flag has 1 (it checked all 8 buttons), loop finished
-
-.if TWO_CONTROLLERS
-  update_controller_2:
-    PHP
-    PHA
-    TXA
-    PHA
-
-    ; write a 1, then a 0, to CONTROLLER1
-    ; to latch button states
-    LDA #$01
-    STA CONTROLLER2
-    LDA #$00
-    STA CONTROLLER2
-
-    LDA #%00000001
-    STA BTN_Hold_2
-
-  get_buttons_2:
-    LDA CONTROLLER2 ; Read next button's state
-    LSR A           ; Shift button state right, into carry flag
-    ROL BTN_Hold_2        ; Rotate button state from carry flag
-                    ; onto right side of BTN_Hold_2
-                    ; and leftmost 0 of BTN_Hold_2 into carry flag
-    BCC get_buttons_2 ; Continue until original "1" is in carry flag
-
-    PLA
-    TAX
-    PLA
-    PLP
-
-    CLC ; set carry bit to 0
-    LDA #$01 ; load $01 to A
-    STA BTN_Press_2+2 ; set BTN_Press_2+2 to A ($01)
-
-  check_presses_2:
-    ; check which button youre holding
-    LDA BTN_Hold_2 ; load BTN_Hold_2 to A
-    AND BTN_Press_2+2 ; compare bit in A to BTN_Press_2+2
-    BEQ reset_presses_2 ; if they dont match (button isnt pressed), go to reset_presses
-
-    ; check if BTN_Press_2 has a value
-    LDA BTN_Press_2 ; load BTN_Press_2 to A
-    AND BTN_Press_2+2 ; compare bit in A to BTN_Press_2+2
-    BNE set_BTN_Press_2p1_2 ; if it has a value, go to set_BTN_Press_2p1
-
-    ; check if BTN_Press_2+1 has a value
-    LDA BTN_Press_2+1 ; load BTN_Press_2 to A
-    AND BTN_Press_2+2 ; compare bit in A to BTN_Press_2+2
-    BEQ set_button_press_2 ; if it doesnt have a value, go to set_button_press
-    BNE done_checking_a_press_2 ; if it does have a value, go to done_checking_a_press
-
-  reset_presses_2: ; resets BTN_Press_2+1
-    ; check if BTN_Press_2 has a value
-    ; important if you press a button for 1 frame, otherwise its not gonna reset
-    LDA BTN_Press_2 ; load BTN_Press_2 to A
-    AND BTN_Press_2+2 ; compare bit in A to BTN_Press_2+2
-    BNE reset_presses_alt_2 ; if BTN_Press_2 has a value, go to reset_presses_alt
-
-    ; check if BTN_Press_2+1 has a value
-    LDA BTN_Press_2+1 ; load BTN_Press_2+1 to A
-    AND BTN_Press_2+2 ; compare bit in A to BTN_Press_2+2
-    BEQ done_checking_a_press_2 ; if it doesnt have a value, go to done_checking_a_press
-
-    LDA BTN_Press_2+2 ; laod BTN_Press_2+2 to A
-    EOR BTN_Press_2+1 ; invert bit in A specified by BTN_Press_2+1
-    STA BTN_Press_2+1 ; store A to BTN_Press_2+1, resetting it
-
-    JMP done_checking_a_press_2 ; go to done_checking_a_press
-
-  reset_presses_alt_2: ; resets BTN_Press_2
-  ; (same as reset_presses, but its BTN_Press_2 instead of BTN_Press_2+1)
-    LDA BTN_Press_2+2 ; loads BTN_Press_2 to A
-    EOR BTN_Press_2 ; invert bit in A specified by BTN_Press_2
-    STA BTN_Press_2 ; store A to BTN_Press_2, resetting it
-
-    JMP done_checking_a_press_2 ; go to done_checking_a_press
-
-  set_BTN_Press_2p1_2: ; sets a value in BTN_Press_2+1
-  ; important so it doesnt loop the code 2 frames later essentially making it turbo
-  ; basically the same as BTN_Hold_2, but the important difference is this one is delayed by 1 frame
-  ; otherwise it wouldnt set a value in BTN_Press_2
-    LDA BTN_Press_2+2 ; load BTN_Press_2+2 to A
-    EOR BTN_Press_2 ; invert bit in A specified by BTN_Press_2
-    STA BTN_Press_2 ; store A to BTN_Press_2, resetting it, indicading a finished button press
-
-    LDA BTN_Press_2+2 ; load BTN_Press_2+2 to A (again, to overwrite the leftover A)
-    ORA BTN_Press_2+1 ; set bit in A specified by BTN_Press_2+1 to 1
-    STA BTN_Press_2+1 ; store A (BTN_Press_2+2) to BTN_Press_2+1, so it wont repeat this code the next frame
-
-    JMP done_checking_a_press_2 ; go to done_checking_a_press
-
-  set_button_press_2: ; sets a value in BTN_Press_2
-    LDA BTN_Press_2+2 ; load BTN_Press_2+2 to A
-    ORA BTN_Press_2 ; set bit in A specified by BTN_Press_2 to 1
-    STA BTN_Press_2 ; store A (BTN_Press_2+2) to BTN_Press_2
-
-    ; this doesnt need a JMP instruction because the code is right below this
-
-  done_checking_a_press_2: ; stop checking a button
-
-    ROL BTN_Press_2+2 ; move bits in BTN_Press_2+2 to the left, including the carry flag bit
-    BCC check_presses_2 ; check if the carry flag is 1, if not, loop
-
-    ; carry flag has 1 (it checked all 8 buttons), loop finished
-.endif
-
-  RTS
-
-sprite_scroll:
-
-.if PPUSCROLL_X_SPRITE_UPDATE
-
-  LDX #$FE ; load $FE to X
-  update_PPUSCROLL_X_sprites:
-  TXA ; copy X to A
-  CLC
-  ADC #$04 ; add $04 to A
-  TAX ; copy A to X
-  CPX #$FE ; if X is $FE
-  BEQ update_PPUSCROLL_X_sprites_end ; finish loop
-  LDA $200, X ; load $200+X to A (Attribute byte)
-  AND #%00000100 ; check if an unused attribute bit is set to 1
-  BEQ update_PPUSCROLL_X_sprites ; if no, loop
-  LDA $201, X ; load $201+X to A (X coordinate)
-  SBC PPUSCROLL_X_speed ; subtract with PPUSCROLL_X_speed
-  TAY ; copy A to Y
-  INY ; increase Y
-  TYA ; copy Y to A
-  STA $201, X ; store A to $201+X
-  JMP update_PPUSCROLL_X_sprites ; loop
-
-  update_PPUSCROLL_X_sprites_end:
-  LDA $2FE ; load $2FE to A (Attribute byte of sprite 63)
-  AND #%00000100 ; check if an unused attribute bit is set to 1
-  BEQ update_PPUSCROLL_X_sprites_end_2 ; finish updating
-
-  LDA $2FF ; load $2FF (X coordinate of sprite 63)
-  CLC
-  SBC PPUSCROLL_X_speed ; subtract with PPUSCROLL_X_speed
-  TAY ; copy A to Y
-  INY ; increase Y
-  TYA ; copy Y to A
-  STA $2FF ; store A to $2FF
-
-  update_PPUSCROLL_X_sprites_end_2:
-.endif
-
-.if PPUSCROLL_Y_SPRITE_UPDATE
-
-  LDX #$FE ; load $FE to X
-  update_PPUSCROLL_Y_sprites:
-  TXA ; copy X to A
-  CLC
-  ADC #$04 ; add $04 to A
-  TAX ; copy A to X
-  CPX #$FE ; if X is $FE
-  BEQ update_PPUSCROLL_Y_sprites_end ; finish loop
-  LDA $200, X ; load $200+X to A (Attribute byte)
-  AND #%00001000 ; check if an unused attribute bit is set to 1
-  BEQ update_PPUSCROLL_Y_sprites; if no, loop
-  LDA $1FE, X ; load $1FE+X to A (Y coordinate)
-  SBC PPUSCROLL_Y_speed ; subtract with PPUSCROLL_Y_speed
-  TAY ; copy A to Y
-  INY ; increase Y
-  TYA ; copy Y to A
-  STA $1FE, X ; store A to $1FE+X
-  JMP update_PPUSCROLL_Y_sprites ; loop
-
-  update_PPUSCROLL_Y_sprites_end:
-  LDA $2FE ; load $2FE to A (Attribute byte of sprite 63)
-  AND #%00001000 ; check if an unused attribute bit is set to 1
-  BEQ update_PPUSCROLL_Y_sprites_end_2 ; finish updating
-
-  LDA $2FC ; load $2FC (Y coordinate of sprite 63)
-  CLC
-  SBC PPUSCROLL_Y_speed ; subtract with PPUSCROLL_Y_speed
-  TAY ; copy A to Y
-  INY ; increase Y
-  TYA ; copy Y to A
-  STA $2FC ; store A to $2FC
-
-  update_PPUSCROLL_Y_sprites_end_2:
-.endif
-
   RTS
 
 split_x_scrolling:
-.if SPLIT_X_SCROLLING
   LDX #$00
   wait:
   INX
@@ -1096,7 +899,6 @@ split_x_scrolling:
 
   LDA PPUCTRL_kept_2 ; set the bottom half PPUCTRL to PPUCTRL_kept_2
   STA $2000
-.endif
   RTS
 
 .proc metronome
@@ -5765,27 +5567,6 @@ bad_sprite:
 
 input_rate_y_pool:
   .byte $37, $37, $37, $37, $37, $37, $37, $37, $37, $37, $37, $35, $34, $33, $34, $35, $37
-
-.if HAVE_ALL_BYTES_TABLE
-  allbytes:
-  .byte $00, $01, $02, $03, $04, $05, $06, $07, $08, $09, $0A, $0B, $0C, $0D, $0E, $0F
-  .byte $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $1A, $1B, $1C, $1D, $1E, $1F
-  .byte $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $2A, $2B, $2C, $2D, $2E, $2F
-  .byte $30, $31, $32, $33, $34, $35, $36, $37, $38, $39, $3A, $3B, $3C, $3D, $3E, $3F
-  .byte $40, $41, $42, $43, $44, $45, $46, $47, $48, $49, $4A, $4B, $4C, $4D, $4E, $4F
-  .byte $50, $51, $52, $53, $54, $55, $56, $57, $58, $59, $5A, $5B, $5C, $5D, $5E, $5F
-  .byte $60, $61, $62, $63, $64, $65, $66, $67, $68, $69, $6A, $6B, $6C, $6D, $6E, $6F
-  .byte $70, $71, $72, $73, $74, $75, $76, $77, $78, $79, $7A, $7B, $7C, $7D, $7E, $7F
-  .byte $80, $81, $82, $83, $84, $85, $86, $87, $88, $89, $8A, $8B, $8C, $8D, $8E, $8F
-  .byte $90, $91, $92, $93, $94, $95, $96, $97, $98, $99, $9A, $9B, $9C, $9D, $9E, $9F
-  .byte $A0, $A1, $A2, $A3, $A4, $A5, $A6, $A7, $A8, $A9, $AA, $AB, $AC, $AD, $AE, $AF
-  .byte $B0, $B1, $B2, $B3, $B4, $B5, $B6, $B7, $B8, $B9, $BA, $BB, $BC, $BD, $BE, $BF
-  .byte $C0, $C1, $C2, $C3, $C4, $C5, $C6, $C7, $C8, $C9, $CA, $CB, $CC, $CD, $CE, $CF
-  .byte $D0, $D1, $D2, $D3, $D4, $D5, $D6, $D7, $D8, $D9, $DA, $DB, $DC, $DD, $DE, $DF
-  .byte $E0, $E1, $E2, $E3, $E4, $E5, $E6, $E7, $E8, $E9, $EA, $EB, $EC, $ED, $EE, $EF
-  .byte $F0, $F1, $F2, $F3, $F4, $F5, $F6, $F7, $F8, $F9, $FA, $FB, $FC, $FD, $FE, $FF
-
-.endif
 
 taiko_bg_1:
 	.byte $01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01
