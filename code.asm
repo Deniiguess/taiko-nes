@@ -126,7 +126,7 @@ PPUCTRL_kept: .res 1
 PPUCTRL_kept_2: .res 1
 
 draw_length: .res 1
-draw_how_many_times: .res 1
+draw_bg_over_palette: .res 1
 draw_attribute_location: .res 2
 
 fade_intensity: .res 1
@@ -352,7 +352,7 @@ loop:
   JMP leave_nmi
   :
 
-  LDA draw_how_many_times ; load draw_how_many_times to A
+  LDA draw_bg_over_palette ; load draw_bg_over_palette to A
   BNE draw_background_branch ; if its 0, draw palettes
 
   JSR draw_palette
@@ -550,7 +550,7 @@ loop:
   draw_background_sub_loop:
   LDA draw, Y ; loads draw length byte to A
   BNE :+ ; if the length is 0, stop drawing bg
-  DEC draw_how_many_times
+  STA draw_bg_over_palette ; set draw_bg_over_palette to 0 (A is already 0)
   RTS
   :
 
@@ -558,14 +558,22 @@ loop:
   INY ; next byte
 
   LDA draw, Y ; loads attributes to A
-  AND #%00000111 ; check if the RLE bit is 1
-  TAX
+  AND #%00000111 ; get rid of extra bits
+  TAX ; put A to X
 
+  ; %-----VRN
+  ; N - No PPU address changes
+  ; R - RLE loading
+  ; V - Vertical drawing
+
+  ; load proper addresses
+  ; depends on the attribute value
   LDA draw_attribute_locations_lo, X
   STA draw_attribute_location
   LDA draw_attribute_locations_hi, X
   STA draw_attribute_location+1
 
+  ; jump to the proper location
   JMP (draw_attribute_location)
 
 
@@ -626,6 +634,8 @@ loop:
 
 
 
+  ; set PPUCTRL ($2000) to increment by 32 instead of 1
+  ; then jump to the correct location
   draw_background_VER:
   LDA PPUCTRL
   ORA #%00000100
@@ -3107,7 +3117,7 @@ controller_highlight_sprite_data:
 
   clear_drum:
   LDA #$01
-  STA draw_how_many_times
+  STA draw_bg_over_palette
 
   ; load the pool positions to X and Y
   LDX drum_hit_pool_pos+1
@@ -3462,7 +3472,7 @@ controller_highlight_sprite_data:
 
   ; update blanking tiles
   LDA #$01
-  STA draw_how_many_times
+  STA draw_bg_over_palette
   LDA #$04
   STA draw+0
   LDA #%00000110
@@ -3763,7 +3773,7 @@ controller_highlight_sprite_data:
 
   load_don:
   LDA #$01
-  STA draw_how_many_times
+  STA draw_bg_over_palette
 
   LDA (drum_bank_positon, X)
   AND #%00000100
@@ -3815,7 +3825,7 @@ controller_highlight_sprite_data:
 
   load_kat:
   LDA #$01
-  STA draw_how_many_times
+  STA draw_bg_over_palette
 
   LDA (drum_bank_positon, X)
   AND #%00000100
@@ -3865,7 +3875,7 @@ controller_highlight_sprite_data:
 
   load_rol:
   LDA #$01
-  STA draw_how_many_times
+  STA draw_bg_over_palette
 
   LDA #$1E
   STA roll_length+2
@@ -3954,7 +3964,7 @@ controller_highlight_sprite_data:
 
   load_big_kat:
   LDA #$01
-  STA draw_how_many_times
+  STA draw_bg_over_palette
 
   JSR prepare_data_big
 
@@ -3981,7 +3991,7 @@ controller_highlight_sprite_data:
 
   load_big_don:
   LDA #$01
-  STA draw_how_many_times
+  STA draw_bg_over_palette
 
   JSR prepare_data_big
 
@@ -4008,7 +4018,7 @@ controller_highlight_sprite_data:
 
   load_big_rol:
   LDA #$01
-  STA draw_how_many_times
+  STA draw_bg_over_palette
 
   LDA #%01100000
   STA stop_save
@@ -4230,7 +4240,7 @@ controller_highlight_sprite_data:
 
   spawn_roll:
   LDA #$01
-  STA draw_how_many_times
+  STA draw_bg_over_palette
 
   LDA stop_save
   ROL
@@ -4332,7 +4342,7 @@ controller_highlight_sprite_data:
 
   spawn_roll_last:
   LDA #$01
-  STA draw_how_many_times
+  STA draw_bg_over_palette
 
   LDY roll_size
   BNE spawn_roll_last_big
