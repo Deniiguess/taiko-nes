@@ -293,7 +293,7 @@ dbank7:
 
 dbank8:
 .byte $C6, $08
-.byte %00010110, $10, $00
+.byte $03, $10, $10, $00
 
 .segment "START"
 
@@ -1550,27 +1550,13 @@ scenes_hi:
   LDA #$01
   STA $E000
 
-  ; load CHR banks
-  LDA #$00
-  STA $8000
-  LDA #$01
-  STA $8800
-  STA song_sel_entry
-  LDA #$02
-  STA $A000
-  LDA #$08
-  STA $A800
-  LDA #$09
-  STA $B000
-
   ; load nametable banks
   ; load PPU nametables
-  LDA #$E0
+  LDA #$E1
   STA $C800
   STA $D800
-  LDA #$E1
+  LDA #$E0
   STA $D000
-  LDA #$0D
   STA $C000
 
   LDA #$00
@@ -1586,42 +1572,80 @@ scenes_hi:
   CPX #$20
   BNE loop_reset_palette
 
-  ; load background for both nametables
+  ; load difficulty select and settings
   LDA PPUSTATUS
   LDA #$20
   STA PPUADDR
   LDA #$00
   STA PPUADDR
   LDX #$00
-  LDY #$02
 
-;   load_song_sel_bg:
-;   load_song_sel_1:
-;   LDA song_sel_1, X
-;   STA PPUDATA
-;   INX
-;   BNE load_song_sel_1
-;
-;   load_song_sel_2:
-;   LDA song_sel_2, X
-;   STA PPUDATA
-;   INX
-;   BNE load_song_sel_2
-;
-;   load_song_sel_3:
-;   LDA song_sel_3, X
-;   STA PPUDATA
-;   INX
-;   BNE load_song_sel_3
-;
-;   load_song_sel_4:
-;   LDA song_sel_4, X
-;   STA PPUDATA
-;   INX
-;   BNE load_song_sel_4
-;
-;   DEY
-;   BNE load_song_sel_bg
+  load_diff_sel_1:
+  LDA diff_sel_1, X
+  STA PPUDATA
+  INX
+  BNE load_diff_sel_1
+
+  load_diff_sel_2:
+  LDA diff_sel_2, X
+  STA PPUDATA
+  INX
+  BNE load_diff_sel_2
+
+  load_diff_sel_3:
+  LDA diff_sel_3, X
+  STA PPUDATA
+  INX
+  BNE load_diff_sel_3
+
+  load_diff_sel_4:
+  LDA diff_sel_4, X
+  STA PPUDATA
+  INX
+  BNE load_diff_sel_4
+
+  load_sett_sel_1:
+  LDA sett_sel_1, X
+  STA PPUDATA
+  INX
+  BNE load_sett_sel_1
+
+  load_sett_sel_2:
+  LDA sett_sel_2, X
+  STA PPUDATA
+  INX
+  BNE load_sett_sel_2
+
+  load_sett_sel_3:
+  LDA sett_sel_3, X
+  STA PPUDATA
+  INX
+  BNE load_sett_sel_3
+
+  load_sett_sel_4:
+  LDA sett_sel_4, X
+  STA PPUDATA
+  INX
+  BNE load_sett_sel_4
+
+  ; load CHR banks
+  LDA #$00
+  STA $8000
+  LDA #$01
+  STA $8800
+  STA song_sel_entry
+  LDA #$02
+  STA $A000
+  LDA #$08
+  STA $A800
+  LDA #$09
+  STA $B000
+  LDA #$0A
+  STA $B800
+  STA $9000
+
+  LDA #$0D
+  STA $C000
 
   LDA #$02
   STA scene
@@ -2047,37 +2071,7 @@ title_palette:
   CMP #180
   BNE dont_load_main_game
 
-  LDA #$00
   LDX song_sel_position
-  LDY #$00
-
-  draw_stars:
-  LDA song_stars, X
-
-  CLC
-  ;SBC #$
-
-
-  LDY song_difficulty_position, X
-  :
-  CPX #$00
-  BEQ :+
-  CLC
-  ADC #$04
-  DEX
-  CLV
-  BVC :-
-  :
-
-  TAX
-  :
-  CPY #$00
-  BEQ :+
-  INX
-  DEY
-  BVC :-
-  :
-
   LDA song_address_start_lo, X
   STA drum_bank_positon
 
@@ -2088,6 +2082,7 @@ title_palette:
   dont_load_main_game:
 
   RTS
+.endproc
 
   song_address_start_lo:
   .lobytes dbank1, dbank2, dbank3, dbank4
@@ -2106,7 +2101,7 @@ title_palette:
   .hibytes dbank5, dbank6, dbank7, dbank8
 
   song_stars:
-  .byte $00, $00, $00, $00
+  .byte $03, $04, $08, $0A
   .byte $00, $00, $00, $00
   .byte $00, $00, $00, $00
   .byte $00, $00, $00, $00
@@ -2162,7 +2157,100 @@ title_palette:
   .byte $00, $00, $00, $00, $00, $00
   song_chartr_12:
   .byte $00, $00, $00, $00, $00, $00
-.endproc
+
+diff_sel_1:
+	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.byte $00,$00,$00,$c0,$c1,$c1,$c1,$c1,$c1,$c1,$c1,$c1,$c1,$c1,$c1,$c1,$c1,$c1,$c1,$c1,$c1,$c1,$c1,$c1,$c1,$c1,$c1,$c1,$c2,$00,$00,$00
+	.byte $00,$00,$00,$c3,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c5,$00,$00,$00
+	.byte $00,$00,$00,$c3,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c5,$00,$00,$00
+	.byte $00,$00,$00,$c3,$c4,$c4,$c4,$c6,$c7,$c8,$c4,$c4,$c6,$c7,$c8,$c4,$c4,$c6,$c7,$c8,$c4,$c4,$c6,$c7,$c8,$c4,$c4,$c4,$c5,$00,$00,$00
+	.byte $00,$00,$00,$c3,$c4,$c4,$c4,$c9,$ca,$cb,$c4,$c4,$c9,$ca,$cb,$c4,$c4,$c9,$ca,$cb,$c4,$c4,$c9,$ca,$cb,$c4,$c4,$c4,$c5,$00,$00,$00
+
+diff_sel_2:
+	.byte $00,$00,$00,$c3,$c4,$c4,$c4,$c9,$ca,$cb,$c4,$c4,$c9,$ca,$cb,$c4,$c4,$c9,$ca,$cb,$c4,$c4,$c9,$ca,$cb,$c4,$c4,$c4,$c5,$00,$00,$00
+	.byte $00,$00,$00,$c3,$c4,$c4,$c4,$c9,$ca,$cb,$c4,$c4,$c9,$ca,$cb,$c4,$c4,$c9,$ca,$cb,$c4,$c4,$c9,$ca,$cb,$c4,$c4,$c4,$c5,$00,$00,$00
+	.byte $00,$00,$00,$c3,$c4,$c4,$c4,$c9,$ca,$cb,$c4,$c4,$c9,$ca,$cb,$c4,$c4,$c9,$ca,$cb,$c4,$c4,$c9,$ca,$cb,$c4,$c4,$c4,$c5,$00,$00,$00
+	.byte $00,$00,$00,$c3,$c4,$c4,$c4,$c9,$ca,$cb,$c4,$c4,$c9,$ca,$cb,$c4,$c4,$c9,$ca,$cb,$c4,$c4,$c9,$ca,$cb,$c4,$c4,$c4,$c5,$00,$00,$00
+	.byte $00,$00,$00,$c3,$c4,$c4,$c4,$c9,$ca,$cb,$c4,$c4,$c9,$ca,$cb,$c4,$c4,$c9,$ca,$cb,$c4,$c4,$c9,$ca,$cb,$c4,$c4,$c4,$c5,$00,$00,$00
+	.byte $00,$00,$00,$c3,$c4,$c4,$c4,$c9,$ca,$cb,$c4,$c4,$c9,$ca,$cb,$c4,$c4,$c9,$ca,$cb,$c4,$c4,$c9,$ca,$cb,$c4,$c4,$c4,$c5,$00,$00,$00
+	.byte $00,$00,$00,$c3,$c4,$c4,$c4,$c9,$ca,$cb,$c4,$c4,$c9,$ca,$cb,$c4,$c4,$c9,$ca,$cb,$c4,$c4,$c9,$ca,$cb,$c4,$c4,$c4,$c5,$00,$00,$00
+	.byte $00,$00,$00,$c3,$c4,$c4,$c4,$c9,$ca,$cb,$c4,$c4,$c9,$ca,$cb,$c4,$c4,$c9,$ca,$cb,$c4,$c4,$c9,$ca,$cb,$c4,$c4,$c4,$c5,$00,$00,$00
+
+diff_sel_3:
+	.byte $00,$00,$00,$c3,$c4,$c4,$c4,$c9,$ca,$cb,$c4,$c4,$c9,$ca,$cb,$c4,$c4,$c9,$ca,$cb,$c4,$c4,$c9,$ca,$cb,$c4,$c4,$c4,$c5,$00,$00,$00
+	.byte $00,$00,$00,$c3,$c4,$c4,$c4,$c9,$ca,$cb,$c4,$c4,$c9,$ca,$cb,$c4,$c4,$c9,$ca,$cb,$c4,$c4,$c9,$ca,$cb,$c4,$c4,$c4,$c5,$00,$00,$00
+	.byte $00,$00,$00,$c3,$c4,$c4,$c4,$cc,$cd,$ce,$c4,$c4,$cc,$cd,$ce,$c4,$c4,$cc,$cd,$ce,$c4,$c4,$cc,$cd,$ce,$c4,$c4,$c4,$c5,$00,$00,$00
+	.byte $00,$00,$00,$c3,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c5,$00,$00,$00
+	.byte $00,$00,$00,$c3,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c5,$00,$00,$00
+	.byte $00,$00,$00,$c3,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c5,$00,$00,$00
+	.byte $00,$00,$00,$c3,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c5,$00,$00,$00
+	.byte $00,$00,$00,$c3,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c5,$00,$00,$00
+
+diff_sel_4:
+	.byte $00,$00,$00,$c3,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c5,$00,$00,$00
+	.byte $00,$00,$00,$c3,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c5,$00,$00,$00
+	.byte $00,$00,$00,$cf,$d0,$d0,$d0,$d0,$d0,$d0,$d0,$d0,$d0,$d0,$d0,$d0,$d0,$d0,$d0,$d0,$d0,$d0,$d0,$d0,$d0,$d0,$d0,$d0,$d1,$00,$00,$00
+	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+    .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+	.byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+	.byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+	.byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+	.byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+	.byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+	.byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+	.byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+
+sett_sel_1:
+	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.byte $00,$00,$00,$a0,$a1,$a2,$a2,$a2,$a2,$a2,$a2,$a2,$a2,$a2,$a2,$a2,$a2,$a2,$a2,$a2,$a2,$a2,$a2,$a2,$a2,$a2,$a2,$a3,$a4,$00,$00,$00
+	.byte $00,$00,$00,$a5,$a6,$a7,$a8,$a9,$a9,$a9,$a9,$a9,$aa,$ab,$ab,$ab,$ab,$ab,$ab,$ab,$ab,$ab,$ab,$ab,$ab,$ab,$ab,$ab,$ac,$00,$00,$00
+	.byte $00,$00,$00,$ad,$ae,$af,$b0,$a9,$a9,$a9,$a9,$a9,$a9,$ab,$ab,$ab,$ab,$ab,$ab,$ab,$ab,$ab,$ab,$ab,$ab,$ab,$ab,$ab,$b1,$00,$00,$00
+	.byte $00,$00,$00,$ad,$b2,$b3,$b4,$b5,$b6,$a9,$a9,$a9,$a9,$b7,$ab,$ab,$ab,$ab,$ab,$ab,$ab,$ab,$ab,$ab,$ab,$ab,$ab,$ab,$b1,$00,$00,$00
+
+sett_sel_2:
+	.byte $00,$00,$00,$ad,$a9,$b8,$b9,$e0,$ba,$bb,$bc,$a9,$a9,$bd,$be,$be,$be,$be,$be,$bf,$c0,$c1,$be,$bf,$c2,$c1,$be,$c3,$b1,$00,$00,$00
+	.byte $00,$00,$00,$ad,$a9,$c4,$e0,$e0,$e0,$e0,$c5,$a9,$a9,$a9,$a9,$a9,$a9,$a9,$a9,$c6,$c7,$c8,$a9,$c6,$c9,$c8,$a9,$a9,$b1,$00,$00,$00
+	.byte $00,$00,$00,$ad,$a9,$ca,$cb,$e0,$cc,$cd,$ce,$cf,$d0,$d1,$d2,$d3,$d4,$d5,$a9,$d6,$e0,$d7,$a9,$d6,$e0,$d7,$a9,$a9,$b1,$00,$00,$00
+	.byte $00,$00,$00,$ad,$d8,$d8,$d9,$e0,$da,$d8,$d8,$db,$dc,$dd,$de,$df,$e1,$e2,$d8,$e3,$e0,$e4,$d8,$e3,$e0,$e4,$d8,$d8,$b1,$00,$00,$00
+	.byte $00,$00,$00,$e5,$e6,$a9,$a9,$e7,$e8,$a9,$a9,$e9,$ea,$ea,$ea,$ea,$ea,$eb,$a9,$ec,$ed,$ee,$a9,$ec,$ed,$ee,$a9,$ef,$f0,$00,$00,$00
+	.byte $00,$00,$00,$f1,$f2,$f3,$f3,$f3,$f3,$f3,$f3,$f3,$f3,$f3,$f3,$f3,$f3,$f3,$f3,$f3,$f3,$f3,$f3,$f3,$f3,$f3,$f3,$f4,$f5,$00,$00,$00
+	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+
+sett_sel_3:
+	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+
+sett_sel_4:
+	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+    .byte $aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa
+	.byte $aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa
+	.byte $aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa
+	.byte $aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa
+	.byte $aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa
+	.byte $aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa
+	.byte $aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa
+	.byte $aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa
+
+
 
 .proc update_START
   LDA ts_ss_timer+1
@@ -2191,12 +2279,12 @@ title_palette:
   LDA song_sel_entry
   CMP #$02
   BNE :+
-  LDA #$E1
+  LDA #$E0
   STA $D000
+  LDA #$0A
+  STA $B800
 
-  LDA frame_timer
-  AND #$01
-  STA frame_timer
+  JSR load_stars
   :
 
   RTS
@@ -2222,6 +2310,53 @@ title_palette:
   LDA #$80
   STA song_sel_position+2
   :
+  RTS
+
+  load_stars:
+  ; prepare locations for star drawing
+  LDA #$01
+  STA draw_bg_over_palette
+
+  ; prepare PPU high
+  LDA #$29
+  STA draw+2
+  STA draw+10
+  STA draw+18
+  STA draw+26
+  ; prepare PPU low
+  LDA #$08
+  STA draw+3
+  LDA #$0D
+  STA draw+11
+  LDA #$12
+  STA draw+19
+  LDA #$17
+  STA draw+27
+  ; prepare attributes
+  LDA #%00000111
+  STA draw+1
+  STA draw+9
+  STA draw+17
+  STA draw+25
+  LDA #%00000110
+  STA draw+6
+  STA draw+14
+  STA draw+22
+  STA draw+30
+
+  draw_stars:
+  LDA song_stars, X
+  STA draw+1, Y
+  CLC
+  SBC #$0A
+  EOR #$FF
+  STA draw+5, Y
+  TYA
+  ADC #$08
+  TAY
+  CPY #$20
+  BNE draw_stars
+
   RTS
 .endproc
 
@@ -2258,8 +2393,10 @@ update_SEL:
   AND #BTN_SELECT
   BEQ :+
 
-  LDA #$E0
+  LDA #$E1
   STA $D000
+  LDA #$0B
+  STA $B800
 
   JMP down
 
@@ -2562,7 +2699,7 @@ song_sel_pal:
   .byte $0F, $05, $15, $25
   .byte $0F, $0F, $16, $30
   .byte $0F, $16, $37, $0F
-  .byte $0F, $0F, $0F, $0F
+  .byte $0F, $17, $27, $20
 
   .byte $0F, $30, $30, $30
   .byte $0F, $0F, $0F, $0F
