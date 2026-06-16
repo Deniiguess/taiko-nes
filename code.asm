@@ -2368,11 +2368,15 @@ sett_sel_4:
   LDA #$CD
   STA draw+7, Y
   LDA #$01
+  STA draw+5, Y
+  LDA #$0A
+  BVC :++
   :
   STA draw+5, Y
   CLC
   SBC #$0A
   EOR #$FF
+  :
   STA draw+0, Y
   INX
   TYA
