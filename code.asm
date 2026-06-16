@@ -308,27 +308,6 @@ dbank8:
   TYA
   PHA
 
-  ; update sprites
-  LDA #$00
-  STA $2003 ; OAMADDR
-  LDA #$02
-  STA $4014 ; OAMDMA
-    ldx #1             ; get put          <- strobe code must take an odd number of cycles total
-    stx BTN_Hold+0      ; get put get      <- buttons must be in the zeropage
-    stx $4016          ; put get put get
-    dex                ; put get
-    stx $4016          ; put get put get
-loop:
-    lda $4017          ; put get put GET  <- loop code must take an even number of cycles total
-    and #3             ; put get
-    cmp #1             ; put get
-    rol BTN_Hold+1, x   ; put get put get put get (X = 0; waste 1 cycle for alignment)
-    lda $4016          ; put get put GET
-    and #3             ; put get
-    cmp #1             ; put get
-    rol BTN_Hold+0      ; put get put get put
-    bcc loop           ; get put [get]    <- this branch must not be allowed to cross a page
-
   ; update PPUMASK
   LDA PPUMASK
   STA $2001 ; PPUMASK
@@ -363,6 +342,27 @@ loop:
   BNE clear_drum
 
   escape_draw_palette:
+
+    ; update sprites
+  LDA #$00
+  STA $2003 ; OAMADDR
+  LDA #$02
+  STA $4014 ; OAMDMA
+    ldx #1             ; get put          <- strobe code must take an odd number of cycles total
+    stx BTN_Hold+0      ; get put get      <- buttons must be in the zeropage
+    stx $4016          ; put get put get
+    dex                ; put get
+    stx $4016          ; put get put get
+loop:
+    lda $4017          ; put get put GET  <- loop code must take an even number of cycles total
+    and #3             ; put get
+    cmp #1             ; put get
+    rol BTN_Hold+1, x   ; put get put get put get (X = 0; waste 1 cycle for alignment)
+    lda $4016          ; put get put GET
+    and #3             ; put get
+    cmp #1             ; put get
+    rol BTN_Hold+0      ; put get put get put
+    bcc loop           ; get put [get]    <- this branch must not be allowed to cross a page
 
   ; update PPUCTRL again
   LDA PPUCTRL
@@ -1175,6 +1175,13 @@ scenes_hi:
   INX
   INX
   BNE put_sprites_offscreen
+
+  ; rest draw memory bytes
+  LDA #$00
+  reset_draw:
+  STA draw, X
+  INX
+  BPL reset_draw
 
   ; reset necessary values
   LDA #$00
@@ -2317,12 +2324,12 @@ sett_sel_4:
   LDA #$01
   STA draw_bg_over_palette
 
-  LDY #$00
+  LDX #$00
   ; load song position * 4
   LDA song_sel_position
   ASL
   ASL
-  TAX
+  TAY
 
   ; prepare PPU high
   LDA #$29
@@ -2363,26 +2370,44 @@ sett_sel_4:
   STA draw+31
 
   draw_stars:
-  LDA song_stars, X
+  LDA song_stars, Y
   BNE :+
   LDA #$CD
-  STA draw+7, Y
+  STA draw+7, X
   LDA #$01
-  STA draw+5, Y
+  STA draw+5, X
   LDA #$0A
-  BVC :++
+  BNE :+++
   :
-  STA draw+5, Y
+  STA draw+5, X
   CLC
   SBC #$0A
   EOR #$FF
+  BNE :++
+  LDA #$D2
+  STA draw+7, X
+  LDA #$CA
+  STA draw+4, X
+  LDA #$0A
+  STA draw+5, X
+  LDA draw+3, X
+  EOR #$80
+  SEC
+  SBC #$20
+  EOR #$80
+  BVC :+
+  DEC draw+2, X
   :
-  STA draw+0, Y
-  INX
-  TYA
+  STA draw+3, X
+  LDA #$01
+  :
+  STA draw+0, X
+  INY
+  TXA
+  CLC
   ADC #$08
-  TAY
-  CPY #$20
+  TAX
+  CPX #$20
   BNE draw_stars
 
   RTS
