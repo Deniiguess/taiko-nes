@@ -2102,7 +2102,7 @@ title_palette:
 
   song_stars:
   .byte $03, $04, $08, $0A
-  .byte $00, $00, $00, $00
+  .byte $09, $03, $02, $01
   .byte $00, $00, $00, $00
   .byte $00, $00, $00, $00
   .byte $00, $00, $00, $00
@@ -2317,6 +2317,13 @@ sett_sel_4:
   LDA #$01
   STA draw_bg_over_palette
 
+  LDY #$00
+  ; load song position * 4
+  LDA song_sel_position
+  ASL
+  ASL
+  TAX
+
   ; prepare PPU high
   LDA #$29
   STA draw+2
@@ -2333,24 +2340,41 @@ sett_sel_4:
   LDA #$17
   STA draw+27
   ; prepare attributes
-  LDA #%00000111
+  LDA #%00000110
   STA draw+1
   STA draw+9
   STA draw+17
   STA draw+25
-  LDA #%00000110
+  LDA #%00000111
   STA draw+6
   STA draw+14
   STA draw+22
   STA draw+30
+  ; prepare tiles
+  LDA #$D3
+  STA draw+4
+  STA draw+12
+  STA draw+20
+  STA draw+28
+  LDA #$D2
+  STA draw+7
+  STA draw+15
+  STA draw+23
+  STA draw+31
 
   draw_stars:
   LDA song_stars, X
-  STA draw+1, Y
+  BNE :+
+  LDA #$CD
+  STA draw+7, Y
+  LDA #$01
+  :
+  STA draw+5, Y
   CLC
   SBC #$0A
   EOR #$FF
-  STA draw+5, Y
+  STA draw+0, Y
+  INX
   TYA
   ADC #$08
   TAY
