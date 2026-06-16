@@ -216,7 +216,7 @@ drum_sprite_A_big: .res 2
 drum_sprite_T_big: .res 2
 drum_big_sprite_loop: .res 1
 
-controller_sprites_screen: .res 3
+controller_sprites_screen: .res 1
 don_sprites_screen: .res 4
 
 
@@ -2319,7 +2319,7 @@ sett_sel_4:
   :
   RTS
 
-  load_stars:
+  load_stars: ; and the difficulty icons
   ; prepare locations for star drawing
   LDA #$01
   STA draw_bg_over_palette
@@ -2723,7 +2723,6 @@ c_h_base_sprite = $208
   SBC PPUSCROLL_Y
   CPY #$01
   BCC :+
-  LDA #$F0
   :
   STA c_h_base_sprite, X
   INX
@@ -2733,9 +2732,20 @@ c_h_base_sprite = $208
   CPX #$14
   BNE sync_c_h_height
 
+  CLV
   LDA $204
+  EOR #$80
   SEC
   SBC PPUSCROLL_Y
+  EOR #$80
+  BVC :++
+  LDX PPUSCROLL_Y_speed
+  BMI :+
+  DEC controller_sprites_screen
+  BVS :++
+  :
+  INC controller_sprites_screen
+  :
   CPY #$01
   BCC :+
   LDA #$F0
