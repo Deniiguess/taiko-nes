@@ -78,8 +78,3 @@ A - attributes
     1 - force continue (priority over drum)
     2 - change beat animation
     3 - end song (unimplemented)
-
-16 tiles = 4 beats
-1 tile = 1/4 beats
-65535 tiles available
-about 16k+ beats available
