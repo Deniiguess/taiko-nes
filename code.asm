@@ -277,7 +277,7 @@ dbank2:
 .byte $02, $00, $0A, $00, $00
 
 dbank3:
-.byte $C5, $03
+.byte $C3, $03
 .byte $09, $03, $09, $03, $09, $03, $09, $03, $00
 
 dbank4:
@@ -285,7 +285,7 @@ dbank4:
 .byte $0A, $03, $0A, $03, $0A, $03, $0A, $03, $00
 
 dbank5:
-.byte $C1, $05
+.byte $83, $05
 .byte $01, $00, $02, $00, $09, $00, $00
 
 dbank6:
@@ -297,7 +297,7 @@ dbank7:
 .byte $09, $01, $0A, $01, $09, $01, $0A, $01, $00
 
 dbank8:
-.byte $C6, $08
+.byte $83, $08
 .byte $03, $10, $10, $00
 
 .segment "START"
@@ -1568,6 +1568,9 @@ scenes_hi:
   LDA #$00
   STA fade_intensity
 
+  LDA #$1B
+  STA cursor_song_Y
+
   LDX #$00
   STX ts_ss_timer
   STX ts_ss_timer+1
@@ -1761,9 +1764,6 @@ scenes_hi:
 
   LDA #$00
   STA fade_intensity
-
-  LDA #$1B
-  STA cursor_song_Y
 
   LDX #$00
   STX ts_ss_timer
@@ -2545,6 +2545,11 @@ update_SEL:
   ASL
   STA song_sel_entry+1
   :
+
+  LDA PPUSCROLL_Y_speed
+  BPL :+
+  INC PPUSCROLL_Y
+  :
   RTS
 .endproc
 
@@ -2785,7 +2790,7 @@ c_h_base_sprite = $208
 .endproc
 
 Y_scroll_table:
-  .byte $FF, $01, $02, $0B, $10, $2F, $42, $5A
+  .byte $FF, $01, $02, $0B, $11, $2F, $44, $5E
 
 song_sel_pal:
   .byte $0F, $05, $15, $25
