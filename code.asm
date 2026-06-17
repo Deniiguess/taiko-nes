@@ -289,7 +289,7 @@ dbank5:
 .byte $01, $00, $02, $00, $09, $00, $00
 
 dbank6:
-.byte $C7, $06
+.byte $C3, $06
 .byte $02, $00, $01, $00, $0A, $00, $00
 
 dbank7:
@@ -1301,25 +1301,13 @@ scenes_hi:
   LDA (drum_bank_positon, X)
   STA tempo
 
-  LDA drum_bank_positon
-  CMP #$FF
-  BNE :+
-  INC drum_bank_positon+1
-  :
-
-  INC drum_bank_positon
+  JSR increase_dbp
 
   LDA (drum_bank_positon, X)
   STA clear_bar_inputs+1
   STA clear_bar_input_miss+1
 
-  LDA drum_bank_positon
-  CMP #$FF
-  BNE :+
-  INC drum_bank_positon+1
-  :
-
-  INC drum_bank_positon
+  JSR increase_dbp
 
   LDA #$00
   STA scene
@@ -1375,6 +1363,50 @@ scenes_hi:
   DEY
   BNE load_taiko_bg
 
+  LDA tempo
+  AND #$40
+  BEQ :+++
+
+  LDA PPUCTRL
+  ORA #%00000100
+  STA $2000
+
+  LDA PPUSTATUS
+  LDA #$20
+  STA PPUADDR
+  LDA #$55
+  STA PPUADDR
+  LDX #$00
+
+  :
+  LDA blank_tiles, X
+  STA PPUDATA
+  INX
+  CPX #$06
+  BNE :-
+
+  LDA PPUSTATUS
+  LDA #$24
+  STA PPUADDR
+  LDA #$55
+  STA PPUADDR
+  LDX #$00
+
+  :
+  LDA blank_tiles, X
+  STA PPUDATA
+  INX
+  CPX #$06
+  BNE :-
+
+  LDA PPUCTRL
+  STA $2000
+
+  LDA #$20
+  STA tiles_remaining
+
+  :
+
   LDX song_sel_position ; load the song number to X
 
   LDA misc
@@ -1408,8 +1440,21 @@ scenes_hi:
 
   JMP stay_here
 
+  increase_dbp:
+  LDA drum_bank_positon
+  CMP #$FF
+  BNE :+
+  INC drum_bank_positon+1
+  :
+
+  INC drum_bank_positon
+  RTS
+
   song_bank_numbers:
   .byte $06, $07, $08, $09, $0A, $0B
+
+  blank_tiles:
+  .byte $71, $02, $02, $70, $03, $6F
 .endproc
 
 .proc load_title_screen
@@ -4739,6 +4784,14 @@ tempo_8_table_2x:
   EOR #$80
   STA $227, X
   STA $22B, X
+
+  LDA tempo
+  AND #$40
+  BEQ :+
+  LDA #$F0
+  STA $224, X
+  STA $228, X
+  :
 
   RTS
 .endproc
