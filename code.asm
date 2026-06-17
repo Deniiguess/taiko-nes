@@ -221,9 +221,10 @@ cursor_diff_screen: .res 1
 cursor_song_screen: .res 1
 cursor_sett_screen: .res 1
 drum_song_screen: .res 1
+controller_h_screen: .res 1
 
-cursor_song_Y: .res 2
-
+cursor_song_Y: .res 1
+controller_h_Y: .res 1
 
 .segment "PRGRAM"
 
@@ -1615,6 +1616,8 @@ scenes_hi:
 
   LDA #$1B
   STA cursor_song_Y
+  LDA #$D9
+  STA controller_h_Y
 
   LDX #$00
   STX ts_ss_timer
@@ -2593,7 +2596,7 @@ update_SEL:
 
   LDA PPUSCROLL_Y_speed
   BPL :+
-  INC PPUSCROLL_Y
+  INC PPUSCROLL_Y_speed
   :
   RTS
 .endproc
@@ -2714,7 +2717,12 @@ MAX_SONG_COUNT = $05
 
 c_h_base_sprite = $208
 
-.proc update_controller_highlight ; and that donchan icon
+.proc update_controller_highlight ; and that donchan icon (not there yet) and the song sel cursor
+  LDA PPUSCROLL_Y_speed
+  BPL :+
+  DEC PPUSCROLL_Y_speed
+  :
+
   LDX #$00
   load_c_h_sprites:
   LDA controller_highlight_sprite_data, X
@@ -2734,6 +2742,66 @@ c_h_base_sprite = $208
   STA beat_anim_frame
   :
 
+  LDA controller_h_Y
+  STA c_h_base_sprite
+  STA c_h_base_sprite+4
+  CLC
+  ADC #$02
+  STA c_h_base_sprite+8
+  STA c_h_base_sprite+12
+
+  LDA controller_h_screen
+  BEQ :+
+  LDA #$F0
+  STA c_h_base_sprite
+  STA c_h_base_sprite+4
+  STA c_h_base_sprite+8
+  STA c_h_base_sprite+12
+  :
+
+  LDA controller_h_Y
+  CLC
+  ADC #$10
+  STA controller_h_Y
+
+  LDX #$00
+  LDA PPUSCROLL_Y_speed
+  BEQ dont_change_screen_controller
+  BMI :+
+  DEX
+  LDA controller_h_Y
+  SEC
+  SBC PPUSCROLL_Y_speed
+  STA controller_h_Y
+  BCS dont_change_screen_controller
+  ADC #$F0
+  STA controller_h_Y
+  JMP :++
+  :
+  DEC controller_h_Y
+  INX
+  LDA controller_h_Y
+  SEC
+  SBC PPUSCROLL_Y_speed
+  STA controller_h_Y
+  BCC dont_change_screen_controller
+
+  SBC #$F0
+  STA controller_h_Y
+  :
+  STX temp_screen
+  LDA controller_h_screen
+  CLC
+  ADC temp_screen
+  STA controller_h_screen
+
+  dont_change_screen_controller:
+
+  LDA controller_h_Y
+  CLC
+  ADC #$F0
+  STA controller_h_Y
+
   LDA beat_anim_frame
   BNE :+
   LDX #$00
@@ -2748,36 +2816,9 @@ c_h_base_sprite = $208
   BNE unload_c_h_sprites
   :
 
-  LDX #$00
-  sync_c_h_height:
-  LDY #$00
 
-  LDA PPUSCROLL_Y
-  BEQ :+
-  INY
-  :
 
-  LDA PPUCTRL
-  AND #$02
-  BEQ :+
-  INY
-  :
 
-  LDA c_h_base_sprite, X
-  CMP #$F0
-  BCS :+
-  SEC
-  SBC PPUSCROLL_Y
-  CPY #$01
-  BCC :+
-  :
-  STA c_h_base_sprite, X
-  INX
-  INX
-  INX
-  INX
-  CPX #$14
-  BNE sync_c_h_height
 
   LDA cursor_song_Y
   STA $204
@@ -2830,6 +2871,11 @@ c_h_base_sprite = $208
   CLC
   ADC #$F0
   STA cursor_song_Y
+
+  LDA PPUSCROLL_Y_speed
+  BPL :+
+  INC PPUSCROLL_Y_speed
+  :
 
   RTS
 .endproc
