@@ -398,16 +398,24 @@ loop:
   BPL :+ ; check if its negative
   ; if yes run this*
   LDA PPUSCROLL_Y ; load PPUSCROLL_Y to A
+  CLC
   ADC PPUSCROLL_Y_speed ; add PPUSCROLL_Y_speed
   STA PPUSCROLL_Y ; store A to PPUSCROLL_Y
   BCS escape_change_nametable_Y ; if not overflowed, dont change nametable
   ADC #$F0 ; add -$10 to PPUSCROLL_Y
   STA PPUSCROLL_Y
+
   JMP :++ ; do the nametable thingies
   :
 
+  LDA PPUSCROLL_Y
+  CLC
+  ADC #$10
+  STA PPUSCROLL_Y
+
   ; *otherwise run this instead
   LDA PPUSCROLL_Y ; load PPUSCROLL_Y to A
+  CLC
   ADC PPUSCROLL_Y_speed ; add PPUSCROLL_Y_speed
   STA PPUSCROLL_Y ; store A to PPUSCROLL_Y
   BCC escape_change_nametable_Y ; if overflowed, change nametable
@@ -416,12 +424,20 @@ loop:
   LDA PPUCTRL ; load PPUCTRL to A
   EOR #$02 ; flip the 2nd bit (vertical nametable)
   STA PPUCTRL ; store A to PPUCTRL
-  STA $2000 ; store to PPUCTRL early if X is 0 (going downwards)
   LDA PPUCTRL_kept ; flip the 2nd bit in PPUCTRL_kept too
   EOR #$02
   STA PPUCTRL_kept
+  JMP :+
 
   escape_change_nametable_Y:
+
+  LDA PPUSCROLL_Y_speed
+  BMI :+
+  LDA PPUSCROLL_Y
+  CLC
+  ADC #$F0
+  STA PPUSCROLL_Y
+  :
 
   JSR famistudio_update ; update audio
 
@@ -2506,9 +2522,6 @@ update_SEL:
   LDA song_sel_entry+1
   AND #$80
   BNE :+
-  CPX #$07
-  BEQ :+
-  INC PPUSCROLL_Y
   :
 
   LDA Y_scroll_table, X
@@ -2531,8 +2544,6 @@ update_SEL:
   BNE :+
   ASL
   STA song_sel_entry+1
-  STA PPUSCROLL_Y
-  DEC PPUSCROLL_Y
   :
   RTS
 .endproc
@@ -2774,7 +2785,7 @@ c_h_base_sprite = $208
 .endproc
 
 Y_scroll_table:
-  .byte $FF, $01, $02, $0C, $13, $31, $43, $5B
+  .byte $FF, $01, $02, $0B, $10, $2F, $42, $5A
 
 song_sel_pal:
   .byte $0F, $05, $15, $25
