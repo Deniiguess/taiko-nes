@@ -216,8 +216,13 @@ drum_sprite_A_big: .res 2
 drum_sprite_T_big: .res 2
 drum_big_sprite_loop: .res 1
 
-controller_sprites_screen: .res 1
-don_sprites_screen: .res 4
+temp_screen: .res 1
+cursor_diff_screen: .res 1
+cursor_song_screen: .res 1
+cursor_sett_screen: .res 1
+drum_song_screen: .res 1
+
+cursor_song_Y: .res 2
 
 
 .segment "PRGRAM"
@@ -348,6 +353,10 @@ dbank8:
   STA $2003 ; OAMADDR
   LDA #$02
   STA $4014 ; OAMDMA
+  LDA PPUSCROLL_X
+  STA $2005
+  LDA PPUSCROLL_Y
+  STA $2005
     ldx #1             ; get put          <- strobe code must take an odd number of cycles total
     stx BTN_Hold+0      ; get put get      <- buttons must be in the zeropage
     stx $4016          ; put get put get
@@ -368,11 +377,6 @@ loop:
   LDA PPUCTRL
   STA $2000 ; PPUCTRL
 
-  LDA PPUSCROLL_X
-  STA $2005
-  LDA PPUSCROLL_Y
-  STA $2005
-
   ; update PPUSCROLL
   LDA PPUSCROLL_X ; load PPUSCROLL_X to A
   EOR #$80
@@ -391,54 +395,33 @@ loop:
 
   escape_change_nametable_X:
   LDA PPUSCROLL_Y_speed ; load PPUSCROLL_Y_speed to A
-  BPL :+
-  LDA #$01 ; set PPUSCROLL_Y_overflow to 1
-  STA PPUSCROLL_Y_overflow ; if PPUSCROLL_Y_speed is above 80 (going upwards)
-  LDA PPUSCROLL_Y_speed ; restore A by reloading PPUSCROLL_Y_speed
-  :
-  CLC ; clear carry (just in case)
-  ADC #$10 ; add $10 to PPUSCROLL_Y_speed
-  STA PPUSCROLL_Y_speed
-
+  BPL :+ ; check if its negative
+  ; if yes run this*
   LDA PPUSCROLL_Y ; load PPUSCROLL_Y to A
-  EOR #$80 ; flip the last bit for the overflow flag
-  ADC PPUSCROLL_Y_speed ; add $10 + the actual speed
-  EOR #$80 ; flip the last bit again to preserve the flag
+  ADC PPUSCROLL_Y_speed ; add PPUSCROLL_Y_speed
   STA PPUSCROLL_Y ; store A to PPUSCROLL_Y
-  BVC escape_change_nametable_Y ; if overflow flag is 1, change nametable
+  BCS escape_change_nametable_Y ; if not overflowed, dont change nametable
+  ADC #$F0 ; add -$10 to PPUSCROLL_Y
+  STA PPUSCROLL_Y
+  JMP :++ ; do the nametable thingies
+  :
 
+  ; *otherwise run this instead
+  LDA PPUSCROLL_Y ; load PPUSCROLL_Y to A
+  ADC PPUSCROLL_Y_speed ; add PPUSCROLL_Y_speed
+  STA PPUSCROLL_Y ; store A to PPUSCROLL_Y
+  BCC escape_change_nametable_Y ; if overflowed, change nametable
+
+  :
   LDA PPUCTRL ; load PPUCTRL to A
   EOR #$02 ; flip the 2nd bit (vertical nametable)
   STA PPUCTRL ; store A to PPUCTRL
-  LDX PPUSCROLL_Y_overflow ; load PPUSCROLL_Y_overflow to X
-  BNE :+
   STA $2000 ; store to PPUCTRL early if X is 0 (going downwards)
-  :
   LDA PPUCTRL_kept ; flip the 2nd bit in PPUCTRL_kept too
   EOR #$02
   STA PPUCTRL_kept
 
-  ; restore the actual PPUSCROLL_Y (only in overflow)
-  LDA PPUSCROLL_Y ; load PPUSCROLL_Y to A
-  CLC ; clear carry (just in case)
-  ADC scroll_Y_values, X ; add either $F0 (-$10; X == 0) or $00 (X == 1) to A
-  STA PPUSCROLL_Y ; store A to PPUSCROLL_Y
-
   escape_change_nametable_Y:
-  ; clear PPUSCROLL_Y_overflow
-  LDA #$00
-  STA PPUSCROLL_Y_overflow
-
-  ; restore the actual PPUSCROLL_Y_speed
-  LDA PPUSCROLL_Y_speed
-  SEC
-  SBC #$10 ; subtract $10
-  STA PPUSCROLL_Y_speed
-
-  ; restore the actual PPUSCROLL_Y (always)
-  LDA PPUSCROLL_Y
-  SBC #$10 ; subtract $10 rom PPUSCROLL_Y
-  STA PPUSCROLL_Y
 
   JSR famistudio_update ; update audio
 
@@ -1763,6 +1746,9 @@ scenes_hi:
   LDA #$00
   STA fade_intensity
 
+  LDA #$1B
+  STA cursor_song_Y
+
   LDX #$00
   STX ts_ss_timer
   STX ts_ss_timer+1
@@ -2520,6 +2506,8 @@ update_SEL:
   LDA song_sel_entry+1
   AND #$80
   BNE :+
+  CPX #$07
+  BEQ :+
   INC PPUSCROLL_Y
   :
 
@@ -2639,8 +2627,6 @@ MAX_SONG_COUNT = $05
   DEC song_sel_cursor_time
 
   update_cursor_sprite:
-  LDA #$1B
-  STA $204
   LDA #$6C
   STA $205
 
@@ -2732,31 +2718,63 @@ c_h_base_sprite = $208
   CPX #$14
   BNE sync_c_h_height
 
-  CLV
-  LDA $204
-  EOR #$80
-  SEC
-  SBC PPUSCROLL_Y
-  EOR #$80
-  BVC :++
-  LDX PPUSCROLL_Y_speed
-  BMI :+
-  DEC controller_sprites_screen
-  BVS :++
-  :
-  INC controller_sprites_screen
-  :
-  CPY #$01
-  BCC :+
-  LDA #$F0
-  :
+  LDA cursor_song_Y
   STA $204
+
+  LDA cursor_song_screen
+  BEQ :+
+  LDA #$F0
+  STA $204
+  :
+
+  LDA cursor_song_Y
+  CLC
+  ADC #$10
+  STA cursor_song_Y
+
+  LDX #$00
+  LDA PPUSCROLL_Y_speed
+  BEQ dont_change_screen_cursor_song
+  BMI :+
+  DEX
+  LDA cursor_song_Y
+  SEC
+  SBC PPUSCROLL_Y_speed
+  STA cursor_song_Y
+  BCS dont_change_screen_cursor_song
+  ADC #$F0
+  STA cursor_song_Y
+  JMP :++
+  :
+  DEC cursor_song_Y
+  INX
+  LDA cursor_song_Y
+  SEC
+  SBC PPUSCROLL_Y_speed
+  STA cursor_song_Y
+  BCC dont_change_screen_cursor_song
+
+  SBC #$F0
+  STA cursor_song_Y
+  :
+  STX temp_screen
+  LDA cursor_song_screen
+  CLC
+  ADC temp_screen
+  STA cursor_song_screen
+
+  dont_change_screen_cursor_song:
+
+  LDA cursor_song_Y
+  CLC
+  ADC #$F0
+  STA cursor_song_Y
 
   RTS
 .endproc
 
 Y_scroll_table:
-  .byte $FF, $01, $02, $0C, $13, $31, $43, $5A
+  .byte $FF, $01, $02, $0C, $13, $31, $43, $5B
 
 song_sel_pal:
   .byte $0F, $05, $15, $25
