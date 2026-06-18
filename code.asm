@@ -220,10 +220,13 @@ temp_screen: .res 1
 cursor_diff_screen: .res 1
 cursor_song_screen: .res 1
 cursor_sett_screen: .res 1
-drum_song_screen: .res 1
+drum_sel_screen: .res 1
 controller_h_screen: .res 1
 
+cursor_diff_Y: .res 1
 cursor_song_Y: .res 1
+cursor_sett_Y: .res 1
+drum_sel_Y: .res 1
 controller_h_Y: .res 1
 
 .segment "PRGRAM"
@@ -2748,6 +2751,15 @@ c_h_base_sprite = $208
   STA beat_anim_frame
   :
 
+  LDA cursor_song_Y
+  STA $204
+
+  LDA cursor_song_screen
+  BEQ :+
+  LDA #$F0
+  STA $204
+  :
+
   LDA controller_h_Y
   STA c_h_base_sprite
   STA c_h_base_sprite+4
@@ -2765,48 +2777,54 @@ c_h_base_sprite = $208
   STA c_h_base_sprite+12
   :
 
-  LDA controller_h_Y
+  LDX #$00
+  scroll_selection_sprites:
+  LDA cursor_diff_Y, X
   CLC
   ADC #$10
-  STA controller_h_Y
+  STA cursor_diff_Y, X
 
-  LDX #$00
+  LDY #$00
   LDA PPUSCROLL_Y_speed
-  BEQ dont_change_screen_controller
+  BEQ dont_change_screen
   BMI :+
-  DEX
-  LDA controller_h_Y
+  DEY
+  LDA cursor_diff_Y, X
   SEC
   SBC PPUSCROLL_Y_speed
-  STA controller_h_Y
-  BCS dont_change_screen_controller
+  STA cursor_diff_Y, X
+  BCS dont_change_screen
   ADC #$F0
-  STA controller_h_Y
+  STA cursor_diff_Y, X
   JMP :++
   :
-  DEC controller_h_Y
-  INX
-  LDA controller_h_Y
+  DEC cursor_diff_Y, X
+  INY
+  LDA cursor_diff_Y, X
   SEC
   SBC PPUSCROLL_Y_speed
-  STA controller_h_Y
-  BCC dont_change_screen_controller
+  STA cursor_diff_Y, X
+  BCC dont_change_screen
 
   SBC #$F0
-  STA controller_h_Y
+  STA cursor_diff_Y, X
   :
-  STX temp_screen
-  LDA controller_h_screen
+  STY temp_screen
+  LDA cursor_diff_screen, X
   CLC
   ADC temp_screen
-  STA controller_h_screen
+  STA cursor_diff_screen, X
 
-  dont_change_screen_controller:
+  dont_change_screen:
 
-  LDA controller_h_Y
+  LDA cursor_diff_Y, X
   CLC
   ADC #$F0
-  STA controller_h_Y
+  STA cursor_diff_Y, X
+
+  INX
+  CPX #$05
+  BNE scroll_selection_sprites
 
   LDA beat_anim_frame
   BNE :+
@@ -2821,62 +2839,6 @@ c_h_base_sprite = $208
   CPX #$14
   BNE unload_c_h_sprites
   :
-
-
-
-
-
-  LDA cursor_song_Y
-  STA $204
-
-  LDA cursor_song_screen
-  BEQ :+
-  LDA #$F0
-  STA $204
-  :
-
-  LDA cursor_song_Y
-  CLC
-  ADC #$10
-  STA cursor_song_Y
-
-  LDX #$00
-  LDA PPUSCROLL_Y_speed
-  BEQ dont_change_screen_cursor_song
-  BMI :+
-  DEX
-  LDA cursor_song_Y
-  SEC
-  SBC PPUSCROLL_Y_speed
-  STA cursor_song_Y
-  BCS dont_change_screen_cursor_song
-  ADC #$F0
-  STA cursor_song_Y
-  JMP :++
-  :
-  DEC cursor_song_Y
-  INX
-  LDA cursor_song_Y
-  SEC
-  SBC PPUSCROLL_Y_speed
-  STA cursor_song_Y
-  BCC dont_change_screen_cursor_song
-
-  SBC #$F0
-  STA cursor_song_Y
-  :
-  STX temp_screen
-  LDA cursor_song_screen
-  CLC
-  ADC temp_screen
-  STA cursor_song_screen
-
-  dont_change_screen_cursor_song:
-
-  LDA cursor_song_Y
-  CLC
-  ADC #$F0
-  STA cursor_song_Y
 
   LDA PPUSCROLL_Y_speed
   BPL :+
