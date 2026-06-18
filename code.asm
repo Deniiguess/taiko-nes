@@ -116,7 +116,7 @@ PPUCTRL_kept_2: .res 1
 
 draw_length: .res 1
 draw_bg_over_palette: .res 1
-draw_attribute_location: .res 2
+draw_attribute_location: .res 3
 
 fade_intensity: .res 1
 fade_time: .res 2
@@ -222,12 +222,14 @@ cursor_song_screen: .res 1
 cursor_sett_screen: .res 1
 drum_sel_screen: .res 1
 controller_h_screen: .res 1
+diff_icon_screen: .res 1
 
 cursor_diff_Y: .res 1
 cursor_song_Y: .res 1
 cursor_sett_Y: .res 1
 drum_sel_Y: .res 1
 controller_h_Y: .res 1
+diff_icon_Y: .res 1
 
 .segment "PRGRAM"
 
@@ -238,7 +240,7 @@ drum_hit_pool_frame_pos: .res 2
 drum_spawn_position_kept: .res 128
 
 .segment "SRAM"
-don_color: .res 2
+don_color: .res 3
 song_sel_position: .res 3
 
 song_difficulty_position: .res 6
@@ -1099,6 +1101,17 @@ vblankwait2:
   CPX #$20
   BNE :-
 
+  ; set donchan colors for first boot
+  LDA don_color+2
+  BNE :+
+  LDA #$16
+  STA don_color
+  LDA #$21
+  STA don_color+1
+  LDA #$01
+  STA don_color+2
+  :
+
   JSR load_title_screen
 
   LDA #%10110000  ; turn on NMIs, sprites use first pattern table
@@ -1243,7 +1256,7 @@ scenes_hi:
   STA palette, X
   STA PPUDATA
   INX
-  CPX #$20
+  CPX #$1C
   BNE loop_reset_palette
 
   LDA #$FF
@@ -1627,6 +1640,8 @@ scenes_hi:
   STA cursor_song_Y
   LDA #$D9
   STA controller_h_Y
+  LDA #$D1
+  STA drum_sel_Y
 
   LDX #$00
   STX ts_ss_timer
@@ -1635,7 +1650,7 @@ scenes_hi:
   LDA song_sel_pal, X
   STA palette, X
   INX
-  CPX #$20
+  CPX #$1C
   BNE loop_reset_palette
 
   ; load difficulty select and settings
@@ -2115,6 +2130,8 @@ title_palette:
   JSR update_Y_scroll
 
   JSR update_controller_highlight
+
+  JSR update_donchan_color
 
   JMP stay_here
 .endproc
@@ -2738,7 +2755,7 @@ drum_sel_base_sprite = $218
   LDA controller_highlight_sprite_data, X
   STA c_h_base_sprite, X
   INX
-  CPX #$14
+  CPX #$10
   BNE load_c_h_sprites
 
   INC frame_timer_1s
@@ -2751,6 +2768,23 @@ drum_sel_base_sprite = $218
   EOR #$01
   STA beat_anim_frame
   :
+
+  LDX #$00
+  load_drum_sel_sprites:
+  LDA drum_sel_sprite_data, X
+  STA drum_sel_base_sprite+1, X
+  INX
+  CPX #$06
+  BNE load_drum_sel_sprites
+
+  LDA drum_sel_base_sprite+3
+  CLC
+  ADC #$08
+  STA drum_sel_base_sprite+7
+
+  LDX #$00
+  load_difficulty_icons:
+  ;LDA
 
   ; update cursor (song) sprite
   LDA cursor_song_Y
@@ -2834,7 +2868,7 @@ drum_sel_base_sprite = $218
   STA cursor_diff_Y, X
 
   INX
-  CPX #$05
+  CPX #$06
   BNE scroll_selection_sprites
 
   LDA beat_anim_frame
@@ -2847,7 +2881,7 @@ drum_sel_base_sprite = $218
   INX
   INX
   INX
-  CPX #$14
+  CPX #$10
   BNE unload_c_h_sprites
   :
 
@@ -2869,12 +2903,15 @@ song_sel_pal:
   .byte $0F, $17, $27, $20
 
   .byte $0F, $30, $30, $30
-  .byte $0F, $0F, $0F, $0F
-  .byte $0F, $0F, $0F, $0F
+  .byte $0F, $15, $20, $0F
+  .byte $0F, $2A, $07, $0F
   .byte $0F, $0F, $0F, $0F
 
 controller_highlight_sprite_data:
   .byte $D9, $66, $00, $9E, $D9, $66, $00, $A5, $DB, $68, $00, $B4, $DB, $6A, $00, $C4
+
+drum_sel_sprite_data:
+  .byte $10, $03, $74, $00, $12, $03
 
 .proc results
   NOP
@@ -2884,6 +2921,33 @@ controller_highlight_sprite_data:
   JMP load_song_sel
   :
   JMP stay_here
+.endproc
+
+.proc update_donchan_color
+  LDA song_sel_entry
+  BNE :+++
+
+  LDA BTN_Press
+  AND #BTN_LEFT
+  BEQ :+
+  DEC don_color
+  :
+
+  LDA BTN_Press
+  AND #BTN_RIGHT
+  BEQ :+
+  INC don_color
+  :
+
+  :
+
+  LDA don_color
+  STA palette+30
+  LDA don_color+1
+  STA palette+29
+  LDA #$20
+  STA palette+31
+  RTS
 .endproc
 
 
@@ -3325,16 +3389,16 @@ controller_highlight_sprite_data:
 
 
   bad_times_1:
-  .byte $12, $15
+  .byte $12, $14
 
   ok_times_1:
-  .byte $0E, $11
+  .byte $0E, $12
 
   good_times:
   .byte $0B, $0E
 
   ok_times_2:
-  .byte $05, $05
+  .byte $05, $04
 
   bad_times_2:
   .byte $01, $01
