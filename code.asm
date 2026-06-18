@@ -116,7 +116,7 @@ PPUCTRL_kept_2: .res 1
 
 draw_length: .res 1
 draw_bg_over_palette: .res 1
-draw_attribute_location: .res 3
+draw_attribute_location: .res 2
 
 fade_intensity: .res 1
 fade_time: .res 2
@@ -127,7 +127,7 @@ misc: .res 1
 
 position_8px: .res 3
 drum_spawn_position: .res 4
-bg_attr: .res 1
+bg_attr: .res 2
 bg_attr_position: .res 5
 
 tiles_remaining: .res 1
@@ -3288,6 +3288,8 @@ drum_sel_sprite_data:
   clear_drum:
   LDA #$01
   STA draw_bg_over_palette
+  LDA #$01
+  STA bg_attr+1
 
   ; load the pool positions to X and Y
   LDX drum_hit_pool_pos+1
@@ -3389,13 +3391,13 @@ drum_sel_sprite_data:
 
 
   bad_times_1:
-  .byte $12, $14
+  .byte $12, $15
 
   ok_times_1:
-  .byte $0E, $12
+  .byte $0E, $13
 
   good_times:
-  .byte $0B, $0E
+  .byte $0B, $0F
 
   ok_times_2:
   .byte $05, $04
@@ -4655,6 +4657,9 @@ drum_sel_sprite_data:
   AND #%00000100
   BEQ dont_update_attr
 
+  LDA bg_attr+1
+  BNE dont_update_attr
+
   INC bg_attr_position+1
   LDX bg_attr_position+1
   CPX #$D8
@@ -4686,6 +4691,9 @@ drum_sel_sprite_data:
   STA misc
 
   dont_update_attr:
+
+  LDA #$00
+  STA bg_attr+1
   RTS
 .endproc
 
