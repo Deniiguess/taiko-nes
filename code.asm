@@ -2725,6 +2725,7 @@ MAX_SONG_COUNT = $05
 .endproc
 
 c_h_base_sprite = $208
+drum_sel_base_sprite = $218
 
 .proc update_controller_highlight ; and that donchan icon (not there yet) and the song sel cursor
   LDA PPUSCROLL_Y_speed
@@ -2751,31 +2752,41 @@ c_h_base_sprite = $208
   STA beat_anim_frame
   :
 
+  ; update cursor (song) sprite
   LDA cursor_song_Y
-  STA $204
-
-  LDA cursor_song_screen
+  ; set to $F0 if screen isnt 0
+  LDX cursor_song_screen
   BEQ :+
   LDA #$F0
-  STA $204
   :
+  STA $204
 
+  ; update controller highlight sprites
   LDA controller_h_Y
   STA c_h_base_sprite
   STA c_h_base_sprite+4
   CLC
   ADC #$02
-  STA c_h_base_sprite+8
-  STA c_h_base_sprite+12
-
-  LDA controller_h_screen
+  ; set to $F0 if screen isnt 0
+  LDX controller_h_screen
   BEQ :+
   LDA #$F0
   STA c_h_base_sprite
   STA c_h_base_sprite+4
+  :
   STA c_h_base_sprite+8
   STA c_h_base_sprite+12
+
+  ; update donchan icon sprite
+  LDA drum_sel_Y
+  ; set to $F0 if screen isnt 0
+  LDX drum_sel_screen
+  BEQ :+
+  LDA #$F0
   :
+  STA drum_sel_base_sprite
+  STA drum_sel_base_sprite+4
+
 
   LDX #$00
   scroll_selection_sprites:
