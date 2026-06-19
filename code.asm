@@ -169,7 +169,9 @@ ts_ss_timer: .res 3
 song_sel_entry: .res 2
 song_sel_cursor_time: .res 1
 
-frame_timer_1s: .res 1
+frame_timer_controller: .res 1
+
+sram_location: .res 2
 
 .segment "BSS"
 drum_data_pool: .res 21
@@ -194,6 +196,10 @@ input_rate_timer: .res 1
 score: .res 6
 combo: .res 4
 drum_roll: .res 3
+good_count: .res 4
+ok_count: .res 4
+bad_count: .res 4
+crown: .res 1
 
 input: .res 1
 
@@ -233,6 +239,14 @@ diff_icon_Y: .res 1
 
 diff_sel_load_timer: .res 1
 
+score_to_draw: .res 6
+combo_to_draw: .res 4
+roll_to_draw: .res 3
+good_to_draw: .res 4
+okay_to_draw: .res 4
+bad_to_draw: .res 4
+crown_to_draw: .res 1
+
 .segment "PRGRAM"
 
 drum_hit_pool: .res 64
@@ -241,7 +255,7 @@ drum_hit_pool_frame: .res 128
 drum_hit_pool_frame_pos: .res 2
 drum_spawn_position_kept: .res 128
 
-.segment "SRAM"
+.segment "SETT"
 don_color: .res 3
 song_sel_position: .res 3
 
@@ -2131,6 +2145,13 @@ title_palette:
 .proc song_sel
   NOP
 
+  LDX #$00
+  clear_draw:
+  LDA #$00
+  STA draw, X
+  INX
+  BPL clear_draw
+
   JSR update_START
   JSR update_B
   JSR update_SEL
@@ -2148,6 +2169,8 @@ title_palette:
   JSR update_donchan_color
 
   JSR update_diff_sel_loading
+
+  JSR update_top_scores
 
   JMP stay_here
 .endproc
@@ -2207,8 +2230,8 @@ title_palette:
   .byte $00, $00, $00, $00
   .byte $01, $03, $06, $07
 
-  song_author_1:
-  .byte $46, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
+  song_author_1: ; IT WORKS!!
+  .byte $48, $53, $02, $56, $4E, $51, $4A, $52, $68, $68, $02, $02
   song_author_2:
   .byte $47, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
   song_author_3:
@@ -2217,11 +2240,11 @@ title_palette:
   .byte $49, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
   song_author_5:
   .byte $4A, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
-  song_author_6:
-  .byte $4B, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
+  song_author_6: ; THEPURPLANON
+  .byte $53, $47, $44, $4F, $54, $51, $4F, $4B, $40, $4D, $4E, $4D
 
-  song_chartr_1:
-  .byte $40, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
+  song_chartr_1: ; TEST TEXT
+  .byte $53, $44, $52, $53, $02, $53, $44, $57, $53, $02, $02, $02
   song_chartr_2:
   .byte $41, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
   song_chartr_3:
@@ -2230,8 +2253,8 @@ title_palette:
   .byte $43, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
   song_chartr_5:
   .byte $44, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
-  song_chartr_6:
-  .byte $45, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
+  song_chartr_6: ; TEST TEXT
+  .byte $53, $44, $52, $53, $02, $53, $44, $57, $53, $02, $02, $02
 
 diff_sel_1:
 	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
@@ -2659,12 +2682,12 @@ diff_icon_base_sprtie = $220
   CPX #$10
   BNE load_c_h_sprites
 
-  INC frame_timer_1s
-  LDA frame_timer_1s
+  INC frame_timer_controller
+  LDA frame_timer_controller
   CMP #30
   BNE :+
   LDA #0
-  STA frame_timer_1s
+  STA frame_timer_controller
   LDA beat_anim_frame
   EOR #$01
   STA beat_anim_frame
@@ -2896,7 +2919,7 @@ diff_icon_sprite_data:
   :
   CMP #$02
   BNE :+
-  JMP load_names
+  JMP load_scores
 
   :
 
@@ -3031,6 +3054,113 @@ diff_icon_sprite_data:
   BNE draw_names
 
   RTS
+
+  load_scores:
+  LDA #$62
+  STA sram_location+1
+  LDA #$E0
+  STA sram_location
+
+  LDX song_sel_position
+
+  set_sram_loc:
+  LDA sram_location
+  CLC
+  ADC #$20
+  BCC :+
+  INC sram_location+1
+  :
+  STA sram_location
+  DEX
+  BPL set_sram_loc
+
+  LDY #$00
+  load_to_draw_score:
+  LDA (sram_location), Y
+  STA score_to_draw, Y
+  INY
+  CPY #$20
+  BNE load_to_draw_score
+
+  RTS
+.endproc
+
+.proc update_top_scores
+  LDA diff_sel_load_timer
+  CMP #$01
+  BEQ :++
+  :
+  RTS
+  :
+  LDA song_sel_entry
+  CMP #$02
+  BNE :--
+
+  ; prepare PPU high
+  LDA #$2A
+  STA draw+2
+  STA draw+23
+  ; prepare PPU low
+  LDA #$A7
+  STA draw+3
+  ADC #$1F
+  STA draw+24
+  ; prepare attributes
+  LDA #$00
+  STA draw+1
+  STA draw+22
+  ; prepare length
+  LDA #17
+  STA draw+0
+  LDA #14
+  STA draw+21
+
+  LDY #$00
+  prepare_tiles_score_text:
+  LDA score_text, Y
+  STA draw+4, Y
+  INY
+  CPY #10
+  BNE prepare_tiles_score_text
+
+  LDY #$00
+  prepare_tiles_combo_text:
+  LDA combo_text, Y
+  STA draw+25, Y
+  INY
+  CPY #10
+  BNE prepare_tiles_combo_text
+
+  LDY #$00
+  draw_top_score:
+  LDA score_to_draw, Y
+  CLC
+  ADC #$5A
+  STA draw+14, Y
+  INY
+  CPY #06
+  BNE draw_top_score
+
+  LDY #$00
+  draw_top_combo:
+  LDA combo_to_draw, Y
+  CLC
+  ADC #$5A
+  STA draw+35, Y
+  INY
+  CPY #04
+  BNE draw_top_combo
+
+  LDA #$5A
+  STA draw+20
+  RTS
+
+  score_text: ; TOP SCORE:
+  .byte $53, $4E, $4F, $02, $52, $42, $4E, $51, $44, $64
+
+  combo_text: ; TOP COMBO:
+  .byte $53, $4E, $4F, $02, $42, $4E, $4C, $41, $4E, $64
+
 .endproc
 
 
