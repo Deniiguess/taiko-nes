@@ -1645,6 +1645,8 @@ scenes_hi:
   STA controller_h_Y
   LDA #$D1
   STA drum_sel_Y
+  LDA #$2E
+  STA diff_icon_Y
 
   LDX #$00
   STX ts_ss_timer
@@ -2794,7 +2796,7 @@ diff_icon_base_sprtie = $220
   CPX #$20
   BNE load_difficulty_icons
 
-  ; update cursor (song) sprite
+  ; update cursor (song) sprite Y
   LDA cursor_song_Y
   ; set to $F0 if screen isnt 0
   LDX cursor_song_screen
@@ -2803,7 +2805,7 @@ diff_icon_base_sprtie = $220
   :
   STA $204
 
-  ; update controller highlight sprites
+  ; update controller highlight sprites Y
   LDA controller_h_Y
   STA c_h_base_sprite
   STA c_h_base_sprite+4
@@ -2819,7 +2821,7 @@ diff_icon_base_sprtie = $220
   STA c_h_base_sprite+8
   STA c_h_base_sprite+12
 
-  ; update donchan icon sprite
+  ; update donchan icon sprite Y
   LDA drum_sel_Y
   ; set to $F0 if screen isnt 0
   LDX drum_sel_screen
@@ -2829,6 +2831,23 @@ diff_icon_base_sprtie = $220
   STA drum_sel_base_sprite
   STA drum_sel_base_sprite+4
 
+  ; update difficulty icon sprite Y
+  LDA diff_icon_Y
+  LDX drum_sel_screen
+  DEX
+  BEQ :+
+  LDA #$F0
+  :
+
+  LDX #$00
+  update_diff_icon_Y:
+  STA diff_icon_base_sprtie, X
+  INX
+  INX
+  INX
+  INX
+  CPX #$20
+  BNE update_diff_icon_Y
 
   LDX #$00
   scroll_selection_sprites:
@@ -2911,8 +2930,8 @@ song_sel_pal:
   .byte $0F, $17, $27, $20
 
   .byte $0F, $30, $30, $30
-  .byte $0F, $15, $20, $0F
-  .byte $0F, $2A, $07, $0F
+  .byte $0F, $0F, $15, $20
+  .byte $0F, $0F, $2A, $07
   .byte $0F, $0F, $0F, $0F
 
 controller_highlight_sprite_data:
@@ -2920,6 +2939,11 @@ controller_highlight_sprite_data:
 
 drum_sel_sprite_data:
   .byte $10, $03, $74, $00, $12, $03
+
+diff_icon_sprite_data:
+  .byte $2E, $94, $01, $3C, $2E, $94, $41, $44, $2E, $98, $02, $8C, $2E, $98, $42, $94
+  .byte $2E, $96, $02, $64, $2E, $96, $42, $6C, $2E, $9A, $01, $B4, $2E, $9A, $41, $BC
+
 
 .proc results
   NOP
