@@ -231,6 +231,8 @@ drum_sel_Y: .res 1
 controller_h_Y: .res 1
 diff_icon_Y: .res 1
 
+diff_sel_load_timer: .res 1
+
 .segment "PRGRAM"
 
 drum_hit_pool: .res 64
@@ -1318,8 +1320,12 @@ scenes_hi:
   LDA #$01
   STA metronome_v
 
+  ; enable sprite flicker
+  LDA sprite_flicker_toggle
+  AND #$FE
+  STA sprite_flicker_toggle
+
   LDX #$00
-  STX sprite_flicker_toggle ; enable sprite flicker
 
   ; set tempo (tmp)
   LDA (drum_bank_positon, X)
@@ -1621,11 +1627,14 @@ scenes_hi:
   STA PPUSCROLL_X_speed
   STA PPUSCROLL_Y_speed
 
+  ; disable sprite flicker
+  LDA sprite_flicker_toggle
+  ORA #$01
+  STA sprite_flicker_toggle
+
   ; load PRG banks (just in case)
   LDA #$01
   STA $E000
-
-  STA sprite_flicker_toggle ; disable sprite flicker
 
   ; load nametable banks
   ; load PPU nametables
@@ -2138,6 +2147,8 @@ title_palette:
 
   JSR update_donchan_color
 
+  JSR update_diff_sel_loading
+
   JMP stay_here
 .endproc
 
@@ -2197,54 +2208,30 @@ title_palette:
   .byte $01, $03, $06, $07
 
   song_author_1:
-  .byte $00, $00, $00, $00, $00, $00
+  .byte $46, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
   song_author_2:
-  .byte $00, $00, $00, $00, $00, $00
+  .byte $47, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
   song_author_3:
-  .byte $00, $00, $00, $00, $00, $00
+  .byte $48, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
   song_author_4:
-  .byte $00, $00, $00, $00, $00, $00
+  .byte $49, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
   song_author_5:
-  .byte $00, $00, $00, $00, $00, $00
+  .byte $4A, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
   song_author_6:
-  .byte $00, $00, $00, $00, $00, $00
-  song_author_7:
-  .byte $00, $00, $00, $00, $00, $00
-  song_author_8:
-  .byte $00, $00, $00, $00, $00, $00
-  song_author_9:
-  .byte $00, $00, $00, $00, $00, $00
-  song_author_10:
-  .byte $00, $00, $00, $00, $00, $00
-  song_author_11:
-  .byte $00, $00, $00, $00, $00, $00
-  song_author_12:
-  .byte $00, $00, $00, $00, $00, $00
+  .byte $4B, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
 
   song_chartr_1:
-  .byte $00, $00, $00, $00, $00, $00
+  .byte $40, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
   song_chartr_2:
-  .byte $00, $00, $00, $00, $00, $00
+  .byte $41, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
   song_chartr_3:
-  .byte $00, $00, $00, $00, $00, $00
+  .byte $42, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
   song_chartr_4:
-  .byte $00, $00, $00, $00, $00, $00
+  .byte $43, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
   song_chartr_5:
-  .byte $00, $00, $00, $00, $00, $00
+  .byte $44, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
   song_chartr_6:
-  .byte $00, $00, $00, $00, $00, $00
-  song_chartr_7:
-  .byte $00, $00, $00, $00, $00, $00
-  song_chartr_8:
-  .byte $00, $00, $00, $00, $00, $00
-  song_chartr_9:
-  .byte $00, $00, $00, $00, $00, $00
-  song_chartr_10:
-  .byte $00, $00, $00, $00, $00, $00
-  song_chartr_11:
-  .byte $00, $00, $00, $00, $00, $00
-  song_chartr_12:
-  .byte $00, $00, $00, $00, $00, $00
+  .byte $45, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
 
 diff_sel_1:
 	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
@@ -2277,8 +2264,8 @@ diff_sel_3:
 	.byte $00,$00,$00,$c3,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c5,$00,$00,$00
 
 diff_sel_4:
-	.byte $00,$00,$00,$c3,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c5,$00,$00,$00
-	.byte $00,$00,$00,$c3,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c5,$00,$00,$00
+	.byte $00,$00,$00,$c3,$c4,$4c,$54,$52,$48,$42,$c4,$41,$58,$64,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c5,$00,$00,$00
+	.byte $00,$00,$00,$c3,$c4,$42,$47,$40,$51,$53,$c4,$41,$58,$64,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c4,$c5,$00,$00,$00
 	.byte $00,$00,$00,$cf,$d0,$d0,$d0,$d0,$d0,$d0,$d0,$d0,$d0,$d0,$d0,$d0,$d0,$d0,$d0,$d0,$d0,$d0,$d0,$d0,$d0,$d0,$d0,$d0,$d1,$00,$00,$00
 	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
 	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
@@ -2372,7 +2359,8 @@ sett_sel_4:
   LDA #$0A
   STA $B800
 
-  JSR load_stars
+  LDA #$03
+  STA diff_sel_load_timer
   :
 
   RTS
@@ -2398,99 +2386,6 @@ sett_sel_4:
   LDA #$80
   STA song_sel_position+2
   :
-  RTS
-
-  load_stars: ; and the difficulty icons
-  ; prepare locations for star drawing
-  LDA #$01
-  STA draw_bg_over_palette
-
-  LDX #$00
-  ; load song position * 4
-  LDA song_sel_position
-  ASL
-  ASL
-  TAY
-
-  ; prepare PPU high
-  LDA #$29
-  STA draw+2
-  STA draw+10
-  STA draw+18
-  STA draw+26
-  ; prepare PPU low
-  LDA #$08
-  STA draw+3
-  LDA #$0D
-  STA draw+11
-  LDA #$12
-  STA draw+19
-  LDA #$17
-  STA draw+27
-  ; prepare attributes
-  LDA #%00000110
-  STA draw+1
-  STA draw+9
-  STA draw+17
-  STA draw+25
-  LDA #%00000111
-  STA draw+6
-  STA draw+14
-  STA draw+22
-  STA draw+30
-  ; prepare tiles
-  LDA #$D3
-  STA draw+4
-  STA draw+12
-  STA draw+20
-  STA draw+28
-  LDA #$D2
-  STA draw+7
-  STA draw+15
-  STA draw+23
-  STA draw+31
-
-  draw_stars:
-  LDA song_stars, Y
-  BNE :+
-  LDA #$CD
-  STA draw+7, X
-  LDA #$01
-  STA draw+5, X
-  LDA #$0A
-  BNE :+++
-  :
-  STA draw+5, X
-  CLC
-  SBC #$0A
-  EOR #$FF
-  BNE :++
-  LDA #$D2
-  STA draw+7, X
-  LDA #$CA
-  STA draw+4, X
-  LDA #$0A
-  STA draw+5, X
-  LDA draw+3, X
-  EOR #$80
-  SEC
-  SBC #$20
-  EOR #$80
-  BVC :+
-  DEC draw+2, X
-  :
-  STA draw+3, X
-  LDA #$01
-  :
-  STA draw+0, X
-  INY
-  TXA
-  CLC
-  ADC #$08
-  TAX
-  CPX #$20
-  BNE draw_stars
-
   RTS
 .endproc
 
@@ -2833,7 +2728,7 @@ diff_icon_base_sprtie = $220
 
   ; update difficulty icon sprite Y
   LDA diff_icon_Y
-  LDX drum_sel_screen
+  LDX diff_icon_screen
   DEX
   BEQ :+
   LDA #$F0
@@ -2979,6 +2874,162 @@ diff_icon_sprite_data:
   STA palette+29
   LDA #$20
   STA palette+31
+  RTS
+.endproc
+
+.proc update_diff_sel_loading
+  LDA diff_sel_load_timer
+  BNE :+
+
+  RTS
+  :
+
+  LDX #$01
+  STX draw_bg_over_palette
+
+  DEC diff_sel_load_timer
+
+  CMP #$03
+  BNE :+
+  JMP load_names
+
+  :
+  CMP #$02
+  BNE :+
+  JMP load_names
+
+  :
+
+  ; load_stars
+  ; prepare locations for star drawing
+  LDX #$00
+  ; load song position * 4
+  LDA song_sel_position
+  ASL
+  ASL
+  TAY
+
+  ; prepare PPU high
+  LDA #$29
+  STA draw+2
+  STA draw+10
+  STA draw+18
+  STA draw+26
+  ; prepare PPU low
+  LDA #$08
+  STA draw+3
+  LDA #$0D
+  STA draw+11
+  LDA #$12
+  STA draw+19
+  LDA #$17
+  STA draw+27
+  ; prepare attributes
+  LDA #%00000110
+  STA draw+1
+  STA draw+9
+  STA draw+17
+  STA draw+25
+  LDA #%00000111
+  STA draw+6
+  STA draw+14
+  STA draw+22
+  STA draw+30
+  ; prepare tiles
+  LDA #$D3
+  STA draw+4
+  STA draw+12
+  STA draw+20
+  STA draw+28
+  LDA #$D2
+  STA draw+7
+  STA draw+15
+  STA draw+23
+  STA draw+31
+
+  draw_stars:
+  LDA song_stars, Y
+  BNE :+
+  LDA #$CD
+  STA draw+7, X
+  LDA #$01
+  STA draw+5, X
+  LDA #$0A
+  BNE :+++
+  :
+  STA draw+5, X
+  CLC
+  SBC #$0A
+  EOR #$FF
+  BNE :++
+  LDA #$D2
+  STA draw+7, X
+  LDA #$CA
+  STA draw+4, X
+  LDA #$0A
+  STA draw+5, X
+  LDA draw+3, X
+  EOR #$80
+  SEC
+  SBC #$20
+  EOR #$80
+  BVC :+
+  DEC draw+2, X
+  :
+  STA draw+3, X
+  LDA #$01
+  :
+  STA draw+0, X
+  INY
+  TXA
+  CLC
+  ADC #$08
+  TAX
+  CPX #$20
+  BNE draw_stars
+
+  RTS
+
+  load_names:
+  ; prepare PPU high
+  LDA #$2B
+  STA draw+2
+  STA draw+18
+  ; prepare PPU low
+  LDA #$0F
+  STA draw+3
+  ORA #$20
+  STA draw+19
+  ; prepare attributes
+  LDA #$00
+  STA draw+1
+  STA draw+17
+  ; prepare length
+  LDA #12
+  STA draw+0
+  STA draw+16
+
+  LDX song_sel_position
+  LDA #$F4
+  LDY #$00
+  :
+  CLC
+  ADC #12
+  DEX
+  BPL :-
+
+  TAX
+
+  draw_names:
+  LDA song_author_1, X
+  STA draw+4, Y
+  LDA song_chartr_1, X
+  STA draw+20, Y
+  INX
+  INY
+  CPY #12
+  BNE draw_names
+
   RTS
 .endproc
 
