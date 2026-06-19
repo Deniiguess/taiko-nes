@@ -247,6 +247,8 @@ okay_to_draw: .res 4
 bad_to_draw: .res 4
 crown_to_draw: .res 1
 
+frame_timer_score_draw: .res 1
+
 .segment "PRGRAM"
 
 drum_hit_pool: .res 64
@@ -2384,6 +2386,8 @@ sett_sel_4:
 
   LDA #$03
   STA diff_sel_load_timer
+  LDA #240
+  STA frame_timer_score_draw
   :
 
   RTS
@@ -3082,43 +3086,72 @@ diff_icon_sprite_data:
   CPY #$20
   BNE load_to_draw_score
 
-  RTS
+  LDA #240
+  STA frame_timer_score_draw
+
+  JMP load_score_combo
 .endproc
 
-.proc update_top_scores
-  LDA diff_sel_load_timer
-  CMP #$01
-  BEQ :++
-  :
-  RTS
-  :
+update_top_scores:
   LDA song_sel_entry
   CMP #$02
-  BNE :--
+  BEQ :+
+  RTS
+  :
+
+  DEC frame_timer_score_draw
+  LDA frame_timer_score_draw
+  BNE :+
+  LDA #240
+  STA frame_timer_score_draw
+  :
+
+  CMP #120
+  BNE :+
+  JMP load_score_inputs
+  :
+
+  CMP #240
+  BEQ :+
+  RTS
+  :
+
+  LDX #$01
+  STX draw_bg_over_palette
+
+  load_score_combo:
+
+  LDA #$02
+  LDY #$00
+  draw_blank_tiles:
+  STA draw+4, Y
+  STA draw+28, Y
+  INY
+  CPY #20
+  BNE draw_blank_tiles
 
   ; prepare PPU high
   LDA #$2A
   STA draw+2
-  STA draw+23
+  STA draw+26
   ; prepare PPU low
-  LDA #$A7
+  LDA #$A6
   STA draw+3
-  ADC #$1F
-  STA draw+24
+  LDA #$C6
+  STA draw+27
   ; prepare attributes
   LDA #$00
   STA draw+1
-  STA draw+22
+  STA draw+25
   ; prepare length
-  LDA #17
+  LDA #20
   STA draw+0
-  LDA #14
-  STA draw+21
+  STA draw+24
 
   LDY #$00
   prepare_tiles_score_text:
   LDA score_text, Y
-  STA draw+4, Y
+  STA draw+5, Y
   INY
   CPY #10
   BNE prepare_tiles_score_text
@@ -3126,7 +3159,7 @@ diff_icon_sprite_data:
   LDY #$00
   prepare_tiles_combo_text:
   LDA combo_text, Y
-  STA draw+25, Y
+  STA draw+29, Y
   INY
   CPY #10
   BNE prepare_tiles_combo_text
@@ -3136,7 +3169,7 @@ diff_icon_sprite_data:
   LDA score_to_draw, Y
   CLC
   ADC #$5A
-  STA draw+14, Y
+  STA draw+15, Y
   INY
   CPY #06
   BNE draw_top_score
@@ -3146,23 +3179,116 @@ diff_icon_sprite_data:
   LDA combo_to_draw, Y
   CLC
   ADC #$5A
-  STA draw+35, Y
+  STA draw+39, Y
   INY
   CPY #04
   BNE draw_top_combo
 
   LDA #$5A
-  STA draw+20
+  STA draw+21
   RTS
 
-  score_text: ; TOP SCORE:
+  load_score_inputs:
+  LDX #$01
+  STX draw_bg_over_palette
+
+  ; prepare PPU high
+  LDA #$2A
+  STA draw+2
+  STA draw+26
+  ; prepare PPU low
+  LDA #$A6
+  STA draw+3
+  LDA #$C6
+  STA draw+27
+  ; prepare attributes
+  LDA #$00
+  STA draw+1
+  STA draw+25
+  ; prepare length
+  LDA #20
+  STA draw+0
+  STA draw+24
+
+  LDX #$00
+  load_text_good_bad:
+  LDA good_text, X
+  STA draw+4, X
+  LDA bad_text, X
+  STA draw+28, X
+  INX
+  CPX #$05
+  BNE load_text_good_bad
+
+  LDX #$00
+  load_score_good:
+  LDA good_to_draw, X
+  CLC
+  ADC #$5A
+  STA draw+9, X
+  INX
+  CPX #$04
+  BNE load_score_good
+
+  LDX #$00
+  load_score_bad:
+  LDA bad_to_draw, X
+  CLC
+  ADC #$5A
+  STA draw+33, X
+  INX
+  CPX #$04
+  BNE load_score_bad
+
+  LDX #$00
+  load_text_ok_roll:
+  LDA ok_text, X
+  STA draw+13, X
+  LDA roll_text, X
+  STA draw+37, X
+  INX
+  CPX #$07
+  BNE load_text_ok_roll
+
+  LDX #$00
+  load_score_ok:
+  LDA okay_to_draw, X
+  CLC
+  ADC #$5A
+  STA draw+20, X
+  INX
+  CPX #$04
+  BNE load_score_ok
+
+  LDX #$00
+  load_score_roll:
+  LDA roll_to_draw, X
+  CLC
+  ADC #$5A
+  STA draw+44, X
+  INX
+  CPX #$04
+  BNE load_score_roll
+
+  RTS
+
+score_text: ; TOP SCORE:
   .byte $53, $4E, $4F, $02, $52, $42, $4E, $51, $44, $64
 
-  combo_text: ; TOP COMBO:
+combo_text: ; TOP COMBO:
   .byte $53, $4E, $4F, $02, $42, $4E, $4C, $41, $4E, $64
 
-.endproc
+good_text: ; GOOD:
+  .byte $46, $4E, $4E, $43, $64
 
+ok_text: ; OK:
+  .byte $02, $02, $02, $02, $4E, $4A, $64
+
+bad_text: ; BAD:
+  .byte $02, $41, $40, $43, $64
+
+roll_text: ; ROLL:
+  .byte $02, $02, $51, $4E, $4B, $4B, $64
 
 .segment "MAIN_GAME"
 
