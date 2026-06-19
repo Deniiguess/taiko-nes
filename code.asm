@@ -1319,6 +1319,7 @@ scenes_hi:
   STA metronome_v
 
   LDX #$00
+  STX sprite_flicker_toggle ; enable sprite flicker
 
   ; set tempo (tmp)
   LDA (drum_bank_positon, X)
@@ -1623,6 +1624,8 @@ scenes_hi:
   ; load PRG banks (just in case)
   LDA #$01
   STA $E000
+
+  STA sprite_flicker_toggle ; disable sprite flicker
 
   ; load nametable banks
   ; load PPU nametables
@@ -2743,6 +2746,7 @@ MAX_SONG_COUNT = $05
 
 c_h_base_sprite = $208
 drum_sel_base_sprite = $218
+diff_icon_base_sprtie = $220
 
 .proc update_controller_highlight ; and that donchan icon (not there yet) and the song sel cursor
   LDA PPUSCROLL_Y_speed
@@ -2784,7 +2788,11 @@ drum_sel_base_sprite = $218
 
   LDX #$00
   load_difficulty_icons:
-  ;LDA
+  LDA diff_icon_sprite_data, X
+  STA diff_icon_base_sprtie, X
+  INX
+  CPX #$20
+  BNE load_difficulty_icons
 
   ; update cursor (song) sprite
   LDA cursor_song_Y
