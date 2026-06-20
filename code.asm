@@ -168,6 +168,7 @@ ts_ss_timer: .res 3
 
 song_sel_entry: .res 2
 song_sel_cursor_time: .res 1
+diff_sel_cursor_time: .res 1
 
 frame_timer_controller: .res 1
 
@@ -261,8 +262,7 @@ drum_spawn_position_kept: .res 128
 don_color: .res 3
 song_sel_position: .res 3
 
-song_difficulty_position: .res 6
-song_difficulty_position_time: .res 2
+diff_sel_position: .res 6
 
 .segment "MUSIC_BANK_SONGSELS"
 .include "songs/donstart.s"
@@ -1665,6 +1665,8 @@ scenes_hi:
   STA fade_intensity
 
   LDA #$1B
+  STA cursor_diff_Y
+  LDA #$1B
   STA cursor_song_Y
   LDA #$D9
   STA controller_h_Y
@@ -2196,6 +2198,26 @@ title_palette:
   BNE dont_load_main_game
 
   LDX song_sel_position
+  LDY diff_sel_position, X
+  CPX #$00
+  BEQ :+
+  LDA #$00
+  CLC
+  add_to_chart_start:
+  ADC #$04
+  DEX
+  BNE add_to_chart_start
+
+  TAX
+  :
+
+  BEQ :+
+  add_to_chart_diff:
+  INX
+  DEY
+  BNE add_to_chart_diff
+  :
+
   LDA song_address_start_lo, X
   STA drum_bank_positon
 
@@ -2665,7 +2687,83 @@ MAX_SONG_COUNT = $05
 .endproc
 
 .proc diff_cursor
+  LDA diff_sel_cursor_time
+  CMP #19
+  BNE :+
+
+  LDA #$04
+  JSR famistudio_sfx_sample_play
+  :
+
+  LDX song_sel_position
+
+  LDA BTN_Hold
+  AND #%00000011
+  BNE :+
+  LDA #$00
+  STA diff_sel_cursor_time
+  :
+
+  LDA BTN_Hold
+  AND #BTN_LEFT
+  BEQ :++
+  LDA diff_sel_cursor_time
+  BNE :+
+
+  LDA #20
+  STA diff_sel_cursor_time
+
+  DEC diff_sel_position, X
+  LDA diff_sel_position, X
+  CMP #$FF
+  BNE :+
+  LDA #03
+  STA diff_sel_position, X
+  :
+  DEC diff_sel_cursor_time
+  JMP update_cursor_sprite
+
+  :
+  LDA BTN_Hold
+  AND #BTN_RIGHT
+  BNE :+
+  JMP update_cursor_sprite
+
+  :
+  LDA diff_sel_cursor_time
+  BNE :+
+
+  LDA #20
+  STA diff_sel_cursor_time
+
+  INC diff_sel_position, X
+  LDA diff_sel_position, X
+  CMP #04
+  BCC :+
+  LDA #$00
+  STA diff_sel_position, X
+  :
+  DEC diff_sel_cursor_time
+
+  update_cursor_sprite:
+  LDA #$6C
+  STA $241
+
+  LDA #BASE_CURSOR_X_POSITION_DIFF_SEL
+  LDY diff_sel_position, X
+  CLC
+
+  loop_ucs:
+  BEQ leave_lucs
+  ADC #$28
+  DEY
+  BNE loop_ucs
+
+  leave_lucs:
+  STA $243
   RTS
+
+  BASE_CURSOR_X_POSITION_DIFF_SEL = $40
 .endproc
 
 c_h_base_sprite = $208
@@ -2726,6 +2824,16 @@ diff_icon_base_sprtie = $220
   LDA #$F0
   :
   STA $204
+
+  ; update cursor (song) sprite Y
+  LDA cursor_diff_Y
+  ; set to $F0 if screen isnt 0
+  LDX cursor_diff_screen
+  DEX
+  BEQ :+
+  LDA #$F0
+  :
+  STA $240
 
   ; update controller highlight sprites Y
   LDA controller_h_Y
@@ -4670,7 +4778,7 @@ roll_text: ; ROLL:
   PHA ; push A to stack
   LDA drum_spawn_position+1 ; load high byte PPU location
   EOR #%00000100 ; flip 3rd bit (next screen)
-  STA drum_data_pool+9 ; store to drum part 2
+  STA drum_data_pool+8 ; store to drum part 2
   LDA drum_spawn_position ; load low byte PPU location
   PLA ; pull A from stack
   SEC
