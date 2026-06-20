@@ -2721,15 +2721,35 @@ MAX_SONG_COUNT = $05
   STA diff_sel_position, X
   :
   DEC diff_sel_cursor_time
+
+  JSR update_sram_loc
+
+  LDA frame_timer_score_draw
+  CMP #121
+  BCC draw_godr_1
+
+  LDA #$01
+  STA draw_bg_over_palette
+
+  JSR load_score_combo
+  JMP escape_lsc_1
+  draw_godr_1:
+
+  JSR load_score_inputs
+  escape_lsc_1:
+  LDX song_sel_position
+
   JMP update_cursor_sprite
 
   :
   LDA BTN_Hold
   AND #BTN_RIGHT
   BNE :+
+
   JMP update_cursor_sprite
 
   :
+
   LDA diff_sel_cursor_time
   BNE :+
 
@@ -2744,6 +2764,23 @@ MAX_SONG_COUNT = $05
   STA diff_sel_position, X
   :
   DEC diff_sel_cursor_time
+
+  JSR update_sram_loc
+
+  LDA frame_timer_score_draw
+  CMP #121
+  BCC draw_godr_2
+
+  LDA #$01
+  STA draw_bg_over_palette
+
+  JSR load_score_combo
+  JMP escape_lsc_2
+  draw_godr_2:
+
+  JSR load_score_inputs
+  escape_lsc_2:
+  LDX song_sel_position
 
   update_cursor_sprite:
   LDA #$6C
@@ -3126,6 +3163,13 @@ diff_icon_sprite_data:
   RTS
 
   load_names:
+  LDX #$00
+  clear_draw:
+  LDA #$00
+  STA draw, X
+  INX
+  BPL clear_draw
+
   ; prepare PPU high
   LDA #$2B
   STA draw+2
@@ -3166,39 +3210,53 @@ diff_icon_sprite_data:
   BNE draw_names
 
   RTS
+.endproc
 
-  load_scores:
+  update_sram_loc:
   LDA #$62
   STA sram_location+1
-  LDA #$E0
+  LDA #96
   STA sram_location
 
   LDX song_sel_position
+  LDY diff_sel_position, X
 
-  set_sram_loc:
   LDA sram_location
+  set_sram_loc:
   CLC
-  ADC #$20
+  ADC #128
   BCC :+
   INC sram_location+1
   :
-  STA sram_location
   DEX
   BPL set_sram_loc
+
+  set_sram_loc_low:
+  CLC
+  ADC #32
+  BCC :+
+  INC sram_location+1
+  :
+  DEY
+  BPL set_sram_loc_low
+  STA sram_location
 
   LDY #$00
   load_to_draw_score:
   LDA (sram_location), Y
   STA score_to_draw, Y
   INY
-  CPY #$20
+  CPY #23
   BNE load_to_draw_score
+  RTS
+
+  load_scores:
+  JSR update_sram_loc
 
   LDA #240
   STA frame_timer_score_draw
 
   JMP load_score_combo
-.endproc
 
 update_top_scores:
   LDA song_sel_entry
