@@ -332,10 +332,6 @@ dbank8:
 
 .segment "START"
 
-.proc irq_handler
-  RTI
-.endproc
-
 .proc nmi_handler
   PHA
   TXA
@@ -2194,7 +2190,7 @@ title_palette:
   JSR famistudio_sfx_sample_play
 
   :
-  CMP #180
+  CMP #182
   BNE dont_load_main_game
 
   LDX song_sel_position
@@ -2254,31 +2250,31 @@ title_palette:
   .byte $00, $00, $00, $00
   .byte $01, $03, $06, $07
 
-  song_author_1: ; IT WORKS!!
-  .byte $48, $53, $02, $56, $4E, $51, $4A, $52, $68, $68, $02, $02
-  song_author_2:
-  .byte $47, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
-  song_author_3:
-  .byte $48, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
-  song_author_4:
-  .byte $49, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
-  song_author_5:
-  .byte $4A, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
+  song_author_1: ; ADONETE
+  .byte $40, $43, $4E, $4D, $44, $53, $44, $02, $02, $02, $02, $02
+  song_author_2: ; DDRKIRBY ISQ
+  .byte $43, $43, $51, $4A, $48, $51, $41, $58, $02, $48, $52, $50
+  song_author_3: ; AYAKO SASO
+  .byte $40, $58, $40, $4A, $4E, $02, $52, $40, $52, $4E, $02, $02
+  song_author_4: ; ADONETE
+  .byte $40, $43, $4E, $4D, $44, $53, $44, $02, $02, $02, $02, $02
+  song_author_5: ; MASAMI YONE
+  .byte $4C, $40, $52, $40, $4C, $48, $02, $58, $4E, $4D, $44, $02
   song_author_6: ; THEPURPLANON
   .byte $53, $47, $44, $4F, $54, $51, $4F, $4B, $40, $4D, $4E, $4D
 
-  song_chartr_1: ; TEST TEXT
-  .byte $53, $44, $52, $53, $02, $53, $44, $57, $53, $02, $02, $02
-  song_chartr_2:
-  .byte $41, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
-  song_chartr_3:
-  .byte $42, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
-  song_chartr_4:
-  .byte $43, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
-  song_chartr_5:
-  .byte $44, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
-  song_chartr_6: ; TEST TEXT
-  .byte $53, $44, $52, $53, $02, $53, $44, $57, $53, $02, $02, $02
+  song_chartr_1: ; [blank]
+  .byte $02, $02, $02, $02, $02, $02, $02, $02, $02, $02, $02, $02
+  song_chartr_2: ; [blank]
+  .byte $02, $02, $02, $02, $02, $02, $02, $02, $02, $02, $02, $02
+  song_chartr_3: ; [blank]
+  .byte $02, $02, $02, $02, $02, $02, $02, $02, $02, $02, $02, $02
+  song_chartr_4: ; [blank]
+  .byte $02, $02, $02, $02, $02, $02, $02, $02, $02, $02, $02, $02
+  song_chartr_5: ; [blank]
+  .byte $02, $02, $02, $02, $02, $02, $02, $02, $02, $02, $02, $02
+  song_chartr_6: ; [blank]
+  .byte $02, $02, $02, $02, $02, $02, $02, $02, $02, $02, $02, $02
 
 diff_sel_1:
 	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
@@ -2577,6 +2573,11 @@ update_SEL:
 .endproc
 
 .proc update_cursor_position
+  LDA PPUSCROLL_Y
+  BEQ :+
+  RTS
+  :
+
   LDX song_sel_entry
   LDA cursor_code_lo, X
   STA address_table
@@ -3073,6 +3074,17 @@ diff_icon_sprite_data:
   :
 
   ; load_stars
+
+  ; because pressing a direction + start loads the name data too and i dont know why
+  ; and im just lazy to fix it properly too-
+  LDX #$00
+  clear_draw_stars:
+  LDA #$00
+  STA draw, X
+  INX
+  CPX #$30
+  BNE clear_draw_stars
+
   ; prepare locations for star drawing
   LDX #$00
   ; load song position * 4
@@ -3605,7 +3617,7 @@ roll_text: ; ROLL:
   STA drum_sprite_A, X
 
   LDA drum_input_kat_two
-  AND #%00000111
+  AND #%11000000
   BNE dont_rest_double_kat
 
   ORA #%00000010
@@ -3740,7 +3752,7 @@ roll_text: ; ROLL:
   STA drum_sprite_A, X
 
   LDA drum_input_don_two
-  AND #%00000111
+  AND #%11000000
   BNE dont_rest_double_don
 
   ORA #%00000010
@@ -6509,7 +6521,7 @@ taiko_bg_4:
 .byte $E7, $EA, $ED, $EF, $F1, $F3, $F5, $F7, $F8, $FA, $FB, $FC, $FD, $FE, $FF, $FF
 
 .segment "VECTORS"
-.addr nmi_handler, reset_handler, irq_handler
+.addr nmi_handler, reset_handler, reset_handler ; irq handler
 
 .segment "CHR"
 .incbin "CHR-ROM/gfx.chr"
