@@ -264,6 +264,8 @@ song_sel_position: .res 3
 
 diff_sel_position: .res 6
 
+mods: .res 1
+
 .segment "MUSIC_BANK_SONGSELS"
 .include "songs/donstart.s"
 .byte $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF
@@ -338,6 +340,7 @@ dbank8:
   PHA
   TYA
   PHA
+  CLI
 
   ; update PPUMASK
   LDA PPUMASK
@@ -1147,11 +1150,11 @@ vblankwait2:
   STA misc ; set the last bit in misc to 1
 
   LDX scene
-  LDA scenes_hi, X
-  PHA
-
   LDA scenes_lo, X
-  PHA
+  STA address_table
+  LDA scenes_hi, X
+  STA address_table+1
+  JMP (address_table)
 
   RTS
 
@@ -1339,8 +1342,16 @@ scenes_hi:
 
   LDX #$00
 
-  ; set tempo (tmp)
+  ; set tempo
+  LDA mods
+  AND #$08
+  TAY
+
   LDA (drum_bank_positon, X)
+  CPY #$08
+  BNE :+
+  EOR #$40
+  :
   STA tempo
 
   JSR increase_dbp
@@ -1993,8 +2004,6 @@ taiko_sfx:
 .segment "TITL_SCEN_SONG_SEL_RES"
 
 .proc title_screen
-  NOP
-
   INC PPUSCROLL_X
 
   LDX #$B0
@@ -2143,7 +2152,6 @@ title_palette:
     .byte $0F, $0F, $0F, $0F
 
 .proc song_sel
-  NOP
 
   LDX #$00
   clear_draw:
@@ -2340,22 +2348,22 @@ sett_sel_2:
 	.byte $00,$00,$00,$e5,$e6,$a9,$a9,$e7,$e8,$a9,$a9,$e9,$ea,$ea,$ea,$ea,$ea,$eb,$a9,$ec,$ed,$ee,$a9,$ec,$ed,$ee,$a9,$ef,$f0,$00,$00,$00
 	.byte $00,$00,$00,$f1,$f2,$f3,$f3,$f3,$f3,$f3,$f3,$f3,$f3,$f3,$f3,$f3,$f3,$f3,$f3,$f3,$f3,$f3,$f3,$f3,$f3,$f3,$f3,$f4,$f5,$00,$00,$00
 	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.byte $00,$00,$00,$00,$00,$00,$00,$00,$17,$1c,$13,$08,$2c,$04,$00,$00,$00,$00,$17,$1c,$13,$08,$2c,$05,$00,$00,$00,$00,$00,$00,$00,$00
 
 sett_sel_3:
 	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.byte $00,$00,$00,$00,$00,$00,$00,$00,$17,$1c,$13,$08,$2c,$06,$00,$00,$00,$00,$17,$1c,$13,$08,$2c,$07,$00,$00,$00,$00,$00,$00,$00,$00
 	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
 	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
 	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
 	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
 	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.byte $00,$00,$04,$18,$17,$12,$13,$0f,$04,$1c,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
 
 sett_sel_4:
-	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.byte $00,$00,$0c,$11,$19,$0c,$16,$0c,$05,$0f,$08,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.byte $00,$00,$09,$0f,$0c,$13,$13,$08,$07,$00,$07,$15,$18,$10,$16,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.byte $00,$00,$09,$0f,$0c,$13,$13,$08,$07,$00,$16,$13,$08,$08,$07,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
 	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
 	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
 	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
@@ -2595,8 +2603,51 @@ update_SEL:
 .endproc
 
 .proc options_cursor
+  LDA #$01
+  STA draw_bg_over_palette
+
+  LDA #$04
+  STA draw
+  LDA #$04
+  STA draw+1
+  LDA #$2A
+  STA draw+2
+  LDA #$F0
+  STA draw+3
+  LDA #$F6
+  STA draw+4
+  STA draw+5
+  STA draw+6
+  STA draw+7
+
+  LDX #$00
+  LDA mods
+
+  check_mods:
+  BIT byte_01
+  BEQ :+
+
+  TAY
+  LDA #$F7
+  STA draw+4, X
+  TYA
+
+  :
+  ROR
+  INX
+  CPX #$04
+  BNE check_mods
+
+  ROL
+  ROL
+  ROL
+  ROL
+
   RTS
 .endproc
+
+byte_01:
+.byte $01
 
 MAX_SONG_COUNT = $05
 
@@ -2917,54 +2968,63 @@ diff_icon_base_sprtie = $220
   CPX #$20
   BNE update_diff_icon_Y
 
-  LDX #$00
+  LDX #$00 ; set X to $00
   scroll_selection_sprites:
-  LDA cursor_diff_Y, X
+  ; prepare sprites for overflow/underflow
+  ; for the value $F0
+  LDA cursor_diff_Y, X ; load cursor_diff_Y + X to A
   CLC
-  ADC #$10
-  STA cursor_diff_Y, X
+  ADC #$10 ; add $10 to A
+  STA cursor_diff_Y, X ; store A to cursor_diff_Y + X
 
-  LDY #$00
-  LDA PPUSCROLL_Y_speed
-  BEQ dont_change_screen
-  BMI :+
-  DEY
-  LDA cursor_diff_Y, X
-  SEC
-  SBC PPUSCROLL_Y_speed
-  STA cursor_diff_Y, X
-  BCS dont_change_screen
-  ADC #$F0
-  STA cursor_diff_Y, X
-  JMP :++
-  :
-  DEC cursor_diff_Y, X
-  INY
-  LDA cursor_diff_Y, X
-  SEC
-  SBC PPUSCROLL_Y_speed
-  STA cursor_diff_Y, X
-  BCC dont_change_screen
+  LDY #$00 ; set Y to $00
+  LDA PPUSCROLL_Y_speed ; load Y scroll speed to A
+  BEQ dont_change_screen ; if its 0, dont bother with underflow/overflow checking
+  BMI :+ ; if its scrolling up, run other code
 
-  SBC #$F0
-  STA cursor_diff_Y, X
+  ; code for if its scrolling down
+  DEY ; decrease Y
+  LDA cursor_diff_Y, X ; load cursor_diff_Y + X to A
+  SEC
+  SBC PPUSCROLL_Y_speed ; subtract Y scroll speed value from A
+  STA cursor_diff_Y, X ; store A to cursor_diff_Y + X
+  ; this is so the sprite moves when scrolling
+  BCS dont_change_screen ; if it didnt underflow, dont run underflow code
+  ADC #$F0 ; add $F0 to A (subtract $10)
+  STA cursor_diff_Y, X ; store A to cursor_diff_Y + X
+  JMP :++ ; jump to screen changing code
+
+  ; code for if its scrolling up
   :
-  STY temp_screen
-  LDA cursor_diff_screen, X
-  CLC
-  ADC temp_screen
-  STA cursor_diff_screen, X
+  DEC cursor_diff_Y, X ; decrease cursor_diff_Y, X
+  INY ; increase Y
+  LDA cursor_diff_Y, X ; load cursor_diff_Y + X to A
+  SEC
+  SBC PPUSCROLL_Y_speed ; subtract Y scroll speed value from A
+  STA cursor_diff_Y, X ; store A to cursor_diff_Y + X
+  BCC dont_change_screen ; if it didnt overflow, dont run overflow code
+
+  SBC #$F0 ; subtract $F0 (add $10)
+  STA cursor_diff_Y, X ; store A to cursor_diff_Y + X
+  :
+
+  ; code for screen value changing
+  STY temp_screen ; store Y to a temporary address
+  LDA cursor_diff_screen, X ; load cursor_diff_screen + X to A
+  CLC ; add or subtract $01 to/from A
+  ADC temp_screen ; depends if its scrolling up or down
+  STA cursor_diff_screen, X ; store A to load cursor_diff_screen + X
 
   dont_change_screen:
-
-  LDA cursor_diff_Y, X
+  ; restore the actual sprite Y values
+  LDA cursor_diff_Y, X ; load cursor_diff_Y + X to A
   CLC
-  ADC #$F0
-  STA cursor_diff_Y, X
+  ADC #$F0 ; add $F0 to A (subtract $10)
+  STA cursor_diff_Y, X ; store A to load cursor_diff_Y + X
 
-  INX
-  CPX #$06
-  BNE scroll_selection_sprites
+  INX ; increase X
+  CPX #$06 ; repeat
+  BNE scroll_selection_sprites ; until X is 6
 
   LDA beat_anim_frame
   BNE :+
@@ -2994,7 +3054,7 @@ Y_scroll_table:
 song_sel_pal:
   .byte $0F, $05, $15, $25
   .byte $0F, $0F, $16, $30
-  .byte $0F, $16, $37, $0F
+  .byte $0F, $16, $37, $20
   .byte $0F, $17, $27, $20
 
   .byte $0F, $30, $30, $30
@@ -3014,7 +3074,7 @@ diff_icon_sprite_data:
 
 
 .proc results
-  NOP
+
   LDA BTN_Press
   AND #BTN_A
   BEQ :+
@@ -3471,7 +3531,6 @@ roll_text: ; ROLL:
 .segment "MAIN_GAME"
 
 .proc main_game
-  NOP
 
   JSR update_position ; update the position bytes
 
@@ -3921,8 +3980,6 @@ roll_text: ; ROLL:
 
   bad_times_2:
   .byte $01, $01
-
-
 
   set_input_timing:
   LDA tempo
@@ -4438,8 +4495,21 @@ roll_text: ; ROLL:
   :
 
   LDA (drum_bank_positon, X)
+  PHA
+  LDA mods
+  AND #$04
+  TAX
+  PLA
+  CPX #$00
+  BEQ :+
+  EOR #%00000011
+  BNE :+
+  EOR #%00000011
+  :
   STA drum_hit_pool, Y
   AND #%00000011
+
+  LDX #$00
 
   CMP #$01
   BEQ load_don
@@ -4470,6 +4540,10 @@ roll_text: ; ROLL:
   LSR A
 
   BNE load_big_don_branch
+
+  LDA mods
+  AND #$02
+  BNE done_drawing_small_don
 
   JSR prepare_data_small
 
@@ -4523,6 +4597,10 @@ roll_text: ; ROLL:
 
   BNE load_big_kat_branch
 
+  LDA mods
+  AND #$02
+  BNE done_drawing_small_kat
+
   JSR prepare_data_small
 
   ; tiles
@@ -4562,12 +4640,20 @@ roll_text: ; ROLL:
   STA bg_attr
   JMP leave_attr_roll_2
 
+  dont_draw_rol:
+  JMP :+
+
   load_rol:
+
   LDA #$01
   STA draw_bg_over_palette
 
   LDA #$1E
   STA roll_length+2
+
+  LDA mods
+  AND #$02
+  BNE dont_draw_rol
 
   LDA bg_attr_position+2
   AND #%00000010
@@ -4606,6 +4692,8 @@ roll_text: ; ROLL:
   STY drum_data_pool+10
   INY
   STY drum_data_pool+11
+
+  :
 
   LDA tempo
   AND #%01000000
@@ -4652,6 +4740,10 @@ roll_text: ; ROLL:
 
 
   load_big_kat:
+  LDA mods
+  AND #$02
+  BNE :+
+
   LDA #$01
   STA draw_bg_over_palette
 
@@ -4676,9 +4768,15 @@ roll_text: ; ROLL:
   LDY #$00
   STY drum_data_pool+20
 
+  :
+
   JMP done_drawing_small_kat
 
   load_big_don:
+  LDA mods
+  AND #$02
+  BNE :+
+
   LDA #$01
   STA draw_bg_over_palette
 
@@ -4703,9 +4801,18 @@ roll_text: ; ROLL:
   LDY #$00
   STY drum_data_pool+20
 
+  :
+
   JMP done_drawing_small_don
 
+  dont_draw_big_rol:
+  JMP :+
+
   load_big_rol:
+  LDA mods
+  AND #$02
+  BNE dont_draw_big_rol
+
   LDA #$01
   STA draw_bg_over_palette
 
@@ -4784,6 +4891,8 @@ roll_text: ; ROLL:
   STY drum_data_pool+19
   INY
   STY drum_data_pool+20
+
+  :
 
   LDA tempo
   AND #%01000000
@@ -4928,6 +5037,10 @@ roll_text: ; ROLL:
   JMP escape_spawn_roll
 
   spawn_roll:
+  LDA mods
+  AND #$02
+  BNE stop
+
   LDA #$01
   STA draw_bg_over_palette
 
