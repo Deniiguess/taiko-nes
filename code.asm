@@ -28,14 +28,14 @@ FAMISTUDIO_CFG_EXTERNAL       = 1 ; enables external configuration
 FAMISTUDIO_USE_VOLUME_TRACK = 1 ; enables volume track
 FAMISTUDIO_USE_VOLUME_SLIDES = 1 ; enables volume slides in volume track
 
-; FAMISTUDIO_USE_PITCH_TRACK = 1 ; enables pitch track
+FAMISTUDIO_USE_PITCH_TRACK = 1 ; enables pitch track
 
 ; FAMISTUDIO_USE_NOISE_SLIDE_NOTES = 1 ; enables slide notes (noise)
 FAMISTUDIO_USE_SLIDE_NOTES = 1 ; enables slide notes
 FAMISTUDIO_USE_RELEASE_NOTES = 1 ; enables release notes
 
 FAMISTUDIO_USE_VIBRATO = 1 ; enables vibrato tracks
-; FAMISTUDIO_USE_ARPEGGIO = 1 ; enables arpeggios
+FAMISTUDIO_USE_ARPEGGIO = 1 ; enables arpeggios
 
 ; FAMISTUDIO_USE_DUTYCYCLE_EFFECT  = 1 ; enables the duty cycle track
 
@@ -279,27 +279,27 @@ mods: .res 1
 .include "songs/fluffy.s" ; include song
 
 .segment "MUSIC_BANK_2"
-;.include "songs/fluffy.s" ; include song
+.include "songs/whounleashedthedog.s" ; include song
 
 .segment "MUSIC_BANK_3"
 .include "songs/euphoria.s" ; include song
 
 .segment "MUSIC_BANK_4"
-;.include "songs/fluffy.s" ; include song
+;.include "songs/remix8ds.s" ; include song
 
 .segment "MUSIC_BANK_5"
-;.include "songs/fluffy.s" ; include song
+.include "songs/remix8ds.s" ; include song
 
 .segment "MUSIC_BANK_6"
 .include "songs/finnedfrontier.s" ; include song
 
 .segment "DRUM_BANK_1"
 dbank1:
-.byte $83, $01
+.byte $C5, $01
 .byte $01, $00, $09, $00, $00
 
 dbank2:
-.byte $04, $02
+.byte $C4, $02
 .byte $02, $00, $0A, $00, $00
 
 dbank3:
@@ -307,11 +307,11 @@ dbank3:
 .byte $09, $03, $09, $03, $09, $03, $09, $03, $00
 
 dbank4:
-.byte $07, $04
+.byte $C4, $04
 .byte $0A, $03, $0A, $03, $0A, $03, $0A, $03, $00
 
 dbank5:
-.byte $83, $01
+.byte $C4, $01
 .byte $40, $0F, $09, $00, $00
 
 dbank6:
@@ -340,7 +340,6 @@ dbank8:
   PHA
   TYA
   PHA
-  CLI
 
   ; update PPUMASK
   LDA PPUMASK
@@ -1031,14 +1030,10 @@ split_x_scrolling:
 
 
 .proc reset_handler
-  LDX #0
-  STX $1000
-  LDY #0
-  STY $1001
   SEI ; disable IRQ
   CLD ; clear decimal
   LDX #$40
-  STX $4017
+  ;STX $4017
   LDX #$FF
   TXS ; set stack to $FF
   INX ; set X to 0
@@ -3571,7 +3566,17 @@ roll_text: ; ROLL:
 
   JSR update_bars ; update bar positions
 
+  LDA mods
+  LSR
+  BCS :+
+
   JSR update_inputs ; update inputs and drum hitting
+  JMP :++
+  :
+
+  JSR update_autoplay
+
+  :
 
   JSR update_scroll ; update scrolling
 
@@ -3612,6 +3617,261 @@ roll_text: ; ROLL:
 
   JMP stay_here ; go to the forever loop
 
+.endproc
+
+.proc update_autoplay
+  LDA #$00
+  STA clear_bar
+  STA clear_bar+1
+  STA clear_bar+2
+  STA clear_bar+3
+  STA clear_bar+4
+  STA clear_bar+5
+  STA clear_bar+6
+  STA clear_bar+7
+
+  ; update the DON drum palette
+  LDX drum_input_don_time
+  CPX #$01
+  BCS update_dinp_don
+  exit_dinp_don:
+
+  ; update the KAT drum palette
+  LDX drum_input_kat_time
+  CPX #$01
+  BCS update_dinp_kat
+  exit_dinp_kat:
+
+  LDA roll_length+2
+  BNE :+
+  LDA roll_length+1
+  BEQ :+
+  LDA misc ; execute every 8 pixel scrolls
+  AND #%00000010
+  BEQ :+
+
+  LDA #$0A
+  STA drum_input_don_time
+
+  LDA #$01
+  JSR famistudio_sfx_sample_play
+
+  LDX slot_number
+  LDA drum_sprite_A, X
+  AND #%11111101
+  STA drum_sprite_A, X
+
+  LDA #30
+  STA roll_time
+
+  JSR inc_roll
+
+  RTS
+
+  :
+
+  LDX drum_hit_pool_pos+1
+  LDY drum_hit_pool_frame_pos+1
+  LDA drum_hit_pool_frame, Y
+  CMP #$02
+  BNE :+
+  LDA drum_hit_pool_frame+1, Y
+  CMP #$0B
+  BCS :+
+
+  LDA drum_hit_pool, X
+  AND #%00000011
+  CMP #$01
+  BEQ don_ap
+  CMP #$02
+  BEQ kat_ap
+
+  :
+
+  RTS
+
+  force_good:
+  LDA #$02
+  STA input_rate
+  INC combo+3
+  JSR add_points
+  JMP clear_drum
+
+  update_dinp_don:
+  ; load the palette timer for DON
+  LDX drum_input_don_time
+
+  ; load the palette value in the pool + X
+  LDA dinp_don_pal, X
+  STA palette+26 ; store the value into the proper palette color slot
+
+  ; check for the last 2 bits in the TWO location
+  LDA drum_input_don_two
+  AND #%11000000
+  CMP #%11000000
+  BNE :+ ; if its not $80, skip code
+  LDA drum_input_don_two
+  AND #%00000111
+  TAX
+  LDA dinp_don_pal_two, X ; set the lighter red for the KAT palette
+  STA palette+25
+  :
+
+  DEC drum_input_don_time ; decrease the timer
+  JMP exit_dinp_don
+
+  update_dinp_kat:
+  ; load the palette timer for KAT
+  LDX drum_input_kat_time
+
+  ; load the palette value in the pool + X
+  LDA dinp_kat_pal, X
+  STA palette+25 ; store the value into the proper palette color slot
+
+  ; check for the last 2 bits in the TWO location
+  LDA drum_input_kat_two
+  AND #%11000000
+  CMP #%11000000
+  BNE :+ ; if its not $80, skip code
+  LDA drum_input_kat_two
+  AND #%00000111
+  TAX
+  LDA dinp_kat_pal_two, X ; set the lighter red for the DON palette
+  STA palette+26
+  :
+
+  DEC drum_input_kat_time ; decrease the timer
+  JMP exit_dinp_kat
+
+  don_ap:
+  LDA #$0A
+  STA drum_input_don_time
+
+  LDA drum_hit_pool, X
+  AND #%00000100
+  BEQ :+
+  LDA #$C2
+  STA drum_input_don_two
+
+  JSR set_sprite_to_big
+  :
+
+  LDA #$01
+  JSR famistudio_sfx_sample_play
+
+  LDX slot_number
+  LDA drum_sprite_A, X
+  AND #%11111101
+  STA drum_sprite_A, X
+  JMP force_good
+
+  kat_ap:
+  LDA #$0A
+  STA drum_input_kat_time
+
+  LDA drum_hit_pool, X
+  AND #%00000100
+  BEQ :+
+  LDA #$C2
+  STA drum_input_kat_two
+
+  JSR set_sprite_to_big
+  :
+
+  LDA #$02
+  JSR famistudio_sfx_sample_play
+
+  LDX slot_number
+  LDA drum_sprite_A, X
+  ORA #%00000010
+  STA drum_sprite_A, X
+  JMP force_good
+
+  set_sprite_to_big:
+  LDX slot_number
+  LDA drum_sprite_A, X
+  ORA #%00000100
+  STA drum_sprite_A, X
+  RTS
+
+  add_points:
+  LDA score_to_add
+  ADC #45
+  LDX combo
+  BNE add_max
+  LDX combo+1
+  BNE add_max
+
+  PHA
+  LDY combo+2
+  LDX drum_hit_pool_pos+1
+  LDA drum_hit_pool, X
+  AND #%00000100
+  BEQ :++
+
+  LDA drum_input_don_two
+  AND #%11000000
+  CMP #$C0
+  BEQ :+
+
+  LDA drum_input_kat_two
+  AND #%11000000
+  CMP #$C0
+  BNE :++
+
+  :
+  TYA
+  CLC
+  ASL
+  TAY
+
+  :
+  PLA
+  add_points_loop:
+  CPY #$00
+  BEQ no_longer_add_points
+  CLC
+  ADC #10
+  BCC :+
+  INC score_to_add_10
+  :
+  DEY
+  JMP add_points_loop
+
+  no_longer_add_points:
+  STA score_to_add
+  RTS
+
+  add_max:
+  CLC
+  ADC #100
+
+  TAY
+  LDX drum_hit_pool_pos+1
+  LDA drum_hit_pool, X
+  AND #%00000100
+  BEQ dont_add_max
+
+  LDA drum_input_don_two
+  AND #%11000000
+  CMP #$C0
+  BEQ :+
+
+  LDA drum_input_kat_two
+  AND #%11000000
+  CMP #$C0
+  BNE dont_add_max
+
+  :
+  TYA
+  ADC #100
+  BCC dont_add_max
+  INC score_to_add_10
+  TAY
+
+  dont_add_max:
+  TYA
+  JMP no_longer_add_points
 .endproc
 
 .proc update_inputs
@@ -3861,7 +4121,330 @@ roll_text: ; ROLL:
   dont_clear_don:
   JMP exit_input
 
-  clear_drum:
+  bad_times_1:
+  .byte $12, $15
+
+  ok_times_1:
+  .byte $0E, $13
+
+  good_times:
+  .byte $0B, $0F
+
+  ok_times_2:
+  .byte $05, $04
+
+  bad_times_2:
+  .byte $01, $01
+
+  set_input_timing:
+  LDA tempo
+  AND #%01000000
+  CLC
+  ROL
+  ROL
+  ROL
+  TAX
+  LDA drum_hit_pool_frame, Y
+  CMP #$02
+  BEQ set_input_timing1
+  CMP #$01
+  BEQ set_input_timing2
+  JMP exit_input
+
+  set_input_timing1:
+  LDA drum_hit_pool_frame+1, Y
+  CMP bad_times_2, X
+  BCC set_bad
+  CMP ok_times_2, X
+  BCC set_ok
+  CMP good_times, X
+  BCC set_good
+  CMP ok_times_1, X
+  BCC set_ok
+  CMP bad_times_1, X
+  BCC set_bad
+  JMP exit_input
+
+  set_input_timing2:
+  LDA drum_hit_pool_frame+1, Y
+  BEQ set_bad
+  CMP #$FF
+  BCS set_bad
+  JMP exit_input
+
+  set_good:
+  LDA #$02
+  STA input_rate
+  INC combo+3
+  INC clear_bar_inputs
+  JSR add_points
+  JMP clear_drum
+
+  set_ok:
+  LDA #$01
+  STA input_rate
+  INC combo+3
+  INC clear_bar_inputs
+  JSR add_points_ok
+  JMP clear_drum
+
+  set_bad:
+  LDX slot_number
+  LDA drum_sprite_A, X
+  ORA #%00000001
+  STA drum_sprite_A, X
+
+  LDX drum_hit_pool_pos+1
+  LDA drum_hit_pool, X
+  AND #%00000100
+  BEQ :+
+
+  LDA #$01
+  STA drum_inc
+  :
+
+  INC clear_bar_input_miss
+
+  LDA #$00
+  STA input_rate
+  STA combo
+  STA combo+1
+  STA combo+2
+  STA combo+3
+  JMP clear_drum
+
+  add_points:
+  LDA score_to_add
+  ADC #45
+  LDX combo
+  BNE add_max
+  LDX combo+1
+  BNE add_max
+
+  PHA
+  LDY combo+2
+  LDX drum_hit_pool_pos+1
+  LDA drum_hit_pool, X
+  AND #%00000100
+  BEQ :++
+
+  LDA drum_input_don_two
+  AND #%11000000
+  CMP #$C0
+  BEQ :+
+
+  LDA drum_input_kat_two
+  AND #%11000000
+  CMP #$C0
+  BNE :++
+
+  :
+  TYA
+  CLC
+  ASL
+  TAY
+
+  :
+  PLA
+  add_points_loop:
+  CPY #$00
+  BEQ no_longer_add_points
+  CLC
+  ADC #10
+  BCC :+
+  INC score_to_add_10
+  :
+  DEY
+  JMP add_points_loop
+
+  no_longer_add_points:
+  STA score_to_add
+  RTS
+
+  add_max:
+  CLC
+  ADC #100
+
+  TAY
+  LDX drum_hit_pool_pos+1
+  LDA drum_hit_pool, X
+  AND #%00000100
+  BEQ dont_add_max
+
+  LDA drum_input_don_two
+  AND #%11000000
+  CMP #$C0
+  BEQ :+
+
+  LDA drum_input_kat_two
+  AND #%11000000
+  CMP #$C0
+  BNE dont_add_max
+
+  :
+  TYA
+  ADC #100
+  BCC dont_add_max
+  INC score_to_add_10
+  TAY
+
+  dont_add_max:
+  TYA
+  JMP no_longer_add_points
+
+
+
+
+
+  add_points_ok:
+  LDA score_to_add
+  ADC #23
+  LDX combo
+  BNE add_max_ok
+  LDX combo+1
+  BNE add_max_ok
+
+  PHA
+  LDY combo+2
+  LDX drum_hit_pool_pos+1
+  LDA drum_hit_pool, X
+  AND #%00000100
+  BEQ :++
+
+  LDA drum_input_don_two
+  AND #%11000000
+  CMP #$C0
+  BEQ :+
+
+  LDA drum_input_kat_two
+  AND #%11000000
+  CMP #$C0
+  BNE :++
+
+  :
+  TYA
+  CLC
+  ASL
+  TAY
+
+  :
+  PLA
+  add_points_loop_ok:
+  CPY #$00
+  BEQ no_longer_add_points_ok
+  CLC
+  ADC #5
+  BCC :+
+  INC score_to_add_10
+  :
+  DEY
+  JMP add_points_loop_ok
+
+  no_longer_add_points_ok:
+  STA score_to_add
+  RTS
+
+  add_max_ok:
+  CLC
+  ADC #50
+
+  TAY
+  LDX drum_hit_pool_pos+1
+  LDA drum_hit_pool, X
+  AND #%00000100
+  BEQ dont_add_max_ok
+
+  LDA drum_input_don_two
+  AND #%11000000
+  CMP #$C0
+  BEQ :+
+
+  LDA drum_input_kat_two
+  AND #%11000000
+  CMP #$C0
+  BNE dont_add_max_ok
+
+  :
+  TYA
+  ADC #100
+  BCC dont_add_max_ok
+  INC score_to_add_10
+  TAY
+
+  dont_add_max_ok:
+  TYA
+  JMP no_longer_add_points_ok
+
+
+  input_roll_p2_don:
+  LDA #30
+  STA roll_time
+
+  JSR inc_roll
+
+  JMP exit_input
+
+  input_roll_p2_kat:
+  LDA #30
+  STA roll_time
+
+  JSR inc_roll
+
+  JMP exit_input
+.endproc
+
+.proc inc_roll
+  LDX slot_number
+  LDA drum_sprite_A, X
+  ORA #%00000001
+  STA drum_sprite_A, X
+
+  INC drum_roll+2
+  LDX #$01
+
+  increase_roll:
+  LDA drum_roll+1, X
+  dont_increase_num:
+  CMP #$0A
+  BCC escape_roll
+  SEC
+  SBC #$0A
+  STA drum_roll+1, X
+  INC drum_roll, X
+  JMP increase_roll
+
+  escape_roll:
+  DEX
+  CPX #$FF
+  BNE increase_roll
+
+  LDA drum_roll
+
+  CMP #$0A
+  BCC escape_rollL
+  LDA #$09
+  STA drum_roll
+  STA drum_roll+1
+  STA drum_roll+2
+  STA drum_roll+3
+
+  escape_rollL:
+
+  INC score+4
+  LDA roll_size
+  BEQ not_big_roll
+
+  LDX slot_number
+  LDA drum_sprite_A, X
+  ORA #%00000100
+  STA drum_sprite_A, X
+  INC score+4
+  not_big_roll:
+
+  RTS
+.endproc
+
+.proc clear_drum
   LDA #$01
   STA draw_bg_over_palette
   LDA #$01
@@ -3964,224 +4547,6 @@ roll_text: ; ROLL:
   LDA #$10 ; set the rating timer (for the sprite appearing) to $10
   STA input_rate_timer
   RTS
-
-
-  bad_times_1:
-  .byte $12, $15
-
-  ok_times_1:
-  .byte $0E, $13
-
-  good_times:
-  .byte $0B, $0F
-
-  ok_times_2:
-  .byte $05, $04
-
-  bad_times_2:
-  .byte $01, $01
-
-  set_input_timing:
-  LDA tempo
-  AND #%01000000
-  CLC
-  ROL
-  ROL
-  ROL
-  TAX
-  LDA drum_hit_pool_frame, Y
-  CMP #$02
-  BEQ set_input_timing1
-  CMP #$01
-  BEQ set_input_timing2
-  JMP exit_input
-
-  set_input_timing1:
-  LDA drum_hit_pool_frame+1, Y
-  CMP bad_times_2, X
-  BCC set_bad
-  CMP ok_times_2, X
-  BCC set_ok
-  CMP good_times, X
-  BCC set_good
-  CMP ok_times_1, X
-  BCC set_ok
-  CMP bad_times_1, X
-  BCC set_bad
-  JMP exit_input
-
-  set_input_timing2:
-  LDA drum_hit_pool_frame+1, Y
-  BEQ set_bad
-  CMP #$FF
-  BCS set_bad
-  JMP exit_input
-
-  set_good:
-  LDA #$02
-  STA input_rate
-  INC combo+3
-  INC clear_bar_inputs
-  JSR add_points
-  JMP clear_drum
-
-  set_ok:
-  LDA #$01
-  STA input_rate
-  INC combo+3
-  INC clear_bar_inputs
-  JSR add_points_ok
-  JMP clear_drum
-
-  set_bad:
-  LDX slot_number
-  LDA drum_sprite_A, X
-  ORA #%00000001
-  STA drum_sprite_A, X
-
-  LDX drum_hit_pool_pos+1
-  LDA drum_hit_pool, X
-  AND #%00000100
-  BEQ :+
-
-  LDA #$01
-  STA drum_inc
-  :
-
-  INC clear_bar_input_miss
-
-  LDA #$00
-  STA input_rate
-  STA combo
-  STA combo+1
-  STA combo+2
-  STA combo+3
-  JMP clear_drum
-
-  add_points:
-
-  LDA score_to_add
-  CLC
-  ADC #45
-  LDX combo
-  BNE add_max
-  LDX combo+1
-  BNE add_max
-
-  add_points_loop:
-  BEQ no_longer_add_points
-  ADC #10
-  DEX
-  JMP add_points_loop
-
-  no_longer_add_points:
-  STA score_to_add
-  RTS
-
-  add_max:
-  CLC
-  ADC #100
-
-  dont_add_max:
-  JMP no_longer_add_points
-
-
-
-
-
-  add_points_ok:
-
-  LDA score_to_add
-  CLC
-  ADC #23
-  LDX combo+0
-  BNE add_max_ok
-  LDX combo+1
-  BNE add_max_ok
-
-  add_points_loop_ok:
-  BEQ no_longer_add_points_ok
-  ADC #5
-  DEX
-  JMP add_points_loop_ok
-
-  no_longer_add_points_ok:
-  STA score_to_add
-  RTS
-
-  add_max_ok:
-  CLC
-  ADC #50
-
-  JMP no_longer_add_points_ok
-
-
-  input_roll_p2_don:
-  LDA #30
-  STA roll_time
-
-  JSR inc_roll
-
-  JMP exit_input
-
-  input_roll_p2_kat:
-  LDA #30
-  STA roll_time
-
-  JSR inc_roll
-
-  JMP exit_input
-
-  inc_roll:
-  LDX slot_number
-  LDA drum_sprite_A, X
-  ORA #%00000001
-  STA drum_sprite_A, X
-
-  INC drum_roll+2
-  LDX #$01
-
-  increase_roll:
-  LDA drum_roll+1, X
-  dont_increase_num:
-  CMP #$0A
-  BCC escape_roll
-  SEC
-  SBC #$0A
-  STA drum_roll+1, X
-  INC drum_roll, X
-  JMP increase_roll
-
-  escape_roll:
-  DEX
-  CPX #$FF
-  BNE increase_roll
-
-  LDA drum_roll
-
-  CMP #$0A
-  BCC escape_rollL
-  LDA #$09
-  STA drum_roll
-  STA drum_roll+1
-  STA drum_roll+2
-  STA drum_roll+3
-
-  escape_rollL:
-
-  INC score+4
-  LDA roll_size
-  BEQ not_big_roll
-
-  LDX slot_number
-  LDA drum_sprite_A, X
-  ORA #%00000100
-  STA drum_sprite_A, X
-  INC score+4
-  not_big_roll:
-
-  RTS
-
 .endproc
 
 
@@ -5459,7 +5824,7 @@ tempo_5_table_2x:
   .byte $02, $02, $01, $01, $02, $02, $01, $01, $02, $01, $21
 
 tempo_6_table_2x:
-  .byte $02, $02, $02, $01, $01, $02, $02, $02, $02, $21
+  .byte $02, $02, $02, $01, $01, $01, $02, $02, $02, $21
 
 tempo_7_table_2x:
   .byte $02, $02, $02, $02, $02, $02, $02, $01, $21
