@@ -1,6 +1,3 @@
-code.o
-*.nss
-*.png
-*.aseprite
-*.dbg
+build
+assets
 compile
