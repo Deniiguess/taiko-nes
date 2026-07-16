@@ -2576,7 +2576,6 @@ update_SEL:
 .endproc
 
 .proc update_cursor_position
-  NOP
   LDA PPUSCROLL_Y
   BEQ :+
   RTS
