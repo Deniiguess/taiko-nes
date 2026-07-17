@@ -25,10 +25,15 @@ TODO: Test both
 
 ## Credits
 **Karippa Boss** - [Adonete](https://www.youtube.com/@Adonete42/)
+
 **Who Unleashed The Dog** *(WHO UNLEASH. DOG in-game)* - [DDRKirby(ISQ)](https://ddrkirbyisq.bandcamp.com) *(DDRKIRBY ISQ in-game)*
-**Euphoria** (Rave Racer) - 
+
+**Euphoria** (Rave Racer) - Ayako Saso
+
 **Bean Brained** - [Adonete](https://www.youtube.com/@Adonete42/)
+
 **Remix 8 DS** *[Sunsoft 5B Cover](https://www.youtube.com/watch?v=OUfYOx_-B50)* (Rhythm Heaven DS) - Masami Yone
+
 **Finned Frontier** - ThePurpleAnon *(THEPURPLANON in-game)*
 
 
