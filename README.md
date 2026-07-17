@@ -24,17 +24,17 @@ TODO: Test both
 5. Run `ca65 code/main.asm -o main.o` and `ld65.exe main.o -C nes.cfg -o taiko.nes`
 
 ## Credits
-**Karippa Boss** - [Adonete](https://www.youtube.com/@Adonete42/)
+**Karippa Boss** - Adonete
 
 **Who Unleashed The Dog** *(WHO UNLEASH. DOG in-game)* - [DDRKirby(ISQ)](https://ddrkirbyisq.bandcamp.com) *(DDRKIRBY ISQ in-game)*
 
-**Euphoria** (Rave Racer) - __Ayako Saso__
+**Euphoria** (Rave Racer) - Ayako Saso
 
-**Bean Brained** - [Adonete](https://www.youtube.com/@Adonete42/)
+**Bean Brained** - Adonete
 
-**Remix 8 DS** *[Sunsoft 5B Cover](https://www.youtube.com/watch?v=OUfYOx_-B50)* (Rhythm Heaven DS) - __Masami Yone__
+**Remix 8 DS** *[Sunsoft 5B Cover](https://www.youtube.com/watch?v=OUfYOx_-B50)* (Rhythm Heaven DS) - Masami Yone
 
-**Finned Frontier** - __ThePurpleAnon__ *(THEPURPLANON in-game)*
+**Finned Frontier** - ThePurpleAnon *(THEPURPLANON in-game)*
 
 
 ## Disclamer
