@@ -23,6 +23,15 @@ TODO: Test both
 4. Open the terminal and go to the `taiko-nes` directory in it
 5. Run `ca65 code/main.asm -o main.o` and `ld65.exe main.o -C nes.cfg -o taiko.nes`
 
+## Credits
+**Karippa Boss** - [Adonete](https://www.youtube.com/@Adonete42/)
+**Who Unleashed The Dog** *(WHO UNLEASH. DOG in-game)* - [DDRKirby(ISQ)](https://ddrkirbyisq.bandcamp.com) *(DDRKIRBY ISQ in-game)*
+**Euphoria** (Rave Racer) - 
+**Bean Brained** - [Adonete](https://www.youtube.com/@Adonete42/)
+**Remix 8 DS** *[Sunsoft 5B Cover](https://www.youtube.com/watch?v=OUfYOx_-B50)* (Rhythm Heaven DS) - Masami Yone
+**Finned Frontier** - ThePurpleAnon *(THEPURPLANON in-game)*
+
+
 ## Disclamer
 This port is **NOT AFFILIATED** with Bandai Namco or the Taiko No Tatsujin franchise in any way, nor uses any music, charts, code or graphics from any Taiko No Tatsujin game.
 
