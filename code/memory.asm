@@ -158,8 +158,6 @@ crown_to_draw: .res 1
 
 frame_timer_score_draw: .res 1
 
-.segment "PRGRAM"
-
 drum_hit_pool: .res 64
 drum_hit_pool_pos: .res 2
 drum_hit_pool_frame: .res 128
@@ -171,5 +169,6 @@ don_color: .res 3
 song_sel_position: .res 3
 options_position: .res 2
 diff_sel_position: .res 6
+controller: .res 1
 
 mods: .res 1

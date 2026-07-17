@@ -1271,9 +1271,9 @@ MAX_SONG_COUNT = $05
 .endproc
 
   update_sram_loc:
-  LDA #$62
+  LDA #$5F
   STA sram_location+1
-  LDA #96
+  LDA #$70
   STA sram_location
 
   LDX song_sel_position
