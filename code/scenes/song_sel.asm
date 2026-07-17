@@ -84,14 +84,14 @@
 
 .proc update_START
   LDA ts_ss_timer+1
-  BNE :+++
+  BNE start_game
 
   LDA song_sel_entry+1
   BNE :++
 
   LDA BTN_Press
   AND #%10010000
-  BEQ :+++
+  BEQ :++
 
   LDA #$03
   JSR famistudio_sfx_sample_play
@@ -99,16 +99,29 @@
   INC song_sel_entry
   LDA song_sel_entry
   CMP #$01
-  BEQ :+
+  BEQ scroll_up
   CMP #$02
-  BNE :+++
-  :
+  BNE start_game
+
+  scroll_up:
   LDA #$07
   STA song_sel_entry+1
 
   LDA song_sel_entry
+  CMP #$01
+  BNE :+
+  LDA BTN_Press
+  AND #BTN_A
+  BEQ :+
+  LDA #$00
+  STA song_sel_entry+1
+  STA song_sel_entry
+  RTS
+
+  :
   CMP #$02
   BNE :+
+
   LDA #$E0
   STA $D000
   LDA #$0A
@@ -121,7 +134,8 @@
   :
 
   RTS
-  :
+
+  start_game:
   CMP #$03
   BNE :++
 
@@ -307,7 +321,8 @@ update_SEL:
 .endproc
 
 .proc options_cursor
-  LDA #$01
+
+	LDA #$01
   STA draw_bg_over_palette
 
   LDA #$04
@@ -347,7 +362,316 @@ update_SEL:
   ROL
   ROL
 
+  LDA BTN_Press
+  AND #BTN_RIGHT
+  BEQ return_right
+
+  JSR move_cursor_right
+
+  return_right:
+
+  LDA BTN_Press
+  AND #BTN_LEFT
+  BEQ return_left
+
+  JSR move_cursor_left
+
+  return_left:
+
+  LDA BTN_Press
+  AND #BTN_DOWN
+  BEQ return_down
+
+  LDA #$04
+  JSR famistudio_sfx_sample_play
+  INC options_position
+  LDA options_position
+  CMP #$06
+  BEQ set_op_pos_to_0
+  CMP #$09
+  BCS set_op_pos_to_7
+
+  return_down:
+
+  LDA BTN_Press
+  AND #BTN_UP
+  BEQ return_up
+
+  LDA #$04
+  JSR famistudio_sfx_sample_play
+  DEC options_position
+  LDA options_position
+  BMI set_op_pos_to_6
+  CMP #$05
+  BEQ set_op_pos_to_9
+  CMP #$08
+  BEQ set_op_pos_to_8
+
+  return_up:
+
+  LDX options_position
+  LDA opt_position_lo, X
+  STA address_table
+  LDA opt_position_hi, X
+  STA address_table+1
+  JMP (address_table)
+
+  set_op_pos_to_0:
+  LDA #$00
+  STA options_position
+  BEQ return_down
+
+  set_op_pos_to_6:
+  LDA #$05
+  STA options_position
+  BNE return_up
+
+  move_cursor_right:
+  LDA options_position
+  BEQ add_6_to_opt_pos
+  CMP #$01
+  BEQ add_6_to_opt_pos
+  CMP #$08
+  BEQ inc_opt_pos
+  CMP #$02
+  BCC :+
+  CMP #$06
+  BCS :+
+  LDA #$04
+  JSR famistudio_sfx_sample_play
+  LDA #$08
+  STA options_position
+  :
   RTS
+
+  LDA #$04
+  JSR famistudio_sfx_sample_play
+  LDA #$08
+  STA options_position
+  RTS
+
+  add_6_to_opt_pos:
+  CLC
+  ADC #$06
+  STA options_position
+
+  LDA #$04
+  JSR famistudio_sfx_sample_play
+  RTS
+
+  inc_opt_pos:
+  LDA #$04
+  JSR famistudio_sfx_sample_play
+  INC options_position
+  RTS
+
+  set_op_pos_to_7:
+  LDA #$06
+  STA options_position
+  RTS
+
+  set_op_pos_to_8:
+  LDA #$07
+  STA options_position
+  RTS
+
+  set_op_pos_to_9:
+  LDA #$08
+  STA options_position
+  RTS
+
+  move_cursor_left:
+  LDA options_position
+  CMP #$06
+  BEQ set_op_pos_to_1
+  CMP #$07
+  BEQ set_op_pos_to_2
+  CMP #$08
+  BEQ set_op_pos_to_3
+  CMP #$09
+  BNE :+
+  LDA #$04
+  JSR famistudio_sfx_sample_play
+  DEC options_position
+  :
+  RTS
+
+  set_op_pos_to_3:
+  LDA #$04
+  JSR famistudio_sfx_sample_play
+  LDA #$02
+  STA options_position
+  RTS
+
+  set_op_pos_to_2:
+  LDA #$04
+  JSR famistudio_sfx_sample_play
+  LDA #$01
+  STA options_position
+  RTS
+
+  set_op_pos_to_1:
+  LDA #$04
+  JSR famistudio_sfx_sample_play
+  LDA #$00
+  STA options_position
+  RTS
+
+  opt_position_lo:
+  .lobytes opt_position_1, opt_position_2, opt_position_3, opt_position_4, opt_position_5
+  .lobytes opt_position_6, opt_position_7, opt_position_8, opt_position_9, opt_position_10
+
+  opt_position_hi:
+  .hibytes opt_position_1, opt_position_2, opt_position_3, opt_position_4, opt_position_5
+  .hibytes opt_position_6, opt_position_7, opt_position_8, opt_position_9, opt_position_10
+
+  opt_position_1:
+  LDA #$64
+	STA $245
+
+  LDA #$36
+  STA $247
+  LDA #$77
+  STA cursor_sett_Y
+
+  LDA #$00
+  STA $246
+  RTS
+
+  opt_position_2:
+  LDA #$64
+	STA $245
+
+  LDA #$36
+  STA $247
+  LDA #$87
+  STA cursor_sett_Y
+
+  LDA #$00
+  STA $246
+  RTS
+
+  opt_position_3:
+  LDA #$64
+	STA $245
+
+  LDA #$88
+  STA $247
+  LDA #$B6
+  STA cursor_sett_Y
+
+  LDA #$40
+  STA $246
+
+  JSR press_A
+  BEQ :+
+
+  LDA mods
+  EOR #%00000001
+  STA mods
+  :
+  RTS
+
+  opt_position_4:
+  LDA #$64
+	STA $245
+
+  LDA #$88
+  STA $247
+  LDA #$BE
+  STA cursor_sett_Y
+
+  LDA #$40
+  STA $246
+
+  JSR press_A
+  BEQ :+
+
+  LDA mods
+  EOR #%00000010
+  STA mods
+  :
+  RTS
+
+  opt_position_5:
+  LDA #$64
+	STA $245
+
+  LDA #$88
+  STA $247
+  LDA #$C6
+  STA cursor_sett_Y
+
+  LDA #$40
+  STA $246
+
+  JSR press_A
+  BEQ :+
+
+  LDA mods
+  EOR #%00000100
+  STA mods
+  :
+  RTS
+
+  opt_position_6:
+  LDA #$64
+	STA $245
+
+  LDA #$88
+  STA $247
+  LDA #$CE
+  STA cursor_sett_Y
+
+  LDA #$40
+  STA $246
+
+  JSR press_A
+  BEQ :+
+
+  LDA mods
+  EOR #%00001000
+  STA mods
+  :
+  RTS
+
+  opt_position_7:
+  LDA #$64
+	STA $245
+
+  LDA #$86
+  STA $247
+  LDA #$77
+  STA cursor_sett_Y
+
+  LDA #$00
+  STA $246
+  RTS
+
+  opt_position_8:
+  LDA #$64
+	STA $245
+
+  LDA #$86
+  STA $247
+  LDA #$87
+  STA cursor_sett_Y
+
+  LDA #$00
+  STA $246
+  RTS
+
+  opt_position_9:
+  RTS
+
+  opt_position_10:
+  RTS
+
+  press_A:
+  LDA BTN_Press
+  AND #BTN_A
+  RTS
+
 .endproc
 
 byte_01:
@@ -563,7 +887,7 @@ MAX_SONG_COUNT = $05
 	drum_sel_base_sprite = $218
 	diff_icon_base_sprtie = $220
 
-.proc update_controller_highlight ; and that donchan icon (not there yet) and the song sel cursor
+.proc update_controller_highlight ; and that donchan icon and the song sel cursor
   LDA PPUSCROLL_Y_speed
   BPL :+
   DEC PPUSCROLL_Y_speed
@@ -618,7 +942,7 @@ MAX_SONG_COUNT = $05
   :
   STA $204
 
-  ; update cursor (song) sprite Y
+  ; update cursor (difficulty) sprite Y
   LDA cursor_diff_Y
   ; set to $F0 if screen isnt 0
   LDX cursor_diff_screen
@@ -627,6 +951,16 @@ MAX_SONG_COUNT = $05
   LDA #$F0
   :
   STA $240
+
+  ; update cursor (settings) sprite Y
+  LDA cursor_sett_Y
+  ; set to $F0 if screen isnt 0
+  LDX cursor_sett_screen
+  INX
+  BEQ :+
+  LDA #$F0
+  :
+  STA $244
 
   ; update controller highlight sprites Y
   LDA controller_h_Y
@@ -753,23 +1087,6 @@ MAX_SONG_COUNT = $05
 .endproc
 
 .proc update_donchan_color
-  LDA song_sel_entry
-  BNE :+++
-
-  LDA BTN_Press
-  AND #BTN_LEFT
-  BEQ :+
-  DEC don_color
-  :
-
-  LDA BTN_Press
-  AND #BTN_RIGHT
-  BEQ :+
-  INC don_color
-  :
-
-  :
-
   LDA don_color
   STA palette+30
   LDA don_color+1
@@ -1199,17 +1516,6 @@ MAX_SONG_COUNT = $05
 
   Y_scroll_table:
   .byte $FF, $01, $02, $0B, $11, $2F, $44, $5E
-
-  song_sel_pal:
-  .byte $0F, $05, $15, $25
-  .byte $0F, $0F, $16, $30
-  .byte $0F, $16, $37, $20
-  .byte $0F, $17, $27, $20
-
-  .byte $0F, $30, $30, $30
-  .byte $0F, $0F, $15, $20
-  .byte $0F, $0F, $2A, $07
-  .byte $0F, $0F, $0F, $0F
 
   controller_highlight_sprite_data:
   .byte $D9, $66, $00, $9E, $D9, $66, $00, $A5, $DB, $68, $00, $B4, $DB, $6A, $00, $C4

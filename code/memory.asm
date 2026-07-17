@@ -169,7 +169,7 @@ drum_spawn_position_kept: .res 128
 .segment "SETT"
 don_color: .res 3
 song_sel_position: .res 3
-
+options_position: .res 2
 diff_sel_position: .res 6
 
 mods: .res 1
