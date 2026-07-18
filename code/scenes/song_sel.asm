@@ -116,9 +116,13 @@
   LDA #$00
   STA song_sel_entry+1
   STA song_sel_entry
+
   RTS
 
   :
+  LDX #$00
+  STX in_color_set
+
   CMP #$02
   BNE :+
 
@@ -132,7 +136,6 @@
   LDA #240
   STA frame_timer_score_draw
   :
-
   RTS
 
   start_game:
