@@ -42,8 +42,6 @@ vblankwait2:
   STA $500, X
   STA $600, X
   STA $700, X
-  STA $6000, X
-  STA $6100, X
   INX
   BNE loop_reset_memory
 
