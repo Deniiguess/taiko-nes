@@ -85,10 +85,10 @@ vblankwait2:
   ; set donchan colors for first boot
   LDA don_color+2
   BNE :+
-  LDA #$16
-  STA don_color
-  LDA #$21
-  STA don_color+1
+  LDA #$19
+  STA don_color_pos
+  LDA #$06
+  STA don_color_pos+1
   LDA #$01
   STA don_color+2
   :

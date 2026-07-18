@@ -82,6 +82,8 @@ frame_timer_controller: .res 1
 
 sram_location: .res 2
 
+in_color_set: .res 1
+
 .segment "BSS"
 drum_data_pool: .res 21
 
@@ -138,6 +140,7 @@ cursor_sett_screen: .res 1
 drum_sel_screen: .res 1
 controller_h_screen: .res 1
 diff_icon_screen: .res 1
+color_sqr_screen: .res 1
 
 cursor_diff_Y: .res 1
 cursor_song_Y: .res 1
@@ -145,6 +148,7 @@ cursor_sett_Y: .res 1
 drum_sel_Y: .res 1
 controller_h_Y: .res 1
 diff_icon_Y: .res 1
+color_sqr_Y: .res 1
 
 diff_sel_load_timer: .res 1
 
@@ -172,3 +176,4 @@ diff_sel_position: .res 6
 controller: .res 1
 
 mods: .res 1
+don_color_pos: .res 2
