@@ -112,17 +112,11 @@
   STA drum_hit_pool_pos
 
   ; setup buttons
-  LDA #%10000000
-  STA don_inputs
-  LDA #%00000110
-  STA don_inputs+1
+  LDA don_inputs+1
   ORA don_inputs
   STA don_inputs+2
 
-  LDA #%01000000
-  STA kat_inputs
-  LDA #%00001001
-  STA kat_inputs+1
+  LDA kat_inputs+1
   ORA kat_inputs
   STA kat_inputs+2
 

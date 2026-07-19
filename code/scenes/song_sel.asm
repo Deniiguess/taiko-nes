@@ -28,6 +28,8 @@
 
   JSR update_top_scores
 
+  JSR update_controls
+
   JMP stay_here
 .endproc
 
@@ -324,6 +326,8 @@ update_SEL:
 .endproc
 
 .proc options_cursor
+	JSR update_controller_type
+
 	LDA #$01
   STA draw_bg_over_palette
 
@@ -553,6 +557,12 @@ update_SEL:
   LDA #$00
   STA $246
   STA $249
+
+  JSR press_A
+  BEQ :+
+  LDA #$00
+  STA controller
+  :
   RTS
 
   opt_position_2:
@@ -567,6 +577,12 @@ update_SEL:
   LDA #$00
   STA $246
   STA $249
+
+  JSR press_A
+  BEQ :+
+  LDA #$02
+  STA controller
+  :
   RTS
 
   opt_position_3:
@@ -677,6 +693,12 @@ update_SEL:
   LDA #$00
   STA $246
   STA $249
+
+  JSR press_A
+  BEQ :+
+  LDA #$01
+  STA controller
+  :
   RTS
 
   opt_position_8:
@@ -691,6 +713,12 @@ update_SEL:
   LDA #$00
   STA $246
   STA $249
+
+  JSR press_A
+  BEQ :+
+  LDA #$03
+  STA controller
+  :
   RTS
 
   opt_position_9:
@@ -826,6 +854,58 @@ update_SEL:
   AND #BTN_A
   RTS
 
+  update_controller_type:
+  LDA #$02
+  STA draw+8
+  STA draw+9
+  STA draw+13
+  STA draw+16
+  STA draw+17
+  STA draw+21
+  LDA #$27
+  STA draw+10
+  STA draw+18
+  LDA #$DA
+  STA draw+11
+  LDA #$E2
+  STA draw+19
+  LDA #$AA
+  STA draw+12
+  STA draw+15
+  STA draw+20
+  STA draw+23
+
+  LDA #$03
+  STA draw+14
+  STA draw+22
+
+
+
+  LDA controller
+  BEQ type_a
+  CMP #$01
+  BEQ type_b
+  CMP #$02
+  BEQ type_c
+  ;type_d
+  LDA #$A5
+  STA draw+23
+  RTS
+
+  type_a:
+  LDA #$5A
+  STA draw+12
+  RTS
+
+  type_b:
+  LDA #$5A
+  STA draw+15
+  RTS
+
+  type_c:
+  LDA #$A5
+  STA draw+20
+  RTS
 .endproc
 
 byte_01:
@@ -1676,6 +1756,63 @@ MAX_SONG_COUNT = $05
   BNE load_score_roll
 
   RTS
+
+.proc update_controls
+	LDA controller
+  BEQ type_a
+  CMP #$01
+  BEQ type_b
+  CMP #$02
+  BEQ type_c
+  ;type_d
+
+  LDA #%00000101
+  STA don_inputs
+  LDA #%00001010
+  STA don_inputs+1
+
+  LDA #%10000000
+  STA kat_inputs
+  LDA #%01000000
+  STA kat_inputs+1
+  RTS
+
+  type_a:
+  LDA #%10000000
+  STA don_inputs
+  LDA #%00000110
+  STA don_inputs+1
+
+  LDA #%01000000
+  STA kat_inputs
+  LDA #%00001001
+  STA kat_inputs+1
+  RTS
+
+  type_b:
+  LDA #%01000000
+  STA don_inputs
+  LDA #%00001001
+  STA don_inputs+1
+
+  LDA #%10000000
+  STA kat_inputs
+  LDA #%00000110
+  STA kat_inputs+1
+  RTS
+
+  type_c:
+  LDA #%10000000
+  STA don_inputs
+  LDA #%01000000
+  STA don_inputs+1
+
+  LDA #%00000101
+  STA kat_inputs
+  LDA #%00001010
+  STA kat_inputs+1
+  RTS
+.endproc
 
   score_text: ; TOP SCORE:
   .byte $53, $4E, $4F, $02, $52, $42, $4E, $51, $44, $64

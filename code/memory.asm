@@ -82,6 +82,7 @@ frame_timer_controller: .res 1
 
 sram_location: .res 2
 
+options_position: .res 1
 in_color_set: .res 1
 
 .segment "BSS"
@@ -171,7 +172,6 @@ drum_spawn_position_kept: .res 128
 .segment "SETT"
 don_color: .res 3
 song_sel_position: .res 3
-options_position: .res 2
 diff_sel_position: .res 6
 controller: .res 1
 
