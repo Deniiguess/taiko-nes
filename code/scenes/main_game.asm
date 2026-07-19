@@ -8,8 +8,8 @@
   STA PPUSCROLL_X_stored
 
   LDA frame_timer
-  AND #$01
-  BNE :+
+  LSR
+  BCS :+
 
   JSR metronome ; update the metronome countdowns
 
@@ -33,6 +33,11 @@
 
   JSR update_attributes ; update the palette attributes
 
+  LDA mods
+  AND #%00001001
+  CMP #%00001001
+  BEQ :+
+
   JSR reset_misc_bit_2 ; set the bit 2 in misc to 0
 
   :
@@ -48,6 +53,16 @@
   :
 
   JSR update_autoplay
+
+  LDA mods
+  AND #%00001001
+  CMP #%00001001
+  BNE :+
+
+  LDA frame_timer
+  LSR
+  BCS :+
+  JSR reset_misc_bit_2 ; set the bit 2 in misc to 0
 
   :
 
