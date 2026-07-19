@@ -142,6 +142,7 @@ drum_sel_screen: .res 1
 controller_h_screen: .res 1
 diff_icon_screen: .res 1
 color_sqr_screen: .res 1
+controller_t_screen: .res 1
 
 cursor_diff_Y: .res 1
 cursor_song_Y: .res 1
@@ -150,6 +151,7 @@ drum_sel_Y: .res 1
 controller_h_Y: .res 1
 diff_icon_Y: .res 1
 color_sqr_Y: .res 1
+controller_t_Y: .res 1
 
 diff_sel_load_timer: .res 1
 

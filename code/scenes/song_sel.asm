@@ -326,6 +326,17 @@ update_SEL:
 .endproc
 
 .proc options_cursor
+	LDX #$00
+	load_controller_t_sprites:
+	LDA controller_type_sprite_data, X
+	STA $25D, X
+	INX
+	CPX #23
+	BNE load_controller_t_sprites
+
+	LDA #$3B
+	STA controller_t_Y
+
 	JSR update_controller_type
 
 	LDA #$01
@@ -890,21 +901,41 @@ update_SEL:
   ;type_d
   LDA #$A5
   STA draw+23
+
+  LDA #$74
+  STA $26D
+  STA $271
   RTS
 
   type_a:
   LDA #$5A
   STA draw+12
+
+  LDA #$74
+  STA $25D
+  STA $265
+  STA $26D
   RTS
 
   type_b:
   LDA #$5A
   STA draw+15
+
+  LDA #$74
+  STA $261
+  STA $269
+  STA $271
   RTS
 
   type_c:
   LDA #$A5
   STA draw+20
+
+  LDA #$74
+  STA $25D
+  STA $261
+  STA $265
+  STA $269
   RTS
 .endproc
 
@@ -1215,6 +1246,30 @@ MAX_SONG_COUNT = $05
   :
   STA $248
 
+  ; update controller type sprites Y
+  LDA controller_t_Y
+  ; set to $F0 if screen isnt 0
+  LDX controller_t_screen
+  INX
+  BEQ :+
+  LDA #$F0
+  :
+  STA $25C
+  ADC #12
+  BCC :+
+  LDA #$F0
+  :
+  STA $260
+  STA $264
+  CLC
+  ADC #12
+  BCC :+
+  LDA #$F0
+  :
+  STA $268
+  STA $26C
+  STA $270
+
   ; update controller highlight sprites Y
   LDA controller_h_Y
   STA c_h_base_sprite
@@ -1314,7 +1369,7 @@ MAX_SONG_COUNT = $05
   STA cursor_diff_Y, X ; store A to load cursor_diff_Y + X
 
   INX ; increase X
-  CPX #$07 ; repeat
+  CPX #$08 ; repeat
   BNE scroll_selection_sprites ; until X is 7
 
   LDA beat_anim_frame
@@ -1847,6 +1902,10 @@ MAX_SONG_COUNT = $05
 
   color_square_sprite_data:
   .byte $70, $03, $A8, $9F, $70, $03, $B0, $9F, $6E, $03, $C8, $9F, $6E, $03, $D0
+
+  controller_type_sprite_data:
+  .byte $72, $00, $3B, $48, $72, $00, $2E, $48, $72, $00, $48, $54, $72, $00, $3B
+  .byte $54, $72, $00, $A0, $54, $72, $00, $C0
 
   color_table:
   .byte $0C, $1C, $2C, $3C ; cyan
