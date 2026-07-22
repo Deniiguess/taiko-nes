@@ -7,6 +7,7 @@ This is an NES port of Taiko No Tatsujin written completely in assembly using th
 **Make sure that you're using a compatible emulator (ex. Mesen). Not all emulators support that mapper chip.**
 
 ## Credits
+### Song List
 **Karippa Boss** - Adonete
 
 **Who Unleashed The Dog** *(WHO UNLEASH. DOG in-game)* - [DDRKirby(ISQ)](https://ddrkirbyisq.bandcamp.com) *(DDRKIRBY ISQ in-game)*
@@ -19,6 +20,8 @@ This is an NES port of Taiko No Tatsujin written completely in assembly using th
 
 **Finned Frontier** - ThePurpleAnon *(THEPURPLANON in-game)*
 
+### Other
+**Results Theme** - FluffyKn1ght
 
 ## Disclamer
 This port is **NOT AFFILIATED** with Bandai Namco or the Taiko No Tatsujin franchise in any way, nor uses any music, charts, code or graphics from any Taiko No Tatsujin game.
