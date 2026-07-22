@@ -90,8 +90,14 @@ taiko_sfx:
 .include "scenes/song_sel.asm"
 .include "scenes/results.asm"
 
+results_song:
+.include "../songs/results.s"
+
 .segment "MAIN_GAME"
 .include "scenes/main_game.asm"
+
+.segment "MUSIC_BANK_RESULTSS"
+.incbin "../songs/results.dmc"
 
 .segment "VECTORS"
 .addr nmi_handler, reset_handler, reset_handler ; irq handler

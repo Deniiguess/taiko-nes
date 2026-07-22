@@ -37,7 +37,7 @@
   STA PPUSCROLL_Y_speed
 
   ; load PRG banks (just in case)
-  LDA #$01
+  LDA #TSCRN_BANK
   STA $E000
 
   ; load CHR banks
@@ -45,7 +45,6 @@
   STA $8000
   LDA #$01
   STA $8800
-  STA song_sel_entry
   LDA #$02
   STA $A000
   LDA #$08
@@ -58,9 +57,9 @@
   LDA #$E0
   STA $C800
   STA $D800
-  LDA #$E1
+  LDA #$0F
   STA $D000
-  LDA #$0D
+  LDA #$0C
   STA $C000
 
   LDA #$00
@@ -70,7 +69,7 @@
   STX ts_ss_timer
   STX ts_ss_timer+1
   loop_reset_palette:
-  LDA song_sel_pal, X
+  LDA results_pal, X
   STA palette, X
   INX
   CPX #$20
@@ -123,29 +122,46 @@
   BPL :-
 
   LDA PPUCTRL
-  ORA #%10000000
+  ORA #%10000010
   STA PPUCTRL_kept
   STA PPUCTRL
   STA $2000
 
-  LDA #MBANKS_BANK
+  LDA #MUSIC_BANK_RESULTSS
   STA $F000
-  JSR init_song
+  ; define song
+  LDX #<results_song ; load low byte to X
+  LDY #>results_song ; load high byte to Y
 
-  LDA #$01
-  JSR famistudio_sfx_sample_play
-
-  LDA #$FF
-  STA song_sel_position+1
+  LDA #$01 ; NTSC speed
+  JSR famistudio_init ; initialize songs
 
   LDA #$04
   STA fade_intensity
-
   LDA #$00
   STA fade_type
-
-  LDA #$01
+  LDA #$04
   STA fade_time
+
+  LDA #$00
+  JSR famistudio_music_play
+
+  LDA #161
+  STA ts_ss_timer
+
+  LDA #120
+  STA ts_ss_timer+1
 
   JMP stay_here
 .endproc
+
+	results_pal:
+  .byte $16, $05, $15, $25
+  .byte $16, $0F, $0F, $20
+  .byte $16, $16, $37, $00
+  .byte $16, $17, $27, $20
+
+  .byte $16, $30, $16, $21
+  .byte $16, $0F, $15, $20
+  .byte $16, $0F, $2A, $07
+  .byte $16, $0F, $0F, $0F
