@@ -1,4 +1,11 @@
 .proc load_main_game
+	LDX drum_bank_position_chart_backup
+	LDA song_address_start_lo, X
+  STA drum_bank_positon
+
+  LDA song_address_start_hi, X
+  STA drum_bank_positon+1
+
   LDA PPUMASK
   AND #%11100111
   STA PPUMASK
@@ -34,6 +41,7 @@
   STA $D800
   LDA #$E0
   STA $C000
+  LDA #$0D
   STA $D000
 
   ; put every sprite offscreen
@@ -55,12 +63,13 @@
   BPL reset_draw
 
   ; reset necessary values
+  LDX #$00
   LDA #$00
-  reset_PRGRAM:
-  STA $6000, X
-  STA $6100, X
+  :
+  STA drum_hit_pool, X
+  STA drum_hit_pool+68, X
   INX
-  BNE reset_PRGRAM
+  BNE :-
 
   reset_positions:
   STA position_8px, X
@@ -70,8 +79,7 @@
 
   ; reset misc bit 2
   ; otherwise drum inputs will be offsynced by -8px
-  LDA misc
-  AND #%11111101
+  LDA #$00
   STA misc
 
   ; set sprite 0 for scrolling
@@ -193,6 +201,9 @@
   STA PPUSCROLL_X
   STA PPUSCROLL_Y
   STA PPUSCROLL_Y_speed
+  STA pause
+  STA tempo+1
+  STA roll_length
 
   ; spawn the sprites for drum hitting
   LDY base_sprite+2

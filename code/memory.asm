@@ -85,6 +85,11 @@ sram_location: .res 2
 options_position: .res 1
 in_color_set: .res 1
 
+pause: .res 2
+pause_pos: .res 1
+
+drum_bank_position_chart_backup: .res 1
+
 .segment "BSS"
 drum_data_pool: .res 21
 

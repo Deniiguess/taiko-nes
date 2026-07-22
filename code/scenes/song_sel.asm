@@ -1,5 +1,3 @@
-.include "../song_info.asm"
-
 .proc song_sel
   LDX #$00
   clear_draw:
@@ -72,11 +70,7 @@
   BNE add_to_chart_diff
   :
 
-  LDA song_address_start_lo, X
-  STA drum_bank_positon
-
-  LDA song_address_start_hi, X
-  STA drum_bank_positon+1
+  STX drum_bank_position_chart_backup
 
   JMP load_main_game
   dont_load_main_game:
@@ -1013,6 +1007,8 @@ MAX_SONG_COUNT = $05
   update_cursor_sprite:
   LDA #$6C
   STA $205
+  LDA #$00
+  STA $206
 
   LDA #BASE_CURSOR_X_POSITION_SONG_SEL
   LDX song_sel_position

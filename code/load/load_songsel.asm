@@ -52,6 +52,8 @@
   LDA #$01
   STA $E000
 
+  STA song_sel_entry
+
   ; load nametable banks
   ; load PPU nametables
   LDA #$E1
@@ -63,6 +65,14 @@
 
   LDA #$00
   STA fade_intensity
+  STA pause
+
+  LDX #$00
+  reset_screen_bytes:
+  STA cursor_diff_screen, X
+  INX
+  CPX #$08
+  BNE reset_screen_bytes
 
   LDA #$1B
   STA cursor_diff_Y
@@ -157,7 +167,7 @@
   STA $B800
   STA $9000
 
-  LDA #$0D
+  LDA #$0C
   STA $C000
 
   LDA #$02

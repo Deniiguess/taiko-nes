@@ -61,6 +61,8 @@ dmc_data:
 .include "load/load_songsel.asm"
 .include "load/load_results.asm"
 
+.include "song_info.asm"
+
 init_song:
 ; define song
   LDX #<$C000 ; load low byte to X
@@ -95,9 +97,20 @@ taiko_sfx:
 .addr nmi_handler, reset_handler, reset_handler ; irq handler
 
 .segment "CHR"
-.incbin "../CHR-ROM/gfx.chr"
-.incbin "../CHR-ROM/gfx2.chr"
+; tiles (12kB)
+.incbin "../CHR-ROM/gfx_drum1.chr" ; includes sprites for the main game
+.incbin "../CHR-ROM/gfx_drum2_sel.chr" ; includes a part of the circle, numbers and some menu stuff as sprites
+.incbin "../CHR-ROM/gfx_font_drumbg1.chr" ; includes the main font and a part of the drum bg tiles
+.incbin "../CHR-ROM/gfx_drumbg2_bg.chr" ; includes the rest of the drum bg tiles and the main game background
+.incbin "../CHR-ROM/gfx_clearbar_pause.chr" ; includes the clear bar tiles and "RETRY" in the pause menu
+.incbin "../CHR-ROM/gfx_title1.chr" ; includes the first part of the title screen tiles
+.incbin "../CHR-ROM/gfx_title2.chr" ; includes the second part of the title screen tiles
+.incbin "../CHR-ROM/gfx_title3.chr" ; includes the third part of the title screen tiles
+.incbin "../CHR-ROM/gfx_fontsongsel.chr" ; includes the font on the song select
+.incbin "../CHR-ROM/gfx_famicom1.chr" ; includes the small famicom controller and a part of the big one
+.incbin "../CHR-ROM/gfx_diffsel.chr" ; includes the difficulty select tiles (both bg and sprites)
+.incbin "../CHR-ROM/gfx_famicom2.chr" ; includes the rest of the famicom controller
+
+; backgrounds (2kB)
 .include "../CHR-ROM/song_sel.asm"
-.include "../CHR-ROM/song_sel.asm"
-; .include "CHR-ROM/options.asm"
-; .include "CHR-ROM/results.asm"
+.include "../CHR-ROM/pause.asm"

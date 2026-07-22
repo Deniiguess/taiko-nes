@@ -1,5 +1,7 @@
 .proc main_game
 
+	JSR update_pause
+
   JSR update_position ; update the position bytes
 
   LDA PPUSCROLL_X_stored
@@ -102,6 +104,12 @@
   INC sprite_flicker_toggle
   JSR update_drum_sprites ; update the drum sprites to clear bar movement
   DEC sprite_flicker_toggle
+
+  LDA pause
+  BEQ :+
+  LDA #$00
+  STA PPUSCROLL_X_speed
+  :
 
   JMP stay_here ; go to the forever loop
 
@@ -1300,6 +1308,25 @@
   JMP load_rol
 
   update_drums_p4:
+  LDX #$00
+  LDA (drum_bank_positon, X)
+  AND #%11000000
+
+  CMP #$40
+  BEQ force_continue
+
+  CMP #$80
+  BNE :+
+  LDA beat_animation
+  EOR #$01
+  STA beat_animation
+  :
+
+  CMP #$C0
+  BNE :+
+  JMP end_song
+  :
+
   LDY drum_hit_pool_frame_pos
   CPY #128
   BNE dont_reset_dhpfp
@@ -1328,24 +1355,6 @@
   STY drum_hit_pool_pos
 
   dont_reset_dhpp:
-  LDX #$00
-  LDA (drum_bank_positon, X)
-  AND #%11000000
-
-  CMP #$40
-  BEQ force_continue
-
-  CMP #$80
-  BNE :+
-  LDA beat_animation
-  EOR #$01
-  STA beat_animation
-  :
-
-  CMP #$C0
-  BNE :+
-  JMP end_song
-  :
 
   LDA (drum_bank_positon, X)
   PHA
@@ -3362,6 +3371,151 @@ drum_sprite_tile_big:
   bg_pal_4_table_B:
   .byte $11, $21, $30
 
+.endproc
+
+.proc update_pause
+	LDA BTN_Press
+	AND #BTN_START
+	BNE pause_unpause_game
+
+	LDA pause
+	BEQ :++
+	LDA #$00
+	STA PPUSCROLL_X_speed
+
+	PLA
+	PLA
+
+	LDA BTN_Press
+	AND #BTN_SELECT
+	BEQ :+
+	JMP load_main_game
+	:
+
+	JSR update_pause_pos
+
+	JMP stay_here
+	:
+	RTS
+
+	pause_unpause_game:
+	LDA pause
+	PHA
+	EOR #$01
+	STA pause
+	JSR famistudio_music_pause
+
+	PLA
+	BEQ :+
+	LDA #$00
+  STA $8000
+  LDA #$01
+  STA $8800
+  LDA #$0F
+  STA $9800
+
+  LDA #$F0
+  STA $204
+
+  LDA PPUMASK
+  AND #%11101111
+  STA $2001
+
+	LDA pause+1
+	STA tempo+1
+	RTS
+	:
+	LDA #$0F
+  STA $8000
+  LDA #$0F
+  STA $8800
+  LDA #$01
+  STA $9800
+
+  LDA #$6F
+	STA $204
+	LDA #$E4
+	STA $205
+	LDA #$02
+	STA $206
+	LDA #$58
+	STA $207
+
+	LDA #$00
+	STA pause_pos
+
+	LDA tempo+1
+	STA pause+1
+	RTS
+
+	update_pause_pos:
+	LDA BTN_Press
+	AND #BTN_DOWN
+	BEQ :+
+	LDA #$02
+	JSR famistudio_sfx_sample_play
+	INC pause_pos
+	LDA pause_pos
+	CMP #$03
+	BCC :+
+	LDA #$00
+	STA pause_pos
+	:
+
+	LDA BTN_Press
+	AND #BTN_UP
+	BEQ :+
+	LDA #$02
+	JSR famistudio_sfx_sample_play
+	DEC pause_pos
+	BPL :+
+	LDA #$02
+	STA pause_pos
+	:
+
+	LDA BTN_Press
+	AND #BTN_A
+	PHA
+
+	LDA pause_pos
+	BEQ continue
+	CMP #$01
+	BEQ retry
+
+	LDA #$8F
+	STA $204
+	LDA #$68
+	STA $207
+
+	PLA
+	BEQ :+
+	JMP load_song_sel
+	:
+	RTS
+
+	continue:
+	LDA #$6F
+	STA $204
+	LDA #$58
+	STA $207
+
+	PLA
+	BEQ :+
+	JMP pause_unpause_game
+	:
+	RTS
+
+	retry:
+	LDA #$7F
+	STA $204
+	LDA #$64
+	STA $207
+
+	PLA
+	BEQ :+
+	JMP load_main_game
+	:
+	RTS
 .endproc
 
 inc_dbp:

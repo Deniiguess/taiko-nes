@@ -131,7 +131,24 @@ loop:
   STA PPUSCROLL_Y
   :
 
+  LDA pause
+  BEQ :+
+  LDA #$00
+  STA $2005
+  STA $2005
+
+  LDA PPUCTRL
+  AND #$FE
+  ORA #$02
+  STA $2000
+  :
+
   JSR famistudio_update ; update audio
+
+  LDA pause
+  BEQ :+
+  JMP leave_nmi
+  :
 
   LDA misc
   AND #$01
@@ -144,12 +161,6 @@ loop:
   JSR sprite_flicker ; change sprite priorities
   :
 
-  JSR update_controller_1 ; update controller holding and presses
-  ; less cycles and bytes if TWO_CONTROLLERS is disabled
-
-  LDA PRGROM_buf
-  STA $F800 ; restore PRG-ROM read-write because the sound engine does stuff with it
-
   INC frame_timer ; increase frame_timer
 
   leave_nmi:
@@ -159,6 +170,12 @@ loop:
   LDA misc
   AND #%01111111
   STA misc
+
+  JSR update_controller_1 ; update controller holding and presses
+  ; less cycles and bytes if TWO_CONTROLLERS is disabled
+
+  LDA PRGROM_buf
+  STA $F800 ; restore PRG-ROM read-write because the sound engine does stuff with it
 
   pla ; restore Y
   tay
