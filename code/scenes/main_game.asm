@@ -3434,9 +3434,9 @@ drum_sprite_tile_big:
 
   LDA #$6F
 	STA $204
-	LDA #$E4
+	LDA #$F6
 	STA $205
-	LDA #$02
+	LDA #$00
 	STA $206
 	LDA #$58
 	STA $207

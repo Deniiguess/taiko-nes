@@ -175,6 +175,28 @@
   STA sprite_flicker_toggle
 
   LDX #$00
+  TXA ; LDA #$00
+  reset_stats:
+  STA score, X
+  INX
+  CPX #26
+  BNE reset_stats
+
+  TAX
+  reset_clearbar:
+  STA clear_bar, X
+  INX
+  CPX #13
+  BNE reset_clearbar
+
+  TAX
+  reset_drum_sprites:
+  STA slot_number, X
+  INX
+  CPX #47
+  BNE reset_drum_sprites
+
+  TAX
 
   ; set tempo
   LDA mods
@@ -204,6 +226,11 @@
   STA pause
   STA tempo+1
   STA roll_length
+  STA roll_length+1
+  STA roll_time
+  STA input_rate_timer
+  STA drum_input_don_time
+  STA drum_input_kat_time
 
   ; spawn the sprites for drum hitting
   LDY base_sprite+2
