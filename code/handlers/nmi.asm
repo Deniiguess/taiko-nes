@@ -138,6 +138,7 @@ loop:
   LDA #$00
   STA $2005
   STA $2005
+  STA $5800
 
   LDA PPUCTRL
   AND #$FE
@@ -704,18 +705,6 @@ split_x_scrolling:
   LDA #%11001000
   STA $5800
   CLI
-
-  LDA frame_timer
-  LSR
-  BCS :+
-  LDA base_sprite+2
-  CLC
-  ROL
-  ROL
-  ROL
-  TAX
-  LDA base_sprite_pool, X
-  STA base_sprite_drum_hit
   :
 
   RTS

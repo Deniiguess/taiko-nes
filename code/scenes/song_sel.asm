@@ -16,6 +16,8 @@
   ; update the cursor positions and selections and stuff
   JSR update_cursor_position
 
+  JSR update_donchan
+
   ; update the song selection song preview
   JSR update_song_select_value
 
@@ -1205,6 +1207,7 @@ MAX_SONG_COUNT = $05
 	c_h_base_sprite = $208
 	drum_sel_base_sprite = $218
 	diff_icon_base_sprtie = $220
+	donchan_base_sprite = $274
 
 .proc update_controller_highlight ; and that donchan icon and the cursors
 ; future deni here: basiaclly almost every sprite
@@ -1258,6 +1261,15 @@ MAX_SONG_COUNT = $05
   CPX #$20 ; repeat $20 times
   BNE load_difficulty_icons
 
+  ; load the don
+  LDX #$00 ; load $00 to X (prepare loop)
+  load_the_don:
+  LDA donchan_sprite_data, X
+  STA donchan_base_sprite, X
+  INX ; increase X
+  CPX #$20 ; repeat $20 times
+  BNE load_the_don
+
   ; hell yeah i dont have to comment this because i already did
   ; update cursor (song) sprite Y
   LDA cursor_song_Y
@@ -1307,6 +1319,28 @@ MAX_SONG_COUNT = $05
   :
   STA $248
 
+  ; update donchan sprite Y
+  LDA don_Y
+  ; set to $F0 if screen isnt 0
+  LDX don_screen
+  INX
+  BEQ :+
+  LDA #$F0
+  :
+  STA donchan_base_sprite
+  STA donchan_base_sprite+4
+  STA donchan_base_sprite+8
+  STA donchan_base_sprite+12
+  CLC
+  ADC #$10
+  BCC :+
+  LDA #$F0
+  :
+  STA donchan_base_sprite+16
+  STA donchan_base_sprite+20
+  STA donchan_base_sprite+24
+  STA donchan_base_sprite+28
+
   ; update controller type sprites Y
   LDA controller_t_Y
   ; set to $F0 if screen isnt 0
@@ -1316,7 +1350,8 @@ MAX_SONG_COUNT = $05
   LDA #$F0
   :
   STA $25C
-  ADC #12
+  CLC
+  ADC #13
   BCC :+
   LDA #$F0
   :
@@ -1431,8 +1466,8 @@ MAX_SONG_COUNT = $05
   STA cursor_diff_Y, X ; store A to load cursor_diff_Y + X
 
   INX ; increase X
-  CPX #$08 ; repeat
-  BNE scroll_selection_sprites ; until X is 7
+  CPX #$09 ; repeat 9 times
+  BNE scroll_selection_sprites
 
   LDA beat_anim_frame ; load beat_anim_frame to A
   BNE :+ ; if its not $00, skip some code
@@ -1943,6 +1978,20 @@ MAX_SONG_COUNT = $05
 ; oke done finally
 ; its 2:07AM
 
+; nvm im adding new code ffs
+
+.proc update_donchan
+	LDA beat_anim_frame
+	BEQ :+
+	LDA #$10
+	STA $9800
+	RTS
+	:
+	LDA #$11
+	STA $9800
+	RTS
+.endproc
+
   score_text: ; TOP SCORE:
   .byte $53, $4E, $4F, $02, $52, $42, $4E, $51, $44, $64
 
@@ -1980,6 +2029,13 @@ MAX_SONG_COUNT = $05
   controller_type_sprite_data:
   .byte $72, $00, $3B, $48, $72, $00, $2E, $48, $72, $00, $48, $54, $72, $00, $3B
   .byte $54, $72, $00, $A0, $54, $72, $00, $C0
+
+  base_don_Y = $BF
+	base_don_X = $B0
+
+	donchan_sprite_data:
+	.byte base_don_Y, $C0, $03, base_don_X, base_don_Y, $C2, $03, base_don_X+8, base_don_Y, $C4, $03, base_don_X+16, base_don_Y, $C6, $03, base_don_X+24
+	.byte base_don_Y+16, $C8, $03, base_don_X, base_don_Y+16, $CA, $03, base_don_X+8, base_don_Y+16, $CC, $03, base_don_X+16, base_don_Y+16, $CE, $03, base_don_X+24
 
   color_table:
   .byte $0C, $1C, $2C, $3C ; cyan

@@ -1,4 +1,6 @@
 .proc load_main_game
+	SEI
+
 	LDX drum_bank_position_chart_backup
 	LDA song_address_start_lo, X
   STA drum_bank_positon
@@ -36,6 +38,10 @@
   STA $A800
   LDA #$04
   STA $B000
+  LDA #$0E
+  STA $9000
+  LDA #$01
+  STA $9800
   LDA #$E1
   STA $C800
   STA $D800
@@ -82,16 +88,6 @@
   LDA #$00
   STA misc
 
-  ; set sprite 0 for scrolling
-  LDA #$68
-  STA $200
-  LDA #$06
-  STA $201
-  LDA #%00100000
-  STA $202
-  LDA #$00
-  STA $203
-
   LDA #10
   STA end_song_timer
 
@@ -115,6 +111,15 @@
   INX
   CPX #$1C
   BNE loop_reset_palette
+
+  LDA PPUSTATUS
+  LDA #$3F
+  STA PPUADDR
+  LDA #$1F
+  STA PPUADDR
+  LDA #$0F
+  STA palette+31
+  STA PPUDATA
 
   LDA #$FF
   STA drum_hit_pool_pos
@@ -325,10 +330,6 @@
   :
 
   LDX song_sel_position ; load the song number to X
-
-  LDA misc
-  AND #$FE ; disable sprite 0 hit
-  STA misc
 
   LDA PPUMASK
   ORA #%00011000

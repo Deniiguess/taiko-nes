@@ -121,3 +121,9 @@ results_song:
 ; backgrounds (2kB)
 .include "../CHR-ROM/song_sel.asm"
 .include "../CHR-ROM/pause.asm"
+
+; donchan frames
+.incbin "../CHR-ROM/don_frame_1.chr"
+.incbin "../CHR-ROM/don_frame_2.chr"
+.incbin "../CHR-ROM/don_sett_1.chr"
+.incbin "../CHR-ROM/don_sett_2.chr"

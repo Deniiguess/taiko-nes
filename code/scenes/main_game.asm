@@ -110,15 +110,7 @@
   STA PPUSCROLL_X_speed
   :
 
-  LDX base_sprite+2
-  LDA #$00
-  LDY #$00
-  clear_drum_hit_sprites:
-  STA $22C, X
-  INX
-  INY
-  CPY #20
-  BNE clear_drum_hit_sprites
+  JSR update_don
 
   JMP stay_here ; go to the forever loop
 
@@ -2355,7 +2347,7 @@ tempo_8_table_2x:
 	LDY #$00
   set_circle_sprite_data:
   LDA circle_sprite_data, Y
-  STA $204, Y
+  STA $204, X
   INX
   INY
   CPY #24
@@ -2475,7 +2467,7 @@ tempo_8_table_2x:
   load_roll_gfx:
   DEC roll_time
 
-  LDA #$8F
+  LDA #$62
   STA $22C, Y
   STA $230, Y
   STA $234, Y
@@ -2632,7 +2624,6 @@ tempo_8_table_2x:
 
 
 .proc update_score_combo
-  LDX drum_hit_pool_pos+1
   LDA drum_hit_pool, X
   AND #%00000100
   BEQ dont_check_for_big
@@ -3388,18 +3379,12 @@ drum_sprite_tile_big:
 	BNE pause_unpause_game
 
 	LDA pause
-	BEQ :++
+	BEQ :+
 	LDA #$00
 	STA PPUSCROLL_X_speed
 
 	PLA
 	PLA
-
-	LDA BTN_Press
-	AND #BTN_SELECT
-	BEQ :+
-	JMP load_main_game
-	:
 
 	JSR update_pause_pos
 
@@ -3420,11 +3405,12 @@ drum_sprite_tile_big:
   STA $8000
   LDA #$01
   STA $8800
-  LDA #$0F
-  STA $9800
+  LDA #$0E
+  STA $9000
 
+  LDX base_sprite+2
   LDA #$F0
-  STA $204
+  STA $200, X
 
   LDA PPUMASK
   AND #%11101111
@@ -3434,21 +3420,22 @@ drum_sprite_tile_big:
 	STA tempo+1
 	RTS
 	:
-	LDA #$0F
+	LDX base_sprite+2
+	LDA #$17
   STA $8000
-  LDA #$0F
+  LDA #$17
   STA $8800
-  LDA #$01
-  STA $9800
+  LDA #$17
+  STA $9000
 
   LDA #$6F
-	STA $204
+	STA $200, X
 	LDA #$F6
-	STA $205
+	STA $201, X
 	LDA #$00
-	STA $206
+	STA $202, X
 	LDA #$58
-	STA $207
+	STA $203, X
 
 	LDA #$00
 	STA pause_pos
@@ -3486,15 +3473,16 @@ drum_sprite_tile_big:
 	AND #BTN_A
 	PHA
 
+	LDX base_sprite+2
 	LDA pause_pos
 	BEQ continue
 	CMP #$01
 	BEQ retry
 
 	LDA #$8F
-	STA $204
+	STA $200, X
 	LDA #$68
-	STA $207
+	STA $203, X
 
 	PLA
 	BEQ :+
@@ -3504,9 +3492,9 @@ drum_sprite_tile_big:
 
 	continue:
 	LDA #$6F
-	STA $204
+	STA $200, X
 	LDA #$58
-	STA $207
+	STA $203, X
 
 	PLA
 	BEQ :+
@@ -3516,9 +3504,9 @@ drum_sprite_tile_big:
 
 	retry:
 	LDA #$7F
-	STA $204
+	STA $200, X
 	LDA #$64
-	STA $207
+	STA $203, X
 
 	PLA
 	BEQ :+
@@ -3538,6 +3526,27 @@ inc_dbp:
   :
   STA drum_bank_positon
   RTS
+
+.proc update_don
+	LDX #$00
+	load_don_p1:
+	LDA donchan_sprite_pool, X
+	STA $200, X
+	INX
+	CPX #64
+	BNE load_don_p1
+	RTS
+
+	base_don_Y = $14
+	base_don_X = $14
+
+	donchan_sprite_pool:
+	.byte base_don_Y, $80, $03, base_don_X, base_don_Y, $82, $03, base_don_X+8, base_don_Y, $84, $03, base_don_X+16, base_don_Y, $86, $03, base_don_X+24
+	.byte base_don_Y+16, $88, $03, base_don_X, base_don_Y+16, $8A, $03, base_don_X+8, base_don_Y+16, $8C, $03, base_don_X+16, base_don_Y+16, $8E, $03, base_don_X+24
+	.byte base_don_Y, $90, $00, base_don_X, base_don_Y, $92, $00, base_don_X+8, base_don_Y, $94, $00, base_don_X+16, base_don_Y, $96, $00, base_don_X+24
+	.byte base_don_Y+16, $98, $00, base_don_X, base_don_Y+16, $9A, $00, base_don_X+8, base_don_Y+16, $9C, $00, base_don_X+16, base_don_Y+16, $9E, $00, base_don_X+24
+.endproc
+
 
 main_g_pal:
   .byte $0F, $21, $16, $20

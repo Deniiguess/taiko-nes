@@ -1,4 +1,5 @@
 .proc load_results
+	SEI
   LDA PPUMASK
   AND #%11100111
   STA PPUMASK

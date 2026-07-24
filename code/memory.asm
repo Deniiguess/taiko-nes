@@ -90,8 +90,6 @@ pause_pos: .res 1
 
 drum_bank_position_chart_backup: .res 1
 
-base_sprite_drum_hit: .res 1
-
 .segment "BSS"
 drum_data_pool: .res 21
 
@@ -150,6 +148,7 @@ controller_h_screen: .res 1
 diff_icon_screen: .res 1
 color_sqr_screen: .res 1
 controller_t_screen: .res 1
+don_screen: .res 1
 
 cursor_diff_Y: .res 1
 cursor_song_Y: .res 1
@@ -159,6 +158,7 @@ controller_h_Y: .res 1
 diff_icon_Y: .res 1
 color_sqr_Y: .res 1
 controller_t_Y: .res 1
+don_Y: .res 1
 
 diff_sel_load_timer: .res 1
 

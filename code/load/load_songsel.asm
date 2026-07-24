@@ -1,4 +1,5 @@
 .proc load_song_sel
+	SEI
   LDA PPUMASK
   AND #%11100111
   STA PPUMASK
@@ -84,6 +85,8 @@
   STA drum_sel_Y
   LDA #$2E
   STA diff_icon_Y
+  LDA #base_don_Y
+  STA don_Y
 
   LDX #$00
   STX ts_ss_timer
@@ -204,6 +207,7 @@
 
   LDA #$00
   STA fade_type
+  STA options_position
 
   LDA #$01
   STA fade_time
