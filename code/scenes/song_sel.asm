@@ -1892,7 +1892,7 @@ MAX_SONG_COUNT = $05
 
   ; all of these below are just loading the proper buttons matching the controller type
   ; im not also gonna bother commenting this sorry
-  
+
   LDA #%00000101
   STA don_inputs
   LDA #%00001010
@@ -1942,7 +1942,6 @@ MAX_SONG_COUNT = $05
 .endproc
 ; oke done finally
 ; its 2:07AM
-; uhh helo?
 
   score_text: ; TOP SCORE:
   .byte $53, $4E, $4F, $02, $52, $42, $4E, $51, $44, $64
