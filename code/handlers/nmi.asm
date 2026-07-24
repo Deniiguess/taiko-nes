@@ -699,12 +699,24 @@ split_x_scrolling:
 .proc check_for_irq_timer
 	LDA scene
   BNE :+
-  LDA #$00
-  STA was_in_irq
+  LDA #$F6
   STA $5000
-  LDA #%11000111
+  LDA #%11001000
   STA $5800
   CLI
+
+  LDA frame_timer
+  LSR
+  BCS :+
+  LDA base_sprite+2
+  CLC
+  ROL
+  ROL
+  ROL
+  TAX
+  LDA base_sprite_pool, X
+  STA base_sprite_drum_hit
   :
+
   RTS
 .endproc

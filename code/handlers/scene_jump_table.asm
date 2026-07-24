@@ -9,13 +9,6 @@
   ORA #$80
   STA misc ; set the last bit in misc to 1
 
-  LDA scene
-  BNE :++
-  :
-  LDA was_in_irq
-  BEQ :-
-  :
-
   LDX scene
   LDA scenes_lo, X
   STA address_table

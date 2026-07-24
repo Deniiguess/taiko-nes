@@ -90,7 +90,7 @@ pause_pos: .res 1
 
 drum_bank_position_chart_backup: .res 1
 
-was_in_irq: .res 1
+base_sprite_drum_hit: .res 1
 
 .segment "BSS"
 drum_data_pool: .res 21

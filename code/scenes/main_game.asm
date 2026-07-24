@@ -110,6 +110,16 @@
   STA PPUSCROLL_X_speed
   :
 
+  LDX base_sprite+2
+  LDA #$00
+  LDY #$00
+  clear_drum_hit_sprites:
+  STA $22C, X
+  INX
+  INY
+  CPY #20
+  BNE clear_drum_hit_sprites
+
   JMP stay_here ; go to the forever loop
 
 .endproc
@@ -2341,11 +2351,11 @@ tempo_8_table_2x:
 
 
 .proc update_bars
-  LDX base_sprite+2
-  LDY #$00
+	LDX base_sprite+2
+	LDY #$00
   set_circle_sprite_data:
   LDA circle_sprite_data, Y
-  STA $204, X
+  STA $204, Y
   INX
   INY
   CPY #24
