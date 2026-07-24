@@ -1942,6 +1942,7 @@ MAX_SONG_COUNT = $05
 .endproc
 ; oke done finally
 ; its 2:07AM
+; uhh helo?
 
   score_text: ; TOP SCORE:
   .byte $53, $4E, $4F, $02, $52, $42, $4E, $51, $44, $64
