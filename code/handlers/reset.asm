@@ -1,5 +1,7 @@
 .proc reset_handler
-  SEI ; disable IRQ
+  SEI ; enable IRQ for mapper
+  LDX #$40
+  STX $4017 ; disable the cycle timer
   CLD ; clear decimal
   LDX #$40
   ;STX $4017
@@ -100,5 +102,7 @@ vblankwait2:
   STA $2000 ; PPUCTRL
   LDA #%00011110  ; turn on screen
   STA PPUMASK
+  NOP
+  NOP
   ; the scene jump table is below
 .endproc

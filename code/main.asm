@@ -52,6 +52,7 @@ dmc_data:
 .segment "START"
 
 .include "handlers/nmi.asm"
+.include "handlers/irq.asm"
 .include "handlers/reset.asm"
 
 .include "handlers/scene_jump_table.asm"
@@ -100,7 +101,7 @@ results_song:
 .incbin "../songs/results.dmc"
 
 .segment "VECTORS"
-.addr nmi_handler, reset_handler, reset_handler ; irq handler
+.addr nmi_handler, reset_handler, irq_handler
 
 .segment "CHR"
 ; tiles (12kB)

@@ -168,6 +168,7 @@
   ; metronome_v to start executing at beat 0 instead of beat 1
   LDA #$01
   STA metronome_v
+  STA was_in_irq
 
   ; enable sprite flicker
   LDA sprite_flicker_toggle
@@ -327,7 +328,7 @@
   LDX song_sel_position ; load the song number to X
 
   LDA misc
-  ORA #$01
+  AND #$FE ; disable sprite 0 hit
   STA misc
 
   LDA PPUMASK

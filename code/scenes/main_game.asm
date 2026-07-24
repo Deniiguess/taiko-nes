@@ -1,5 +1,4 @@
 .proc main_game
-
 	JSR update_pause
 
   JSR update_position ; update the position bytes
@@ -2466,7 +2465,7 @@ tempo_8_table_2x:
   load_roll_gfx:
   DEC roll_time
 
-  LDA #$62
+  LDA #$8F
   STA $22C, Y
   STA $230, Y
   STA $234, Y

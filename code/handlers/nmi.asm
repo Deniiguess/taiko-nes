@@ -5,6 +5,8 @@
   TYA
   PHA
 
+  JSR check_for_irq_timer
+
   ; update PPUMASK
   LDA PPUMASK
   STA $2001 ; PPUMASK
@@ -40,7 +42,7 @@
 
   escape_draw_palette:
 
-    ; update sprites
+  ; update sprites
   LDA #$00
   STA $2003 ; OAMADDR
   LDA #$02
@@ -691,5 +693,18 @@ split_x_scrolling:
   STA base_sprite+3
   PLA
   STA base_sprite+1
+  RTS
+.endproc
+
+.proc check_for_irq_timer
+	LDA scene
+  BNE :+
+  LDA #$00
+  STA was_in_irq
+  STA $5000
+  LDA #%11000111
+  STA $5800
+  CLI
+  :
   RTS
 .endproc

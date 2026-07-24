@@ -3,9 +3,18 @@
   AND #$80
   BNE stay_here ; loop stay_here if the last bit in misc is 1
 
+  CLI
+
   LDA misc
   ORA #$80
   STA misc ; set the last bit in misc to 1
+
+  LDA scene
+  BNE :++
+  :
+  LDA was_in_irq
+  BEQ :-
+  :
 
   LDX scene
   LDA scenes_lo, X
