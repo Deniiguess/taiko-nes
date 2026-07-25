@@ -52,8 +52,14 @@
 
   ; put every sprite offscreen
   LDX #$00
-  put_sprites_offscreen:
+  LDA #$00
+  set_sprites_to_00:
+  STA $200, X
+  INX
+  BNE set_sprites_to_00
+
   LDA #$F0
+  put_sprites_offscreen:
   STA $200, X
   INX
   INX
@@ -236,6 +242,11 @@
   STA input_rate_timer
   STA drum_input_don_time
   STA drum_input_kat_time
+  STA beat_anim_frame
+  STA beat_animation
+
+  LDA #$02
+  STA beat_anim_frame+1
 
   ; spawn the sprites for drum hitting
   LDY base_sprite+2

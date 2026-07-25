@@ -122,8 +122,14 @@ results_song:
 .include "../CHR-ROM/song_sel.asm"
 .include "../CHR-ROM/pause.asm"
 
-; donchan frames
-.incbin "../CHR-ROM/don_frame_1.chr"
-.incbin "../CHR-ROM/don_frame_2.chr"
+; donchan frames (10kB)
+.incbin "../CHR-ROM/don_beat_1.chr"
+.incbin "../CHR-ROM/don_beat_2.chr"
 .incbin "../CHR-ROM/don_sett_1.chr"
 .incbin "../CHR-ROM/don_sett_2.chr"
+.incbin "../CHR-ROM/don_full_1.chr"
+.incbin "../CHR-ROM/don_full_2.chr"
+.incbin "../CHR-ROM/don_miss.chr"
+.incbin "../CHR-ROM/don_altb_1.chr"
+.incbin "../CHR-ROM/don_altb_2.chr"
+.incbin "../CHR-ROM/don_jump.chr"

@@ -72,7 +72,7 @@
   reset_screen_bytes:
   STA cursor_diff_screen, X
   INX
-  CPX #$08
+  CPX #$09
   BNE reset_screen_bytes
 
   LDA #$1B
@@ -85,7 +85,7 @@
   STA drum_sel_Y
   LDA #$2E
   STA diff_icon_Y
-  LDA #base_don_Y
+  LDA #base_don_Y_set
   STA don_Y
 
   LDX #$00
@@ -177,6 +177,7 @@
   STA scene
   LDA #$00
   STA PPUSCROLL_X
+  STA beat_anim_frame
 
   LDA PPUMASK
   ORA #%00011000

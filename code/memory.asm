@@ -63,14 +63,15 @@ kat_inputs: .res 3
 drum_inc: .res 1
 
 beat_animation: .res 1
-beat_anim_frame: .res 1
+beat_anim_frame: .res 2
+jump_frame: .res 1
+drum_beat_bank: .res 1
 
 sprite_flicker_toggle: .res 1
 
 clear_bar: .res 8
 clear_bar_inputs: .res 2
 clear_bar_input_miss: .res 2
-clear_bar_timer: .res 1
 
 ts_ss_timer: .res 3
 
@@ -89,6 +90,8 @@ pause: .res 2
 pause_pos: .res 1
 
 drum_bank_position_chart_backup: .res 1
+
+base_don_Y: .res 1
 
 .segment "BSS"
 drum_data_pool: .res 21

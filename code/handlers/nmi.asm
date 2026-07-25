@@ -612,27 +612,6 @@ split_x_scrolling:
   STA $2000
   RTS
 
-.proc metronome
-  LDA misc ; execute every 8 pixel scrolls
-  AND #%00000010
-  BEQ end
-
-  DEC metronome_v
-  LDX metronome_v
-  BNE end ; decrease metronome_v(alue) and branch if its not 0
-
-  LDX #$04
-  STX metronome_v ; reset metronome_v
-
-  LDA misc
-  ORA #%00000100
-  STA misc ; flip the 3rd bit in misc
-
-  end:
-
-  RTS
-.endproc
-
 .proc sprite_flicker
   LDA sprite_flicker_toggle
   EOR #$02

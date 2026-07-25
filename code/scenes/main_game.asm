@@ -294,6 +294,10 @@
   add_points:
   LDA score_to_add
   ADC #45
+  LDX beat_animation
+  BPL :+
+  ADC #10
+  :
   LDX combo
   BNE add_max
   LDX combo+1
@@ -670,6 +674,10 @@
   JMP exit_input
 
   set_good:
+  LDA beat_animation
+  AND #%10111111
+  STA beat_animation
+
   LDA #$02
   STA input_rate
   INC combo+3
@@ -678,6 +686,10 @@
   JMP clear_drum
 
   set_ok:
+  LDA beat_animation
+  AND #%10111111
+  STA beat_animation
+
   LDA #$01
   STA input_rate
   INC combo+3
@@ -686,6 +698,10 @@
   JMP clear_drum
 
   set_bad:
+  LDA beat_animation
+  ORA #%01000000
+  STA beat_animation
+
   LDX slot_number
   LDA drum_sprite_A, X
   ORA #%00000001
@@ -713,6 +729,10 @@
   add_points:
   LDA score_to_add
   ADC #45
+  LDX beat_animation
+  BPL :+
+  ADC #10
+  :
   LDX combo
   BNE add_max
   LDX combo+1
@@ -796,6 +816,14 @@
   add_points_ok:
   LDA score_to_add
   ADC #23
+  LDX beat_animation
+  BPL :+
+  ADC #5
+  :
+  LDX beat_animation
+  BPL :+
+  ADC #5
+  :
   LDX combo
   BNE add_max_ok
   LDX combo+1
@@ -1175,6 +1203,10 @@
   CMP #$03
   BEQ dont_reset_combo
 
+  LDA beat_animation
+  ORA #%01000000
+  STA beat_animation
+
   LDA #$00
   STA combo
   STA combo+1
@@ -1319,7 +1351,7 @@
   CMP #$80
   BNE :+
   LDA beat_animation
-  EOR #$01
+  EOR #$80
   STA beat_animation
   :
 
@@ -2680,6 +2712,12 @@ tempo_8_table_2x:
   SBC #$0A
   STA combo+1, X
   INC combo, X
+  CPX #$02
+  BNE :+
+  LDA beat_animation
+  ORA #$20
+  STA beat_animation
+  :
   JMP decrease_combo
 
   escape_combo:
@@ -3195,14 +3233,26 @@ drum_sprite_tile_big:
 
 .endproc
 
+.proc metronome
+  LDA misc ; execute every 8 pixel scrolls
+  AND #%00000010
+  BEQ end
 
+  DEC metronome_v
+  LDX metronome_v
+  BNE end ; decrease metronome_v(alue) and branch if its not 0
 
+  LDX #$04
+  STX metronome_v ; reset metronome_v
 
+  LDA misc
+  ORA #%00000100
+  STA misc ; flip the 3rd bit in misc
 
+  end:
 
-
-
-
+  RTS
+.endproc
 
 .proc update_clear_bar
   LDA clear_bar_inputs
@@ -3287,6 +3337,10 @@ drum_sprite_tile_big:
 
   escape_cbL:
 
+  LDA beat_animation
+  AND #$FE
+  STA beat_animation
+
   LDX #$02
   LDA clear_bar+7
   CMP #$08
@@ -3321,6 +3375,9 @@ drum_sprite_tile_big:
   RTS
 
   set_bg_palette_3:
+  LDA beat_animation
+  ORA #$01
+  STA beat_animation
   LDA bg_pal_3_table, X
   STA palette+13, X
   DEX
@@ -3328,29 +3385,19 @@ drum_sprite_tile_big:
   RTS
 
   set_bg_palette_4:
-  LDA bg_attr_position+2
-  BEQ set_bg_palette_4_a
-
-  LDA clear_bar_timer
-  BNE set_bg_palette_4_b
+  LDA beat_anim_frame+1
+  LSR
+  BCC set_bg_palette_4_b
   JMP set_bg_palette_3
 
-  set_bg_palette_4_a:
-  LDA #$02
-  STA clear_bar_timer
-  LDA bg_pal_4_table_A, X
-  STA palette+13, X
-  DEX
-  BPL set_bg_palette_4_a
-
-  RTS
-
   set_bg_palette_4_b:
-  LDA bg_pal_4_table_B, X
+  LDA beat_animation
+  ORA #$01
+  STA beat_animation
+  LDA bg_pal_4_table, X
   STA palette+13, X
   DEX
   BPL set_bg_palette_4_b
-  DEC clear_bar_timer
   RTS
 
 
@@ -3365,11 +3412,8 @@ drum_sprite_tile_big:
   bg_pal_3_table:
   .byte $01, $11, $21
 
-  bg_pal_4_table_A:
-  .byte $21, $30, $30
-
-  bg_pal_4_table_B:
-  .byte $11, $21, $30
+  bg_pal_4_table:
+  .byte $11, $21, $31
 
 .endproc
 
@@ -3418,14 +3462,15 @@ drum_sprite_tile_big:
 
 	LDA pause+1
 	STA tempo+1
-	RTS
+	DEC beat_anim_frame+1
+	JMP do_action_at_beat
 	:
 	LDX base_sprite+2
-	LDA #$17
+	LDA #$1F
   STA $8000
-  LDA #$17
+  LDA #$1F
   STA $8800
-  LDA #$17
+  LDA #$1F
   STA $9000
 
   LDA #$6F
@@ -3528,25 +3573,228 @@ inc_dbp:
   RTS
 
 .proc update_don
+	LDA #$14
+	STA base_don_Y
+
+	JSR update_don_timer
+	LDA beat_anim_frame+1
+	CMP #$09
+	BNE :+
+	LDA #$01
+	STA beat_anim_frame+1
+	:
+
+	LSR
+	BCS :+
+
 	LDX #$00
-	load_don_p1:
-	LDA donchan_sprite_pool, X
+	load_don_1:
+	LDA donchan_sprite_pool_1, X
 	STA $200, X
 	INX
 	CPX #64
-	BNE load_don_p1
+	BNE load_don_1
+	JMP :++
+
+	:
+	LDX #$00
+	load_don_2:
+	LDA donchan_sprite_pool_2, X
+	STA $200, X
+	INX
+	CPX #64
+	BNE load_don_2
+
+	:
+
+	JSR update_jump
+
+	LDX #$00
+	LDA base_don_Y
+	load_don_Y_1:
+	STA $200, X
+	INX
+	INX
+	INX
+	INX
+	CPX #32
+	BNE load_don_Y_1
+
+	CLC
+	ADC #$10
+
+	load_don_Y_2:
+	STA $200, X
+	INX
+	INX
+	INX
+	INX
+	CPX #64
+	BNE load_don_Y_2
+
 	RTS
 
-	base_don_Y = $14
 	base_don_X = $14
 
-	donchan_sprite_pool:
-	.byte base_don_Y, $80, $03, base_don_X, base_don_Y, $82, $03, base_don_X+8, base_don_Y, $84, $03, base_don_X+16, base_don_Y, $86, $03, base_don_X+24
-	.byte base_don_Y+16, $88, $03, base_don_X, base_don_Y+16, $8A, $03, base_don_X+8, base_don_Y+16, $8C, $03, base_don_X+16, base_don_Y+16, $8E, $03, base_don_X+24
-	.byte base_don_Y, $90, $00, base_don_X, base_don_Y, $92, $00, base_don_X+8, base_don_Y, $94, $00, base_don_X+16, base_don_Y, $96, $00, base_don_X+24
-	.byte base_don_Y+16, $98, $00, base_don_X, base_don_Y+16, $9A, $00, base_don_X+8, base_don_Y+16, $9C, $00, base_don_X+16, base_don_Y+16, $9E, $00, base_don_X+24
+	donchan_sprite_pool_1:
+	.byte $00, $80, $03, base_don_X, $00, $82, $03, base_don_X+8, $00, $84, $03, base_don_X+16, $00, $86, $03, base_don_X+24
+	.byte $00, $90, $00, base_don_X, $00, $92, $00, base_don_X+8, $00, $94, $00, base_don_X+16, $00, $96, $00, base_don_X+24
+
+	.byte $00, $88, $03, base_don_X, $00, $8A, $03, base_don_X+8, $00, $8C, $03, base_don_X+16, $00, $8E, $03, base_don_X+24
+	.byte $00, $98, $00, base_don_X, $00, $9A, $00, base_don_X+8, $00, $9C, $00, base_don_X+16, $00, $9E, $00, base_don_X+24
+
+	donchan_sprite_pool_2:
+	.byte $00, $A0, $03, base_don_X, $00, $A2, $03, base_don_X+8, $00, $A4, $03, base_don_X+16, $00, $A6, $03, base_don_X+24
+	.byte $00, $B0, $00, base_don_X, $00, $B2, $00, base_don_X+8, $00, $B4, $00, base_don_X+16, $00, $B6, $00, base_don_X+24
+
+	.byte $00, $A8, $03, base_don_X, $00, $AA, $03, base_don_X+8, $00, $AC, $03, base_don_X+16, $00, $AE, $03, base_don_X+24
+	.byte $00, $B8, $00, base_don_X, $00, $BA, $00, base_don_X+8, $00, $BC, $00, base_don_X+16, $00, $BE, $00, base_don_X+24
+
+	update_don_timer:
+	LDA beat_anim_frame
+	SEC
+	SBC PPUSCROLL_X_speed
+	STA beat_anim_frame
+	BCS :++
+	JSR do_action_at_beat
+	LDA tempo
+	AND #$40
+	BEQ :+
+	LDA beat_anim_frame
+	CLC
+	ADC #32
+	STA beat_anim_frame
+	RTS
+	:
+	LDA beat_anim_frame
+	CLC
+	ADC #16
+	STA beat_anim_frame
+	:
+	RTS
+
+	update_jump:
+	LDA jump_frame
+	BMI :+
+	RTS
+	:
+	INC jump_frame
+	LDA jump_frame
+	AND #$7F
+	TAX
+	LDA don_Y_heights, X
+	STA base_don_Y
+
+	LDA jump_frame
+	CMP #$1B+$80
+	BNE :+
+	LDA #$00
+	STA jump_frame
+	LDA beat_animation
+	AND #%11011111
+	STA beat_animation
+	DEC beat_anim_frame+1
+	JMP do_action_at_beat
+	:
+
+	LDA jump_frame
+	CMP #$06+$80
+	BCC jump_start_finish
+	CMP #$13+$80
+	BCS jump_start_finish
+
+	LDX #$00
+	load_don_1_jump:
+	LDA donchan_sprite_pool_1, X
+	STA $200, X
+	INX
+	CPX #64
+	BNE load_don_1_jump
+	RTS
+
+	jump_start_finish:
+	LDX #$00
+	load_don_2_jump:
+	LDA donchan_sprite_pool_2, X
+	STA $200, X
+	INX
+	CPX #64
+	BNE load_don_2_jump
+	RTS
+
+	don_Y_heights:
+
+	.byte $14, $14, $14, $14, $14, $14, $11, $0E, $0D, $0D, $0C, $0C, $0B, $0B, $0C, $0D, $0E, $10, $13, $14, $14, $14, $14, $14, $14, $14, $14, $14
 .endproc
 
+.proc do_action_at_beat
+	LDA beat_animation
+	BIT byte_20
+	BNE beat_anim_jump
+	AND #$40
+	BNE beat_anim_miss
+	LDA beat_animation
+	BMI beat_anim_alt
+	CMP #$01
+	BEQ beat_anim_full
+
+	beat_anim_norm:
+	LDA #$0E
+	STA $9000
+	INC beat_anim_frame+1
+	LDX beat_anim_frame+1
+	CPX #$08
+	BCC :+
+	LDA #$0F
+	STA $9000
+	RTS
+
+	beat_anim_jump:
+	LDA #$17
+	STA $9000
+	INC beat_anim_frame+1
+	LDA jump_frame
+	ORA #%10000000
+	STA jump_frame
+	RTS
+
+	beat_anim_full:
+	LDA #$12
+	STA $9000
+	INC beat_anim_frame+1
+	LDA beat_anim_frame+1
+	TAX
+	LSR
+	LSR
+	BCC :+
+	LDA #$13
+	STA $9000
+	:
+	RTS
+
+	beat_anim_alt:
+	LDA #$15
+	STA $9000
+	INC beat_anim_frame+1
+	LDA beat_anim_frame+1
+	TAX
+	LSR
+	LSR
+	BCC :+
+	LDA #$16
+	STA $9000
+	:
+	RTS
+
+	beat_anim_miss:
+	LDA #$14
+	STA $9000
+	INC beat_anim_frame+1
+	RTS
+
+	byte_20:
+	.byte $20
+.endproc
 
 main_g_pal:
   .byte $0F, $21, $16, $20

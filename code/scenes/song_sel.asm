@@ -2030,12 +2030,12 @@ MAX_SONG_COUNT = $05
   .byte $72, $00, $3B, $48, $72, $00, $2E, $48, $72, $00, $48, $54, $72, $00, $3B
   .byte $54, $72, $00, $A0, $54, $72, $00, $C0
 
-  base_don_Y = $BF
-	base_don_X = $B0
+  base_don_Y_set = $BF
+	base_don_X_set = $B0
 
 	donchan_sprite_data:
-	.byte base_don_Y, $C0, $03, base_don_X, base_don_Y, $C2, $03, base_don_X+8, base_don_Y, $C4, $03, base_don_X+16, base_don_Y, $C6, $03, base_don_X+24
-	.byte base_don_Y+16, $C8, $03, base_don_X, base_don_Y+16, $CA, $03, base_don_X+8, base_don_Y+16, $CC, $03, base_don_X+16, base_don_Y+16, $CE, $03, base_don_X+24
+	.byte base_don_Y_set, $C0, $03, base_don_X_set, base_don_Y_set, $C2, $03, base_don_X_set+8, base_don_Y_set, $C4, $03, base_don_X_set+16, base_don_Y_set, $C6, $03, base_don_X_set+24
+	.byte base_don_Y_set+16, $C8, $03, base_don_X_set, base_don_Y_set+16, $CA, $03, base_don_X_set+8, base_don_Y_set+16, $CC, $03, base_don_X_set+16, base_don_Y_set+16, $CE, $03, base_don_X_set+24
 
   color_table:
   .byte $0C, $1C, $2C, $3C ; cyan
