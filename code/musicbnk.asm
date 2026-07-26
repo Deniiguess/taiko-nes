@@ -8,7 +8,7 @@
 .include "../songs/songselect.s"
 
 .segment "MUSIC_BANK_1"
-.include "../songs/fluffy.s" ; include song
+.include "../songs/treeclimberboss.s" ; include song
 
 .segment "MUSIC_BANK_2"
 .include "../songs/whounleashedthedog.s" ; include song

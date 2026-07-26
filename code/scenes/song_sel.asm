@@ -1199,6 +1199,9 @@ MAX_SONG_COUNT = $05
 
   leave_lucs:
   STA $243 ; store result of A to $243 (X position)
+
+  LDA #$00
+  STA $242
   RTS
 
   BASE_CURSOR_X_POSITION_DIFF_SEL = $40
