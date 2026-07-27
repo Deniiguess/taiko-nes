@@ -58,7 +58,7 @@
   LDA #$E0
   STA $C800
   STA $D800
-  LDA #$0F
+  LDA #$1F
   STA $D000
   LDA #$0C
   STA $C000

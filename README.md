@@ -6,6 +6,10 @@ This is an NES port of Taiko No Tatsujin written completely in assembly using th
 
 **Make sure that you're using a compatible emulator (ex. Mesen). Not all emulators support that mapper chip.**
 
+**There has been little to no hardware testing. If you try it on hardware please let me know.**
+
+**This is for NTSC systems only, PAL systems are not compatible.**
+
 ## Credits
 ### Song List
 **Karippa Boss** - Adonete
