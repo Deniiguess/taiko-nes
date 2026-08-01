@@ -1,12 +1,4 @@
 .proc load_title_screen
-  ; setup sprite 0 hit
-  LDA #$C8
-  STA $200
-  LDA #$06
-  STA $201
-  LDA #%00100000
-  STA $202
-
   ; load PRG banks
   LDA #$01
   STA $E000
@@ -90,10 +82,15 @@
   INX
   BNE load_title_bg_4
 
+  LDA #<title_screen_irq_init
+  STA irq_address
+  LDA #>title_screen_irq_init
+  STA irq_address+1
+
   RTS
 .endproc
 
-.segment "TITL_SCEN_SONG_SEL_RES"
+.segment "TITL_SCEN_SONG_SEL"
 title_bg_1:
 	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
 	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00

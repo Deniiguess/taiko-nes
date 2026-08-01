@@ -2152,19 +2152,23 @@
 
 
   end_song:
-  DEC end_song_timer
-  LDA end_song_timer
+  LDA results_transition_time
   BNE :+
+  INC results_transition_time
 
-  JMP load_results
-  :
+  LDA #MUSIC_BANK_RESULTSS
+  STA $F000
+  ; define song
+  LDX #<results_song ; load low byte to X
+  LDY #>results_song ; load high byte to Y
 
-  CMP #$09
-  BNE :+
-  LDA #$02
-  STA fade_time
-  LDA #$01
-  STA fade_type
+  LDA #$01 ; NTSC speed
+  JSR famistudio_init ; initialize songs
+
+  LDA #$00
+  JSR famistudio_music_play
+
+  JMP done_drawing_small_don
   :
 
   RTS
@@ -3794,6 +3798,363 @@ inc_dbp:
 
 	byte_20:
 	.byte $20
+.endproc
+
+.proc set_scroll_score_init
+	PHA
+
+	LDA #$90
+	STA $5000
+	LDA #$53+$80
+	STA $5800
+
+	LDA #<set_scroll_score
+  STA irq_address
+  LDA #>set_scroll_score
+  STA irq_address+1
+
+	PLA
+	RTI
+.endproc
+
+.proc set_scroll_score
+	PHA
+	TXA
+	PHA
+
+	LDA #$00
+	STA $5800
+	STA $2005
+	STA $2005
+
+	LDA PPUCTRL_kept_2
+  STA $2000
+
+  LDA #<set_scroll_score_init
+  STA irq_address
+  LDA #>set_scroll_score_init
+  STA irq_address+1
+
+  LDX results_transition_time
+  BEQ :+
+  DEX
+
+  LDA #<results_transition_low
+  STA irq_address
+  LDA #>results_transition_low
+  STA irq_address+1
+
+  LDA irq_cycle_timer_results_tr_lo, X
+  STA $5000
+  LDA irq_cycle_timer_results_tr_hi, X
+  STA $5800
+
+  LDA PPUMASK
+  STA $2001
+
+  LDA results_transition_time
+  CMP #16
+  BCS :+
+  INC results_transition_time
+
+  :
+
+  PLA
+  TAX
+  PLA
+	RTI
+
+	irq_cycle_timer_results_tr_lo:
+	.byte $12, $9B, $24, $AD, $66, $BF, $48, $D1, $5A, $E3, $6C, $F5, $7E, $07, $90
+
+	irq_cycle_timer_results_tr_hi:
+	.byte $C2, $C5, $C9, $CC, $D0, $D3, $D7, $DA, $DE, $E1, $E5, $E8, $EC, $F0, $F3
+
+.endproc
+
+.proc results_transition_low
+	PHA
+	LDA #$0C
+	STA PPUADDR
+	LDA #$00
+	STA PPUADDR
+	STA $5800
+
+	LDA PPUMASK
+  AND #%11101111
+  STA $2001
+
+	LDA #<results_transition_high
+  STA irq_address
+  LDA #>results_transition_high
+  STA irq_address+1
+
+	PLA
+	RTI
+.endproc
+
+.proc results_transition_high
+	PHA
+	TXA
+	PHA
+	TYA
+	PHA
+
+	LDX results_transition_time+1
+	CPX #150
+	BCC :+
+	NOP
+	NOP
+	NOP
+	NOP
+	NOP
+	LDA PPUMASK
+	AND #%11101111
+	STA PPUMASK
+	LDA PPUCTRL
+  ORA #%00000011
+  STA $2000
+  DEC results_transition_time
+	DEC results_transition_time
+  LDX results_transition_time
+  LDA #$00
+  STA $2005
+  LDA #$10
+  STA $2005
+	CPX #$02
+	BCS :+
+
+	LDA #$00
+	STA PPUADDR
+	STA PPUADDR
+	STA results_transition_time
+	STA $5800
+
+	LDA #<return_from_irq
+  STA irq_address
+  LDA #>return_from_irq
+  STA irq_address+1
+
+	JMP end_irq_high
+	:
+
+  LDA PPUCTRL
+  ORA #%00000011
+  STA $2000
+
+  LDA PPUMASK
+  AND #%11101111
+  STA $2001
+
+  LDX results_transition_time
+  DEX
+  DEX
+
+  LDA #$00
+  STA $2005
+  LDA scroll_Y_pool, X
+  STA $2005
+
+	LDA #<set_scroll_game
+  STA irq_address
+  LDA #>set_scroll_game
+  STA irq_address+1
+
+  LDA irq_cycle_timer_results_tr_lo, X
+	STA $5000
+	LDA irq_cycle_timer_results_tr_hi, X
+	STA $5800
+
+	LDA results_transition_time+1
+	CMP #150
+	BCC :+
+	LDA irq_cycle_timer_results_tr_lo_up, X
+	STA $5000
+	LDA irq_cycle_timer_results_tr_hi_up, X
+	STA $5800
+	LDA scroll_Y_pool_up_hi, X
+  STA PPUADDR
+  LDA scroll_Y_pool_up_lo, X
+  STA PPUADDR
+	:
+
+	LDX results_transition_time
+	CPX #14
+	BCC :+
+	LDA #<set_scroll_gamealt
+  STA irq_address
+  LDA #>set_scroll_gamealt
+  STA irq_address+1
+  CPX #16
+  BCC :+
+  LDA #<results_transition_low
+  STA irq_address
+  LDA #>results_transition_low
+  STA irq_address+1
+  INC results_transition_time+1
+	:
+
+	LDA results_transition_time+1
+	CMP #$01
+	BNE end_irq_high
+
+	JSR load_results
+
+	end_irq_high:
+
+	PLA
+  TAY
+	PLA
+	TAX
+	PLA
+	RTI
+
+	irq_cycle_timer_results_tr_lo:
+	.byte $CE, $40, $B2, $24, $96, $08, $7A, $EC, $5E, $D0, $42, $B4, $08, $80, $DA
+
+	irq_cycle_timer_results_tr_hi:
+	.byte $FC, $F9, $F5, $F2, $EE, $EB, $E7, $E3, $E0, $DC, $D9, $D5, $D2, $CE, $CA
+
+	irq_cycle_timer_results_tr_lo_up:
+	.byte $1E, $95, $00, $70, $E5, $53, $C5, $3A, $B3, $25, $97, $09, $53
+
+	irq_cycle_timer_results_tr_hi_up:
+	.byte $FD, $F9, $F6, $F2, $EE, $EB, $E7, $E4, $E0, $DD, $D9, $D6, $D2
+
+	scroll_Y_pool:
+	.byte $E8, $E0, $D8, $D0, $C8, $C0, $B8, $B0, $A8, $A0, $98, $90, $88, $80, $78
+
+	scroll_Y_pool_up_lo:
+	.byte $A0, $80, $60, $40, $20, $00, $E0, $C0, $A0, $80, $60, $40, $20
+
+	scroll_Y_pool_up_hi:
+	.byte $0F, $1F, $0F, $0F, $0F, $1F, $0E, $0E, $0E, $0E, $0E, $1E, $0E
+
+.endproc
+
+.proc set_scroll_game
+	PHA
+	TXA
+	PHA
+	TYA
+	PHA
+
+	LDX results_transition_time
+  DEX
+  DEX
+
+  LDA PPUSCROLL_X
+  LSR
+  LSR
+  LSR
+  STA scroll_temp
+  LDA irq_ppu_render_loc_lo, X
+  CLC
+  ADC scroll_temp
+  SEC
+  TAY
+
+  LDA irq_ppu_render_loc_hi, X
+	STA PPUADDR
+	LDA PPUCTRL
+	STA $2000
+	LDA PPUMASK
+	STA $2001
+	STY PPUADDR
+	LDA PPUSCROLL_X
+	SBC PPUSCROLL_X_speed
+	STA $2005
+	LDA #$00
+	STA $2005
+
+	LDA irq_cycle_timer_results_tr_lo, X
+	STA $5000
+	LDA irq_cycle_timer_results_tr_hi, X
+	STA $5800
+
+	LDA #<set_scroll_score
+  STA irq_address
+  LDA #>set_scroll_score
+  STA irq_address+1
+
+  PLA
+  TAY
+	PLA
+	TAX
+	PLA
+	RTI
+
+	irq_ppu_render_loc_lo:
+	.byte $20, $40, $60, $80, $A0, $C0, $E0, $00, $20, $40, $60, $80, $A0, $C0, $E0
+
+	irq_ppu_render_loc_hi:
+	.byte $00, $00, $00, $00, $00, $00, $00, $01, $01, $01, $01, $01, $01, $01, $01
+
+	irq_cycle_timer_results_tr_lo:
+	.byte $75, $07, $99, $DB, $BD, $4F, $E1, $73, $05, $97, $29, $BB
+
+	irq_cycle_timer_results_tr_hi:
+	.byte $D7, $DB, $DE, $E2, $E5, $E9, $EC, $F0, $F4, $F7, $FB, $FE
+.endproc
+
+.proc set_scroll_gamealt
+	PHA
+	TXA
+	PHA
+
+	LDX results_transition_time
+  DEX
+  DEX
+
+  LDA irq_ppu_render_loc_hi, X
+  LDY irq_ppu_render_loc_lo, X
+	STA PPUADDR
+	LDA PPUCTRL
+	STA $2000
+	LDA PPUMASK
+	STA $2001
+	STY PPUADDR
+	LDA #$00
+	STA $2005
+	STA $2005
+
+	LDA irq_cycle_timer_results_tr_lo, X
+	STA $5000
+	LDA irq_cycle_timer_results_tr_hi, X
+	STA $5800
+
+	LDA #<results_transition_low
+  STA irq_address
+  LDA #>results_transition_low
+  STA irq_address+1
+
+  LDA results_transition_time
+  CMP #16
+  BCS :+
+  INC results_transition_time
+	PLA
+	TAX
+	PLA
+	RTI
+
+  :
+
+	PLA
+	TAX
+	PLA
+	RTI
+
+	irq_ppu_render_loc_lo:
+	.byte $20, $40, $60, $80, $A0, $C0, $E0, $00, $20, $40, $60, $80, $A0, $C0, $E0
+
+	irq_ppu_render_loc_hi:
+	.byte $00, $00, $00, $00, $00, $00, $00, $01, $01, $01, $01, $01, $01, $01, $01
+
+	irq_cycle_timer_results_tr_lo:
+	.byte $75, $07, $99, $DB, $BD, $4F, $E1, $73, $05, $97, $29, $D3, $20, $20
+
+	irq_cycle_timer_results_tr_hi:
+	.byte $D7, $DB, $DE, $E2, $E5, $E9, $EC, $F0, $F4, $F7, $FB, $FE, $F1, $F9
 .endproc
 
 main_g_pal:

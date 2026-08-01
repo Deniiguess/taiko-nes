@@ -86,19 +86,20 @@ taiko_sfx:
 .include "../songs/taiko.s"
 
 
-.segment "TITL_SCEN_SONG_SEL_RES"
+.segment "TITL_SCEN_SONG_SEL"
 .include "scenes/title_screen.asm"
 .include "scenes/song_sel.asm"
-.include "scenes/results.asm"
 
-results_song:
-.include "../songs/results.s"
+.segment "RESULTS"
+.include "scenes/results.asm"
 
 .segment "MAIN_GAME"
 .include "scenes/main_game.asm"
 
 .segment "MUSIC_BANK_RESULTSS"
 .incbin "../songs/results.dmc"
+results_song:
+.include "../songs/results.s"
 
 .segment "VECTORS"
 .addr nmi_handler, reset_handler, irq_handler
@@ -133,3 +134,9 @@ results_song:
 .incbin "../CHR-ROM/don_altb_1.chr"
 .incbin "../CHR-ROM/don_altb_2.chr"
 .incbin "../CHR-ROM/don_jump.chr"
+
+; tiles continuation because im not shifiting the banks (1kB)
+.incbin "../CHR-ROM/gfx_results.chr"
+
+; background continuation same reason (1kB)
+.include "../CHR-ROM/results_trans.asm"

@@ -5,7 +5,11 @@
   TYA
   PHA
 
-  JSR check_for_irq_timer
+  LDA #$40
+  STA $5000
+  LDA #%11110111
+  STA $5800
+  CLI
 
   ; update PPUMASK
   LDA PPUMASK
@@ -673,18 +677,5 @@ split_x_scrolling:
   STA base_sprite+3
   PLA
   STA base_sprite+1
-  RTS
-.endproc
-
-.proc check_for_irq_timer
-	LDA scene
-  BNE :+
-  LDA #$F6
-  STA $5000
-  LDA #%11001000
-  STA $5800
-  CLI
-  :
-
   RTS
 .endproc

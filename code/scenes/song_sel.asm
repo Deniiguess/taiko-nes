@@ -264,8 +264,6 @@ update_SEL:
 
   ; load the proper CPU banks for the song previews
   LDA #MBANKSS_BANK
-  STA $E800
-  LDA #MBANKSS_BANK+1
   STA $F000
   JSR init_song
 
@@ -999,8 +997,6 @@ MAX_SONG_COUNT = $05
 
   ; set up PRG-ROM banks
   LDA #MBANKSS_BANK
-  STA $E800
-  LDA #MBANKSS_BANK+1
   STA $F000
   JSR init_song
   LDA #$02 ; play DON sample

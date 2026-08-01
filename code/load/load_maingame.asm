@@ -44,6 +44,7 @@
   STA $9800
   LDA #$E1
   STA $C800
+  LDA #$19
   STA $D800
   LDA #$E0
   STA $C000
@@ -341,6 +342,11 @@
   :
 
   LDX song_sel_position ; load the song number to X
+
+  LDA #<set_scroll_score_init
+  STA irq_address
+  LDA #>set_scroll_score_init
+  STA irq_address+1
 
   LDA PPUMASK
   ORA #%00011000

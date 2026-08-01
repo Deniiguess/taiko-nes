@@ -18,7 +18,7 @@ dbank4:
 dbank5:
 .byte $C4, $01
 .byte $40, $0F
-.byte $C0, $00
+.byte $C0, $00, $00
 
 dbank6:
 .byte $C3, $01

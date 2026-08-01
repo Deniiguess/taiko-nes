@@ -93,6 +93,9 @@ drum_bank_position_chart_backup: .res 1
 
 base_don_Y: .res 1
 
+results_transition_time: .res 2
+scroll_temp: .res 1
+
 .segment "BSS"
 drum_data_pool: .res 21
 
@@ -180,6 +183,8 @@ drum_hit_pool_pos: .res 2
 drum_hit_pool_frame: .res 128
 drum_hit_pool_frame_pos: .res 2
 drum_spawn_position_kept: .res 128
+
+irq_address: .res 2
 
 .segment "SETT"
 don_color: .res 3

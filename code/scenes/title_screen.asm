@@ -1,11 +1,6 @@
 .proc title_screen
   INC PPUSCROLL_X
 
-  LDX #$B0
-  :
-  INX
-  BNE :-
-
   JSR update_title_screen_palette
 
   JSR update_ts_frame_timer
@@ -28,22 +23,6 @@
   LDA #$81
   STA ts_ss_timer+1
   :
-
-  LDA #$00
-  STA $2005
-  LDA #$00
-  STA $2005
-
-  :
-  LDA PPUSTATUS
-  AND #%01000000
-  BEQ :-
-
-  LDA PPUSCROLL_X
-  EOR #$FF
-  STA $2005
-  LDA #$00
-  STA $2005
 
   JMP stay_here
 .endproc
@@ -91,4 +70,60 @@
   RTS
   :
   JMP load_song_sel
+.endproc
+
+.proc title_screen_irq_init
+	PHA
+  LDA #<title_screen_irq_1
+  STA irq_address
+  LDA #>title_screen_irq_1
+  STA irq_address+1
+
+  LDA #$00
+	STA $5000
+	LDA #$70+$80
+	STA $5800
+
+  PLA
+	RTI
+.endproc
+
+.proc title_screen_irq_1
+	PHA
+	LDA #$00
+  STA $2005
+  STA $2005
+
+  LDA #<title_screen_irq_2
+  STA irq_address
+  LDA #>title_screen_irq_2
+  STA irq_address+1
+
+  LDA #$00
+	STA $5000
+	LDA #$35+$80
+	STA $5800
+
+  PLA
+	RTI
+.endproc
+
+.proc title_screen_irq_2
+	PHA
+	LDA PPUSCROLL_X
+  EOR #$FF
+  STA $2005
+  LDA #$00
+  STA $2005
+
+  LDA #<title_screen_irq_init
+  STA irq_address
+  LDA #>title_screen_irq_init
+  STA irq_address+1
+
+  LDA #$00
+  STA $5800
+
+  PLA
+	RTI
 .endproc

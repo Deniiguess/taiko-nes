@@ -173,6 +173,11 @@
   LDA #$0C
   STA $C000
 
+  LDA #<return_from_irq
+  STA irq_address
+  LDA #>return_from_irq
+  STA irq_address+1
+
   LDA #$02
   STA scene
   LDA #$00
@@ -216,7 +221,7 @@
   JMP stay_here
 .endproc
 
-.segment "TITL_SCEN_SONG_SEL_RES"
+.segment "TITL_SCEN_SONG_SEL"
 diff_sel_1:
 	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
 	.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
