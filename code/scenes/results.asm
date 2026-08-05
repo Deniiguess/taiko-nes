@@ -1,12 +1,29 @@
 ; not much here rn
 
 .proc results
+	LDA #$01
+	STA draw_bg_over_palette
+
 	LDA results_transition_time
 	BEQ :+
 
 	JMP load_background_result
 
 	:
+
+	LDA PPUMASK
+	ORA #%00010000
+	STA PPUMASK
+
+	LDA frame_timer
+	LSR
+	BCC :+
+	JSR update_countdown
+	:
+
+	JSR update_inputs_results
+
+	JSR update_transition
 
   JMP stay_here
 .endproc
@@ -17,10 +34,7 @@
 	reset_draw:
 	STA draw, X
 	INX
-	CPX #$E0
-	BNE reset_draw
-	LDA #$01
-	STA draw_bg_over_palette
+	BPL reset_draw
 
 	LDX results_transition_time+1
 	DEX
@@ -46,7 +60,8 @@
   .lobytes background_result_load_29, background_result_load_30, background_result_load_31, background_result_load_32
   .lobytes background_result_load_33, background_result_load_34, background_result_load_35, background_result_load_36
   .lobytes background_result_load_37, background_result_load_38, background_result_load_39, background_result_load_40
-  .lobytes background_result_load_41
+
+  .lobytes save_scores
 
   background_jt_hi:
   .hibytes background_result_load_1, background_result_load_2, background_result_load_3, background_result_load_4
@@ -59,9 +74,534 @@
   .hibytes background_result_load_29, background_result_load_30, background_result_load_31, background_result_load_32
   .hibytes background_result_load_33, background_result_load_34, background_result_load_35, background_result_load_36
   .hibytes background_result_load_37, background_result_load_38, background_result_load_39, background_result_load_40
-  .hibytes background_result_load_41
+
+  .hibytes save_scores
 
 .endproc
+
+.proc save_scores
+	LDA #$00
+	STA crown
+
+	LDA mods
+	LSR
+	BCS dont_save_score
+	LDA clear_bar+6
+	BEQ :+
+	LDA #$01
+	STA crown
+
+	LDA bad_count
+	BNE :+
+	LDA bad_count+1
+	BNE :+
+	LDA bad_count+2
+	BNE :+
+	LDA bad_count+3
+	BNE :+
+	LDA #$02
+	STA crown
+	:
+
+	LDY #$00
+	save_score:
+	LDA score, Y
+	CMP (sram_location), Y
+	BCC :+
+	BEQ :+
+	STA (sram_location), Y
+	CPY #$06
+	BCS :+
+	LDA #$01
+	STA high_score
+	:
+	INY
+	CPY #27
+	BNE save_score
+
+	dont_save_score:
+
+	JMP stay_here
+.endproc
+
+.proc update_countdown
+	LSR
+	BCC :+
+	LDX results_jt_position
+	CPX #$07
+	BCS :+
+	LDA #$00
+  LDX #FAMISTUDIO_SFX_CH0
+  JSR famistudio_sfx_play
+	:
+
+	LDX results_jt_position
+	LDA countdown_jt_lo, X
+	STA address_table
+	LDA countdown_jt_hi, X
+	STA address_table+1
+	JMP (address_table)
+
+	countdown_jt_lo:
+	.lobytes update_countdown_bar, update_countdown_score, update_countdown_combo, update_countdown_roll
+	.lobytes update_countdown_good, update_countdown_ok, update_countdown_bad, draw_crown, nothing
+
+	countdown_jt_hi:
+	.hibytes update_countdown_bar, update_countdown_score, update_countdown_combo, update_countdown_roll
+	.hibytes update_countdown_good, update_countdown_ok, update_countdown_bad, draw_crown, nothing
+.endproc
+
+.proc update_countdown_bar
+	LDA ran_results_setup
+	BNE :+
+
+	LDA #$01
+	STA draw
+	STA ran_results_setup
+	LDA #$00
+	STA draw+1
+	LDA #$20
+	STA draw+2
+	LDA #$E8
+	STA draw+3
+	LDA #$D2
+	STA draw+4
+	STA base_clear_bar_tile_results
+
+	LDX #$00
+	STX results_position
+	:
+
+	LDX results_position
+
+	loop_clear_bar:
+	LDA clear_bar, X
+	BEQ :++
+
+	LDA clear_bar_results_inc
+	AND #$04
+	CMP #$04
+	BNE :+
+	INC draw+3
+	LDA base_clear_bar_tile_results
+	STA draw+4
+	LDA clear_bar_results_inc
+	AND #%11111000
+	EOR #$80
+	STA clear_bar_results_inc
+	BMI :+
+	DEC draw+3
+	:
+
+	INC draw+4
+	DEC clear_bar, X
+	INC clear_bar_results_inc
+	RTS
+	:
+
+	INC results_position
+	INC draw+3
+	LDA base_clear_bar_tile_results
+	STA draw+4
+
+	INX
+	CPX #$08
+	BNE :+
+	LDA #$00
+	STA draw
+	STA ran_results_setup
+	INC results_jt_position
+	RTS
+	:
+
+	CPX #$06
+	BNE :+
+	LDA #$02
+	STA draw
+	LDA #$06
+	STA draw+1
+	LDA #$20
+	STA draw+2
+	LDA #$D4
+	STA draw+3
+	LDA #$D7
+	STA draw+4
+	STA base_clear_bar_tile_results
+	:
+
+	JMP loop_clear_bar
+.endproc
+
+.proc update_countdown_score
+	LDA ran_results_setup
+	BNE :+
+
+	LDA #$01
+	STA draw
+	STA ran_results_setup
+	LDA #$00
+	STA draw+1
+	LDA #$21
+	STA draw+2
+	LDA #$72
+	STA draw+3
+	LDA #$20
+	STA draw+4
+	LDX #$06
+	STX results_position
+	RTS
+	:
+
+	LDX results_position
+	BPL :+
+	LDA #$00
+	STA ran_results_setup
+	INC results_jt_position
+	RTS
+	:
+
+	CPX #$06
+	BNE :+
+	DEC draw+3
+	DEC results_position
+	RTS
+	:
+
+	LDA score, X
+	BEQ :+
+	INC draw+4
+	DEC score, X
+	RTS
+	:
+	DEC results_position
+	DEC draw+3
+	LDA #$20
+	STA draw+4
+
+	LDX results_position
+	CPX #$FF
+	BNE :+
+	LDA #$00
+	STA draw
+	:
+
+	RTS
+.endproc
+
+.proc update_countdown_combo
+	LDA ran_results_setup
+	BNE :+
+
+	LDA #$01
+	STA draw
+	STA ran_results_setup
+	LDA #$00
+	STA draw+1
+	LDA #$21
+	STA draw+2
+	LDA #$CF
+	STA draw+3
+	LDA #$5A
+	STA draw+4
+	LDX #$03
+	STX results_position
+	RTS
+	:
+
+	LDX results_position
+	BPL :+
+	LDA #$00
+	STA ran_results_setup
+	INC results_jt_position
+	RTS
+	:
+
+	LDA combo, X
+	BEQ :+
+	INC draw+4
+	DEC combo, X
+	RTS
+	:
+.endproc
+
+.proc load_4_digit_num
+	DEC results_position
+	DEC draw+3
+	LDA #$5A
+	STA draw+4
+
+	LDX results_position
+	CPX #$FF
+	BNE :+
+	LDA #$00
+	STA draw
+	:
+
+	RTS
+.endproc
+
+.proc update_countdown_roll
+	LDA ran_results_setup
+	BNE :+
+
+	LDA #$01
+	STA draw
+	STA ran_results_setup
+	LDA #$00
+	STA draw+1
+	LDA #$22
+	STA draw+2
+	LDA #$0F
+	STA draw+3
+	LDA #$5A
+	STA draw+4
+	LDX #$03
+	STX results_position
+	RTS
+	:
+
+	LDX results_position
+	BPL :+
+	LDA #$00
+	STA ran_results_setup
+	INC results_jt_position
+	RTS
+	:
+
+	LDA roll_count, X
+	BEQ :+
+	INC draw+4
+	DEC roll_count, X
+	RTS
+	:
+
+	JMP load_4_digit_num
+.endproc
+
+.proc update_countdown_good
+	LDA ran_results_setup
+	BNE :+
+
+	LDA #$01
+	STA draw
+	STA ran_results_setup
+	LDA #$00
+	STA draw+1
+	LDA #$22
+	STA draw+2
+	LDA #$4F
+	STA draw+3
+	LDA #$5A
+	STA draw+4
+	LDX #$03
+	STX results_position
+	RTS
+	:
+
+	LDX results_position
+	BPL :+
+	LDA #$00
+	STA ran_results_setup
+	INC results_jt_position
+	RTS
+	:
+
+	LDA good_count, X
+	BEQ :+
+	INC draw+4
+	DEC good_count, X
+	RTS
+	:
+
+	JMP load_4_digit_num
+.endproc
+
+.proc update_countdown_ok
+	LDA ran_results_setup
+	BNE :+
+
+	LDA #$01
+	STA draw
+	STA ran_results_setup
+	LDA #$00
+	STA draw+1
+	LDA #$22
+	STA draw+2
+	LDA #$8F
+	STA draw+3
+	LDA #$5A
+	STA draw+4
+	LDX #$03
+	STX results_position
+	RTS
+	:
+
+	LDX results_position
+	BPL :+
+	LDA #$00
+	STA ran_results_setup
+	INC results_jt_position
+	RTS
+	:
+
+	LDA ok_count, X
+	BEQ :+
+	INC draw+4
+	DEC ok_count, X
+	RTS
+	:
+
+	JMP load_4_digit_num
+.endproc
+
+.proc update_countdown_bad
+	LDA ran_results_setup
+	BNE :+
+
+	LDA #$01
+	STA draw
+	STA ran_results_setup
+	LDA #$00
+	STA draw+1
+	LDA #$22
+	STA draw+2
+	LDA #$CF
+	STA draw+3
+	LDA #$5A
+	STA draw+4
+	LDX #$03
+	STX results_position
+	RTS
+	:
+
+	LDX results_position
+	BPL :+
+	LDA #$00
+	STA ran_results_setup
+	INC results_jt_position
+	RTS
+	:
+
+	LDA bad_count, X
+	BEQ :+
+	INC draw+4
+	DEC bad_count, X
+	RTS
+	:
+
+	JMP load_4_digit_num
+.endproc
+
+.proc draw_crown
+	LDA #base_crown_X
+	STA base_crown_sprite+3
+	STA base_crown_sprite+19
+	LDA #base_crown_X+8
+	STA base_crown_sprite+7
+	STA base_crown_sprite+23
+	LDA #base_crown_X+16
+	STA base_crown_sprite+11
+	STA base_crown_sprite+27
+	LDA #base_crown_X+24
+	STA base_crown_sprite+15
+	STA base_crown_sprite+31
+
+	LDA #$00
+	LDX #$DD
+	LDY crown
+	BNE :+
+	LDX #$ED
+	BNE :++
+	:
+
+	CPY #$02
+	BNE :+
+	LDA #$01
+	:
+	PHA
+
+	LDA #base_crown_Y
+	STA base_crown_Y_mem
+
+	LDY #$00
+	load_crown_tiles_and_pal:
+	PLA
+	STA base_crown_sprite+2, Y
+	PHA
+	LDA base_crown_Y_mem
+	STA base_crown_sprite, Y
+	TXA
+	STA base_crown_sprite+1, Y
+	INX
+	INX
+	INY
+	INY
+	INY
+	INY
+	CPY #16
+	BCC load_crown_tiles_and_pal
+	LDA #base_crown_Y+16
+	STA base_crown_Y_mem
+	CPY #32
+	BNE load_crown_tiles_and_pal
+	PLA
+
+	LDA #$03
+	JSR famistudio_sfx_sample_play
+
+	INC results_jt_position
+
+	RTS
+
+	base_crown_sprite = $200
+	base_crown_X = $9E
+	base_crown_Y = $8F
+
+.endproc
+
+.proc nothing
+	LDA #$00
+	STA draw_bg_over_palette
+	RTS
+.endproc
+
+.proc update_inputs_results
+	LDA results_jt_position
+	CMP #$07
+	BCC dont_update_inputs
+	LDA fade_intensity
+	BNE dont_update_inputs
+
+	LDA BTN_Press
+	AND #%10010000
+	BEQ dont_update_inputs
+
+  LDA #$01
+  STA fade_type
+  LDA #$02
+  STA fade_time
+  INC ts_ss_timer
+
+	JSR famistudio_music_stop
+	LDA #$03
+	JSR famistudio_sfx_sample_play
+
+	dont_update_inputs:
+	RTS
+.endproc
+
+.proc update_transition
+	LDA ts_ss_timer
+	BEQ dont_update_transition
+	INC ts_ss_timer
+	CMP #$20
+	BCC dont_update_transition
+	JMP load_song_sel
+
+	dont_update_transition:
+	RTS
+.endproc
+
 
 .proc background_result_load_1
 	LDA background_result_load_1_data, X
@@ -518,8 +1058,8 @@
 
 	background_result_load_36_data:
 	.byte $0C, $02, $20, $E8, $D2
-	.byte $04, $02, $20, $D4, $E7
-	.byte $04, $02, $20, $F4, $E7
+	.byte $04, $02, $20, $D4, $D7
+	.byte $04, $02, $20, $F4, $D7
 .endproc
 
 .proc background_result_load_37
@@ -543,53 +1083,37 @@
 	LDA background_result_load_38_data, X
 	STA draw, X
 	INX
-	CPX #30
+	CPX #$24
 	BNE background_result_load_38
 	JMP stay_here
 
 	background_result_load_38_data:
-	.byte $07, $02, $21, $6C, $20
-	.byte $04, $02, $21, $CC, $5A
-	.byte $04, $02, $22, $0C, $5A
-	.byte $04, $02, $22, $4C, $5A
-	.byte $04, $02, $22, $8C, $5A
-	.byte $04, $02, $22, $CC, $5A
+	.byte $20, $00, $23, $C0
+	.byte $00,$00,$00,$00,$00,$00,$00,$00
+	.byte $00,$00,$a0,$a0,$a0,$50,$00,$00
+	.byte $00,$00,$00,$00,$00,$00,$00,$00
+	.byte $00,$00,$00,$00,$f0,$f0,$f0,$00
+
 .endproc
 
 .proc background_result_load_39
 	LDA background_result_load_39_data, X
 	STA draw, X
 	INX
-	CPX #$24
+	CPX #$05
 	BNE background_result_load_39
 	JMP stay_here
 
 	background_result_load_39_data:
-	.byte $20, $00, $23, $C0
-	.byte $00,$00,$00,$00,$00,$00,$00,$00
-	.byte $00,$00,$a0,$a0,$a0,$50,$00,$00
-	.byte $00,$00,$00,$00,$00,$00,$00,$00
-	.byte $00,$00,$00,$00,$f0,$f0,$f0,$00
-.endproc
-
-.proc background_result_load_40
-	LDA background_result_load_40_data, X
-	STA draw, X
-	INX
-	CPX #$05
-	BNE background_result_load_40
-	JMP stay_here
-
-	background_result_load_40_data:
 	.byte $20, $02, $23, $E0, $00
 .endproc
 
-.proc background_result_load_41
+.proc background_result_load_40
 	LDA palette_result_data, X
 	STA palette, X
 	INX
 	CPX #$1C
-	BNE background_result_load_41
+	BNE background_result_load_40
 
 	LDA #$00
 	STA draw_bg_over_palette
@@ -602,7 +1126,7 @@
 	.byte $0F, $05, $11, $15
 	.byte $0F, $21, $11, $26
 
-	.byte $0F, $0F, $0F, $0F
-	.byte $0F, $0F, $0F, $0F
+	.byte $0F, $0F, $10, $20
+	.byte $0F, $0F, $27, $37
 	.byte $0F, $0F, $0F, $0F
 .endproc

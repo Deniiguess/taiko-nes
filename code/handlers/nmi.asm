@@ -47,6 +47,7 @@
   escape_draw_palette:
 
   ; update sprites
+  SEI
   LDA #$00
   STA $2003 ; OAMADDR
   LDA #$02
@@ -70,6 +71,7 @@ loop:
     cmp #1             ; put get
     rol BTN_Hold+0      ; put get put get put
     bcc loop           ; get put [get]    <- this branch must not be allowed to cross a page
+  CLI
 
   ; update PPUCTRL again
   LDA PPUCTRL
@@ -461,7 +463,7 @@ loop:
   CLC
 
   loop_combo:
-  LDA combo, X
+  LDA combo_current, X
   ADC #$20
   STA PPUDATA
   INX

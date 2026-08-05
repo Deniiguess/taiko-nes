@@ -72,7 +72,7 @@
   reset_screen_bytes:
   STA cursor_diff_screen, X
   INX
-  CPX #$09
+  CPX #$0A
   BNE reset_screen_bytes
 
   LDA #$1B
@@ -87,6 +87,8 @@
   STA diff_icon_Y
   LDA #base_don_Y_set
   STA don_Y
+  LDA #$98
+  STA crown_Y
 
   LDX #$00
   STX ts_ss_timer

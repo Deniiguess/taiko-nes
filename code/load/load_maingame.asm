@@ -189,9 +189,9 @@
   LDX #$00
   TXA ; LDA #$00
   reset_stats:
-  STA score, X
+  STA combo_current, X
   INX
-  CPX #26
+  CPX #33
   BNE reset_stats
 
   TAX
@@ -245,6 +245,8 @@
   STA drum_input_kat_time
   STA beat_anim_frame
   STA beat_animation
+  STA results_transition_time
+  STA results_transition_time+1
 
   LDA #$02
   STA beat_anim_frame+1

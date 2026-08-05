@@ -187,11 +187,17 @@
 
   RTS
 
+  update_dinp_kat:
+  JMP update_dinp_kat_branch
+
   force_good:
   LDA #$02
   STA input_rate
-  INC combo+3
+  INC combo_current+3
   JSR add_points
+  INC good_count+3
+  LDX #$08+$02
+  JSR add_to_4_digit_score
   JMP clear_drum
 
   update_dinp_don:
@@ -216,29 +222,6 @@
 
   DEC drum_input_don_time ; decrease the timer
   JMP exit_dinp_don
-
-  update_dinp_kat:
-  ; load the palette timer for KAT
-  LDX drum_input_kat_time
-
-  ; load the palette value in the pool + X
-  LDA dinp_kat_pal, X
-  STA palette+25 ; store the value into the proper palette color slot
-
-  ; check for the last 2 bits in the TWO location
-  LDA drum_input_kat_two
-  AND #%11000000
-  CMP #%11000000
-  BNE :+ ; if its not $80, skip code
-  LDA drum_input_kat_two
-  AND #%00000111
-  TAX
-  LDA dinp_kat_pal_two, X ; set the lighter red for the DON palette
-  STA palette+26
-  :
-
-  DEC drum_input_kat_time ; decrease the timer
-  JMP exit_dinp_kat
 
   don_ap:
   LDA #$0A
@@ -291,6 +274,29 @@
   STA drum_sprite_A, X
   RTS
 
+  update_dinp_kat_branch:
+  ; load the palette timer for KAT
+  LDX drum_input_kat_time
+
+  ; load the palette value in the pool + X
+  LDA dinp_kat_pal, X
+  STA palette+25 ; store the value into the proper palette color slot
+
+  ; check for the last 2 bits in the TWO location
+  LDA drum_input_kat_two
+  AND #%11000000
+  CMP #%11000000
+  BNE :+ ; if its not $80, skip code
+  LDA drum_input_kat_two
+  AND #%00000111
+  TAX
+  LDA dinp_kat_pal_two, X ; set the lighter red for the DON palette
+  STA palette+26
+  :
+
+  DEC drum_input_kat_time ; decrease the timer
+  JMP exit_dinp_kat
+
   add_points:
   LDA score_to_add
   ADC #45
@@ -298,13 +304,13 @@
   BPL :+
   ADC #10
   :
-  LDX combo
+  LDX combo_current
   BNE add_max
-  LDX combo+1
+  LDX combo_current+1
   BNE add_max
 
   PHA
-  LDY combo+2
+  LDY combo_current+2
   LDX drum_hit_pool_pos+1
   LDA drum_hit_pool, X
   AND #%00000100
@@ -680,9 +686,14 @@
 
   LDA #$02
   STA input_rate
-  INC combo+3
+  INC combo_current+3
   INC clear_bar_inputs
   JSR add_points
+
+  INC good_count+3
+  LDX #$08+$02
+  JSR add_to_4_digit_score
+
   JMP clear_drum
 
   set_ok:
@@ -692,9 +703,14 @@
 
   LDA #$01
   STA input_rate
-  INC combo+3
+  INC combo_current+3
   INC clear_bar_inputs
   JSR add_points_ok
+
+  INC ok_count+3
+  LDX #$0C+$02
+  JSR add_to_4_digit_score
+
   JMP clear_drum
 
   set_bad:
@@ -720,10 +736,15 @@
 
   LDA #$00
   STA input_rate
-  STA combo
-  STA combo+1
-  STA combo+2
-  STA combo+3
+  STA combo_current
+  STA combo_current+1
+  STA combo_current+2
+  STA combo_current+3
+
+  INC bad_count+3
+  LDX #$10+$02
+  JSR add_to_4_digit_score
+
   JMP clear_drum
 
   add_points:
@@ -733,13 +754,13 @@
   BPL :+
   ADC #10
   :
-  LDX combo
+  LDX combo_current
   BNE add_max
-  LDX combo+1
+  LDX combo_current+1
   BNE add_max
 
   PHA
-  LDY combo+2
+  LDY combo_current+2
   LDX drum_hit_pool_pos+1
   LDA drum_hit_pool, X
   AND #%00000100
@@ -824,13 +845,13 @@
   BPL :+
   ADC #5
   :
-  LDX combo
+  LDX combo_current
   BNE add_max_ok
-  LDX combo+1
+  LDX combo_current+1
   BNE add_max_ok
 
   PHA
-  LDY combo+2
+  LDY combo_current+2
   LDX drum_hit_pool_pos+1
   LDA drum_hit_pool, X
   AND #%00000100
@@ -918,11 +939,45 @@
   JMP exit_input
 .endproc
 
+.proc add_to_4_digit_score
+	LDY #$02
+  decrease_4digits:
+  LDA combo+1, X
+  CMP #$0A
+  BCC escape_4digits
+  SEC
+  SBC #$0A
+  STA combo+1, X
+  INC combo, X
+  JMP decrease_4digits
+
+  escape_4digits:
+  DEX
+  DEY
+  BPL decrease_4digits
+  INX
+
+  LDA combo, X
+  CMP #$0A
+  BCC escape_4digitsL
+  LDA #$09
+  STA combo, X
+  STA combo+1, X
+  STA combo+2, X
+  STA roll_count+3, X
+  escape_4digitsL:
+	RTS
+.endproc
+
 .proc inc_roll
   LDX slot_number
   LDA drum_sprite_A, X
   ORA #%00000001
   STA drum_sprite_A, X
+
+  LDX #$04+$02
+  INC roll_count+3
+  JSR add_to_4_digit_score
 
   INC drum_roll+2
   LDX #$01
@@ -1208,10 +1263,14 @@
   STA beat_animation
 
   LDA #$00
-  STA combo
-  STA combo+1
-  STA combo+2
-  STA combo+3
+  STA combo_current
+  STA combo_current+1
+  STA combo_current+2
+  STA combo_current+3
+
+  LDX #$10+$02
+  INC bad_count+3
+  JSR add_to_4_digit_score
 
   INC clear_bar_input_miss
 
@@ -2166,6 +2225,8 @@
   JSR famistudio_init ; initialize songs
 
   LDA #$00
+	STA BTN_Press
+	STA BTN_Hold
   JSR famistudio_music_play
 
   JMP done_drawing_small_don
@@ -2707,15 +2768,29 @@ tempo_8_table_2x:
 
   dont_inc_score:
 
+  LDX #$00+$02
+  JSR add_to_4_digit_score
+
+  LDX #$00
+	keep_best_combo:
+	LDA combo_current, X
+	CMP combo, X
+	BCC :+
+	STA combo, X
+	INX
+	CPX #$04
+	BNE keep_best_combo
+	:
+
   LDX #$02
   decrease_combo:
-  LDA combo+1, X
+  LDA combo_current+1, X
   CMP #$0A
   BCC escape_combo
   SEC
   SBC #$0A
-  STA combo+1, X
-  INC combo, X
+  STA combo_current+1, X
+  INC combo_current, X
   CPX #$02
   BNE :+
   LDA beat_animation
@@ -2729,15 +2804,14 @@ tempo_8_table_2x:
   CPX #$FF
   BNE decrease_combo
 
-  LDA combo
-
+  LDA combo_current
   CMP #$0A
   BCC escape_comboL
   LDA #$09
-  STA combo
-  STA combo+1
-  STA combo+2
-  STA combo+3
+  STA combo_current
+  STA combo_current+1
+  STA combo_current+2
+  STA combo_current+3
 
   escape_comboL:
 
@@ -3456,6 +3530,11 @@ drum_sprite_tile_big:
   LDA #$0E
   STA $9000
 
+  LDA BTN_Press
+  STA BTN_Press+1
+  LDA #$00
+  STA BTN_Press
+
   LDX base_sprite+2
   LDA #$F0
   STA $200, X
@@ -3491,6 +3570,10 @@ drum_sprite_tile_big:
 
 	LDA tempo+1
 	STA pause+1
+
+	LDA #$01
+  LDX #FAMISTUDIO_SFX_CH0
+  JSR famistudio_sfx_play
 	RTS
 
 	update_pause_pos:
@@ -3547,6 +3630,10 @@ drum_sprite_tile_big:
 
 	PLA
 	BEQ :+
+	LDA #>main_game
+	PHA
+	LDA #<main_game+2
+	PHA
 	JMP pause_unpause_game
 	:
 	RTS
@@ -4002,6 +4089,10 @@ inc_dbp:
 
 	end_irq_high:
 
+	LDA #$00
+	STA BTN_Press
+	STA BTN_Hold
+
 	PLA
   TAY
 	PLA
@@ -4016,7 +4107,7 @@ inc_dbp:
 	.byte $FC, $F9, $F5, $F2, $EE, $EB, $E7, $E3, $E0, $DC, $D9, $D5, $D2, $CE, $CA
 
 	irq_cycle_timer_results_tr_lo_up:
-	.byte $1E, $95, $00, $70, $E5, $53, $C5, $3A, $B3, $25, $97, $09, $53
+	.byte $19, $8A, $00, $6B, $E0, $4E, $C0, $35, $AE, $20, $92, $04, $53
 
 	irq_cycle_timer_results_tr_hi_up:
 	.byte $FD, $F9, $F6, $F2, $EE, $EB, $E7, $E4, $E0, $DD, $D9, $D6, $D2
@@ -4109,7 +4200,7 @@ inc_dbp:
   LDA irq_ppu_render_loc_hi, X
   LDY irq_ppu_render_loc_lo, X
 	STA PPUADDR
-	LDA PPUCTRL
+	LDA PPUCTRL_kept_2
 	STA $2000
 	LDA PPUMASK
 	STA $2001

@@ -1207,6 +1207,7 @@ MAX_SONG_COUNT = $05
 	drum_sel_base_sprite = $218
 	diff_icon_base_sprtie = $220
 	donchan_base_sprite = $274
+	crown_base_sprite = $294
 
 .proc update_controller_highlight ; and that donchan icon and the cursors
 ; future deni here: basiaclly almost every sprite
@@ -1268,6 +1269,22 @@ MAX_SONG_COUNT = $05
   INX ; increase X
   CPX #$20 ; repeat $20 times
   BNE load_the_don
+
+  ; load the crowns
+  LDX #$00 ; load $00 to X (prepare loop)
+  LDY #$00 ; load $00 to Y
+  load_crown:
+  LDA #$01 ; set attribute to $01
+  STA crown_base_sprite+2, X
+  LDA crown_sprite_data, Y
+  STA crown_base_sprite+3, X
+  INX ; increase X 4 times
+  INX
+  INX
+  INX
+  INY ; and Y for the pool
+  CPY #$04 ; repeat 4 times
+  BNE load_crown
 
   ; hell yeah i dont have to comment this because i already did
   ; update cursor (song) sprite Y
@@ -1409,6 +1426,19 @@ MAX_SONG_COUNT = $05
   CPX #$20
   BNE update_diff_icon_Y
 
+  ; update cursor (difficulty) sprite Y
+  LDA crown_Y
+  ; set to $F0 if screen isnt 1
+  LDX crown_screen
+  DEX
+  BEQ :+
+  LDA #$F0
+  :
+  STA crown_base_sprite
+  STA crown_base_sprite+4
+  STA crown_base_sprite+8
+  STA crown_base_sprite+12
+
   ; hell yeah i commented this mess already too
   LDX #$00 ; set X to $00
   scroll_selection_sprites:
@@ -1465,7 +1495,7 @@ MAX_SONG_COUNT = $05
   STA cursor_diff_Y, X ; store A to load cursor_diff_Y + X
 
   INX ; increase X
-  CPX #$09 ; repeat 9 times
+  CPX #$0A ; repeat 10 times
   BNE scroll_selection_sprites
 
   LDA beat_anim_frame ; load beat_anim_frame to A
@@ -1688,7 +1718,7 @@ MAX_SONG_COUNT = $05
   update_sram_loc:
   LDA #$5F
   STA sram_location+1 ; set sram_location+1 to $5F (high byte)
-  LDA #$80
+  LDA #$E0
   STA sram_location ; set sram_location to $80 (low byte)
 
   LDX song_sel_position ; load song_sel_position to X
@@ -1713,14 +1743,14 @@ MAX_SONG_COUNT = $05
   DEY ; decrease Y
   BPL set_sram_loc_low ; repeat until Y is $FF
   STA sram_location ; store result in A to sram_location
-  ; the starting sram location is actually $6020 and not $5F80
+  ; the starting sram location is actually $6080 and not $6040
 
   LDY #$00 ; load $00 to Y (prepare loop)
   load_to_draw_score:
   LDA (sram_location), Y ; load the value + Y defined by sram_location to A
   STA score_to_draw, Y ; store A to score_to_draw + Y
   INY ; increase Y
-  CPY #23 ; repeat 23 times
+  CPY #26 ; repeat 26 times
   BNE load_to_draw_score
   RTS ; leave subroutine
 
@@ -1729,6 +1759,41 @@ MAX_SONG_COUNT = $05
 
   LDA #240
   STA frame_timer_score_draw ; set frame_timer_score_draw to 240
+
+  LDA sram_location
+  STA sram_location+2
+  AND #$80
+  STA sram_location
+
+  LDY #$1A
+  LDA #$00
+  STA crown_spawn_pos
+  load_crown_tiles:
+  LDX #$00
+  LDA (sram_location), Y
+  CMP #$01
+  BCC :+
+  LDX #$9C
+  CMP #$02
+  BCC :+
+  LDX #$9E
+  :
+  TXA
+  LDX crown_spawn_pos
+  STA crown_base_sprite+1, X
+  TYA
+  CLC
+  ADC #$20
+  TAY
+  INC crown_spawn_pos
+  INC crown_spawn_pos
+  INC crown_spawn_pos
+  INC crown_spawn_pos
+  CPY #$9A
+  BNE load_crown_tiles
+
+  LDA sram_location+2
+  STA sram_location
 
   JMP load_score_combo ; jump to load_score_combo
 
@@ -2035,6 +2100,9 @@ MAX_SONG_COUNT = $05
 	donchan_sprite_data:
 	.byte base_don_Y_set, $C0, $03, base_don_X_set, base_don_Y_set, $C2, $03, base_don_X_set+8, base_don_Y_set, $C4, $03, base_don_X_set+16, base_don_Y_set, $C6, $03, base_don_X_set+24
 	.byte base_don_Y_set+16, $C8, $03, base_don_X_set, base_don_Y_set+16, $CA, $03, base_don_X_set+8, base_don_Y_set+16, $CC, $03, base_don_X_set+16, base_don_Y_set+16, $CE, $03, base_don_X_set+24
+
+	crown_sprite_data:
+	.byte $40, $68, $90, $B8
 
   color_table:
   .byte $0C, $1C, $2C, $3C ; cyan

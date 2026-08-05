@@ -25,7 +25,7 @@ This is an NES port of Taiko No Tatsujin written completely in assembly using th
 **Finned Frontier** - ThePurpleAnon *(THEPURPLANON in-game)*
 
 ### Other
-**Results Theme** - FluffyKn1ght
+**Results Theme, SFX** - FluffyKn1ght
 
 ## Disclamer
 This port is **NOT AFFILIATED** with Bandai Namco or the Taiko No Tatsujin franchise in any way, nor uses any music, charts, code or graphics from any Taiko No Tatsujin game.

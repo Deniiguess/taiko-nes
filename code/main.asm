@@ -5,8 +5,8 @@ FAMISTUDIO_CFG_EXTERNAL       = 1 ; enables external configuration
 ; FAMISTUDIO_CFG_SMOOTH_VIBRATO = 1 ; for a smooth vibrato
 
 ; FAMISTUDIO_CFG_EQUALIZER      = 1 ; enables songs
-; FAMISTUDIO_CFG_SFX_SUPPORT    = 1 ; enables sfx
-; FAMISTUDIO_CFG_SFX_STREAMS    = 2 ; how many sfx can play at once
+ FAMISTUDIO_CFG_SFX_SUPPORT    = 1 ; enables sfx
+ FAMISTUDIO_CFG_SFX_STREAMS    = 1 ; how many sfx can play at once
 
 FAMISTUDIO_USE_VOLUME_TRACK = 1 ; enables volume track
 FAMISTUDIO_USE_VOLUME_SLIDES = 1 ; enables volume slides in volume track
@@ -63,6 +63,7 @@ dmc_data:
 .include "load/load_results.asm"
 
 .include "song_info.asm"
+.include "../songs/soundeffects.s"
 
 init_song:
 ; define song

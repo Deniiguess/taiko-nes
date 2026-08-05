@@ -64,9 +64,9 @@ vblankwait2:
   STA base_sprite+3
 
   ; define sfx
-;   LDX #<sounds ; load low byte to X
-;   LDY #>sounds ; load high byte to Y
-;   JSR famistudio_sfx_init ; initialize sfx
+  LDX #<sounds ; load low byte to X
+  LDY #>sounds ; load high byte to Y
+  JSR famistudio_sfx_init ; initialize sfx
 
   ; set palette as black
   LDA PPUSTATUS

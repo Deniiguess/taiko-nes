@@ -72,6 +72,7 @@ sprite_flicker_toggle: .res 1
 clear_bar: .res 8
 clear_bar_inputs: .res 2
 clear_bar_input_miss: .res 2
+clear_bar_results_inc: .res 1
 
 ts_ss_timer: .res 3
 
@@ -81,7 +82,8 @@ diff_sel_cursor_time: .res 1
 
 frame_timer_controller: .res 1
 
-sram_location: .res 2
+sram_location: .res 3
+crown_spawn_pos: .res 1
 
 options_position: .res 1
 in_color_set: .res 1
@@ -116,9 +118,12 @@ drum_disappear_position: .res 2
 input_rate: .res 1
 input_rate_timer: .res 1
 
+combo_current: .res 4
+drum_roll: .res 3
+
 score: .res 6
 combo: .res 4
-drum_roll: .res 3
+roll_count: .res 4
 good_count: .res 4
 ok_count: .res 4
 bad_count: .res 4
@@ -155,6 +160,7 @@ diff_icon_screen: .res 1
 color_sqr_screen: .res 1
 controller_t_screen: .res 1
 don_screen: .res 1
+crown_screen: .res 1
 
 cursor_diff_Y: .res 1
 cursor_song_Y: .res 1
@@ -165,16 +171,16 @@ diff_icon_Y: .res 1
 color_sqr_Y: .res 1
 controller_t_Y: .res 1
 don_Y: .res 1
+crown_Y: .res 1
 
 diff_sel_load_timer: .res 1
 
 score_to_draw: .res 6
 combo_to_draw: .res 4
-roll_to_draw: .res 3
+roll_to_draw: .res 4
 good_to_draw: .res 4
 okay_to_draw: .res 4
 bad_to_draw: .res 4
-crown_to_draw: .res 1
 
 frame_timer_score_draw: .res 1
 
@@ -185,6 +191,13 @@ drum_hit_pool_frame_pos: .res 2
 drum_spawn_position_kept: .res 128
 
 irq_address: .res 2
+
+high_score: .res 1
+results_position: .res 1
+ran_results_setup: .res 1
+results_jt_position: .res 1
+base_clear_bar_tile_results: .res 1
+base_crown_Y_mem: .res 1
 
 .segment "SETT"
 don_color: .res 3
