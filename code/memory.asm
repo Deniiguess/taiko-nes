@@ -90,6 +90,7 @@ in_color_set: .res 1
 
 pause: .res 2
 pause_pos: .res 1
+pause_sprite_backup: .res 4
 
 drum_bank_position_chart_backup: .res 1
 
@@ -97,8 +98,14 @@ base_don_Y: .res 1
 
 results_transition_time: .res 2
 scroll_temp: .res 1
+results_skip: .res 1
 
 results_compare: .res 1
+
+clear_bar_keep: .res 8
+
+score_keep: .res 26
+
 
 .segment "BSS"
 drum_data_pool: .res 21

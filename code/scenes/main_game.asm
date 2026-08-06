@@ -3508,6 +3508,11 @@ drum_sprite_tile_big:
 	PLA
 	PLA
 
+	LDA #$F6
+	STA $201
+	LDA #$00
+	STA $202
+
 	JSR update_pause_pos
 
 	JMP stay_here
@@ -3535,9 +3540,14 @@ drum_sprite_tile_big:
   LDA #$00
   STA BTN_Press
 
-  LDX base_sprite+2
-  LDA #$F0
-  STA $200, X
+  LDA pause_sprite_backup
+  STA $200
+  LDA pause_sprite_backup+1
+  STA $201
+  LDA pause_sprite_backup+2
+  STA $202
+  LDA pause_sprite_backup+3
+  STA $203
 
   LDA PPUMASK
   AND #%11101111
@@ -3556,14 +3566,14 @@ drum_sprite_tile_big:
   LDA #$1F
   STA $9000
 
-  LDA #$6F
-	STA $200, X
-	LDA #$F6
-	STA $201, X
-	LDA #$00
-	STA $202, X
-	LDA #$58
-	STA $203, X
+  LDA $200
+  STA pause_sprite_backup
+	LDA $201
+  STA pause_sprite_backup+1
+	LDA $202
+  STA pause_sprite_backup+2
+	LDA $203
+  STA pause_sprite_backup+3
 
 	LDA #$00
 	STA pause_pos
@@ -3612,9 +3622,9 @@ drum_sprite_tile_big:
 	BEQ retry
 
 	LDA #$8F
-	STA $200, X
+	STA $200
 	LDA #$68
-	STA $203, X
+	STA $203
 
 	PLA
 	BEQ :+
@@ -3624,9 +3634,9 @@ drum_sprite_tile_big:
 
 	continue:
 	LDA #$6F
-	STA $200, X
+	STA $200
 	LDA #$58
-	STA $203, X
+	STA $203
 
 	PLA
 	BEQ :+
@@ -3640,9 +3650,9 @@ drum_sprite_tile_big:
 
 	retry:
 	LDA #$7F
-	STA $200, X
+	STA $200
 	LDA #$64
-	STA $203, X
+	STA $203
 
 	PLA
 	BEQ :+

@@ -247,6 +247,7 @@
   STA beat_animation
   STA results_transition_time
   STA results_transition_time+1
+  STA jump_frame
 
   LDA #$02
   STA beat_anim_frame+1

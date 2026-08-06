@@ -135,6 +135,9 @@
 	STA results_compare
 
 	LDY #6
+	LDA high_score
+	BNE save_rest_alt
+
 	LDX #$00
 	save_rest:
 	LDA score, Y
@@ -160,6 +163,8 @@
 	CPX #$05
 	BNE save_rest
 
+	leave_rest_alt:
+
 	LDA crown
 	CMP (sram_location), Y
 	BCC :+
@@ -168,6 +173,15 @@
 	:
 
 	JMP stay_here
+
+	save_rest_alt:
+	LDA score, Y
+	STA (sram_location), Y
+	INY
+	CPY #26
+	BNE save_rest_alt
+
+	JMP leave_rest_alt
 
 	set_Y_save_rest:
 	.byte 06, 10, 14, 18, 22, 26
@@ -645,6 +659,8 @@
 	BCC skip_countdown
 	RTS
 
+	; unoptimized but idrc at this point
+	; if it works it works
 	skip_countdown:
 	SEC
 	LDA BTN_Press
@@ -655,8 +671,13 @@
 	LDA #$07
 	STA results_jt_position
 
+	LDA high_score
+	BEQ :+
 	LDA #48
 	STA ts_ss_timer+1
+	LDA #$26
+	STA palette+15
+	:
 
 	LDA #$07
 	STA draw
@@ -677,7 +698,7 @@
 	STA draw+10
 
 	skip_score:
-	LDA (sram_location), Y
+	LDA score_keep, Y
 	ADC #$20
 	STA draw+4, Y
 	INY
@@ -724,6 +745,98 @@
 	STA draw+73
 	LDA #$D4
 	STA draw+74
+
+	CLC
+	skip_combo:
+	LDA score_keep, Y
+	ADC #$5A
+	STA draw+9, Y
+	INY
+	CPY #10
+	BNE skip_combo
+
+	CLC
+	skip_roll:
+	LDA score_keep, Y
+	ADC #$5A
+	STA draw+13, Y
+	INY
+	CPY #14
+	BNE skip_roll
+
+	CLC
+	skip_good:
+	LDA score_keep, Y
+	ADC #$5A
+	STA draw+17, Y
+	INY
+	CPY #18
+	BNE skip_good
+
+	CLC
+	skip_ok:
+	LDA score_keep, Y
+	ADC #$5A
+	STA draw+21, Y
+	INY
+	CPY #22
+	BNE skip_ok
+
+	CLC
+	skip_bad:
+	LDA score_keep, Y
+	ADC #$5A
+	STA draw+25, Y
+	INY
+	CPY #26
+	BNE skip_bad
+
+	LDY #$00
+	LDX #$00
+	skip_clear_bar_red:
+	LDA clear_bar_keep, Y
+	BEQ :+
+	CMP #$04
+	BCC :+
+	LDA #$D6
+	STA draw+55, X
+	INX
+	LDA clear_bar_keep, Y
+	SEC
+	SBC #04
+	:
+	CLC
+	ADC #$D2
+	STA draw+55, X
+	INX
+	CPY #$06
+	BCS :+
+	INY
+	:
+	CPX #$0C
+	BCC skip_clear_bar_red
+
+	skip_clear_bar_gold:
+	LDA clear_bar_keep, Y
+	BEQ :+
+	CMP #$04
+	BCC :+
+	LDA #$DB
+	STA draw+55, X
+	STA draw+63, X
+	INX
+	LDA clear_bar_keep, Y
+	SEC
+	SBC #04
+	:
+	CLC
+	ADC #$D7
+	STA draw+55, X
+	STA draw+63, X
+	INX
+	INY
+	CPX #$10
+	BCC skip_clear_bar_gold
 
 	RTS
 .endproc

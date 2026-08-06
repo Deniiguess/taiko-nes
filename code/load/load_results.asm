@@ -7,6 +7,21 @@
   INX
   BNE unload_sprites
 
+  transfer_clear_bar:
+  LDA clear_bar, X
+  STA clear_bar_keep, X
+  INX
+  CPX #$08
+  BNE transfer_clear_bar
+
+  LDX #$00
+  transfer_score:
+  LDA score, X
+  STA score_keep, X
+  INX
+  CPX #26
+  BNE transfer_score
+
   ; reset scrolling
   LDA #$00
   STA PPUSCROLL_X
