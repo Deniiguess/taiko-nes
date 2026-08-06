@@ -1,8 +1,12 @@
 ; not much here rn
 
 .proc results
+	LDX results_jt_position
+	CPX #$07
+	BCS :+
 	LDA #$01
 	STA draw_bg_over_palette
+	:
 
 	LDA results_transition_time
 	BEQ :+
@@ -24,6 +28,8 @@
 	JSR update_inputs_results
 
 	JSR update_transition
+
+	JSR update_high_score
 
   JMP stay_here
 .endproc
@@ -85,7 +91,9 @@
 
 	LDA mods
 	LSR
-	BCS dont_save_score
+	BCC :+
+	JMP stay_here
+	:
 	LDA clear_bar+6
 	BEQ :+
 	LDA #$01
@@ -107,21 +115,65 @@
 	save_score:
 	LDA score, Y
 	CMP (sram_location), Y
+	BCC :++
+	BEQ :+
+	write_score:
+	LDA score, Y
+	STA (sram_location), Y
+	LDA #$01
+	STA high_score
+	INY
+	CPY #6
+	BNE write_score
+	:
+	INY
+	CPY #6
+	BCC save_score
+	:
+
+	LDA #10
+	STA results_compare
+
+	LDY #6
+	LDX #$00
+	save_rest:
+	LDA score, Y
+	CMP (sram_location), Y
+	BCC :++
+	BEQ :+
+	write_rest:
+	LDA score, Y
+	STA (sram_location), Y
+	INY
+	CPY results_compare
+	BCC write_rest
+	:
+	INY
+	CPY results_compare
+	BCC save_rest
+	:
+	INX
+	LDA set_Y_save_rest, X
+	TAY
+	LDA set_res_cmp, X
+	STA results_compare
+	CPX #$05
+	BNE save_rest
+
+	LDA crown
+	CMP (sram_location), Y
 	BCC :+
 	BEQ :+
 	STA (sram_location), Y
-	CPY #$06
-	BCS :+
-	LDA #$01
-	STA high_score
 	:
-	INY
-	CPY #27
-	BNE save_score
-
-	dont_save_score:
 
 	JMP stay_here
+
+	set_Y_save_rest:
+	.byte 06, 10, 14, 18, 22, 26
+
+	set_res_cmp:
+	.byte 10, 14, 18, 22, 26, 32
 .endproc
 
 .proc update_countdown
@@ -569,12 +621,12 @@
 	LDA results_jt_position
 	CMP #$07
 	BCC dont_update_inputs
-	LDA fade_intensity
-	BNE dont_update_inputs
+	LDA ts_ss_timer
+	BNE :+
 
 	LDA BTN_Press
 	AND #%10010000
-	BEQ dont_update_inputs
+	BEQ :+
 
   LDA #$01
   STA fade_type
@@ -586,7 +638,93 @@
 	LDA #$03
 	JSR famistudio_sfx_sample_play
 
+	:
+	SEC
+
 	dont_update_inputs:
+	BCC skip_countdown
+	RTS
+
+	skip_countdown:
+	SEC
+	LDA BTN_Press
+	AND #BTN_A
+	BEQ dont_update_inputs
+	CLC
+
+	LDA #$07
+	STA results_jt_position
+
+	LDA #48
+	STA ts_ss_timer+1
+
+	LDA #$07
+	STA draw
+	LDA #$00
+	TAY
+	STA draw+1
+	STA draw+12
+	STA draw+20
+	STA draw+28
+	STA draw+36
+	STA draw+44
+	LDA #$21
+	STA draw+2
+	STA draw+13
+	LDA #$6C
+	STA draw+3
+	LDA #$20
+	STA draw+10
+
+	skip_score:
+	LDA (sram_location), Y
+	ADC #$20
+	STA draw+4, Y
+	INY
+	CPY #$06
+	BNE skip_score
+
+	LDA #$04
+	STA draw+11
+	STA draw+19
+	STA draw+27
+	STA draw+35
+	STA draw+43
+
+	LDA #$22
+	STA draw+21
+	STA draw+29
+	STA draw+37
+	STA draw+45
+
+	LDA #$CC
+	STA draw+14
+	STA draw+46
+	LDA #$0C
+	STA draw+22
+	LDA #$4C
+	STA draw+30
+	LDA #$8C
+	STA draw+38
+
+	LDA #$10
+	STA draw+51
+	LDA #$00
+	STA draw+52
+	LDA #$20
+	STA draw+53
+	LDA #$E8
+	STA draw+54
+
+	LDA #$04
+	STA draw+71
+	LDA #$00
+	STA draw+72
+	LDA #$20
+	STA draw+73
+	LDA #$D4
+	STA draw+74
+
 	RTS
 .endproc
 
@@ -599,6 +737,35 @@
 	JMP load_song_sel
 
 	dont_update_transition:
+	RTS
+.endproc
+
+.proc update_high_score
+	LDA high_score
+	BEQ dont_update_high_score
+	LDA results_jt_position
+	CMP #$07
+	BCC dont_update_high_score
+	LDA ts_ss_timer+1
+	CMP #63
+	BCC :+
+
+	LDA #32
+	STA ts_ss_timer+1
+
+	LDA #$11
+	STA palette+15
+	:
+
+	INC ts_ss_timer+1
+	LDA ts_ss_timer+1
+	CMP #48
+	BNE dont_update_high_score
+
+	LDA #$26
+	STA palette+15
+
+	dont_update_high_score:
 	RTS
 .endproc
 
@@ -1052,7 +1219,7 @@
 	LDA background_result_load_36_data, X
 	STA draw, X
 	INX
-	CPX #15
+	CPX #29
 	BNE background_result_load_36
 	JMP stay_here
 
@@ -1060,6 +1227,7 @@
 	.byte $0C, $02, $20, $E8, $D2
 	.byte $04, $02, $20, $D4, $D7
 	.byte $04, $02, $20, $F4, $D7
+	.byte $0A, $00, $21, $F1, $47, $48, $46, $47, $02, $52, $42, $4E, $51, $44
 .endproc
 
 .proc background_result_load_37
@@ -1124,7 +1292,7 @@
 	.byte $0F, $21, $11, $20
 	.byte $0F, $17, $27, $20
 	.byte $0F, $05, $11, $15
-	.byte $0F, $21, $11, $26
+	.byte $0F, $21, $11, $11
 
 	.byte $0F, $0F, $10, $20
 	.byte $0F, $0F, $27, $37

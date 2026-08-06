@@ -98,6 +98,8 @@ base_don_Y: .res 1
 results_transition_time: .res 2
 scroll_temp: .res 1
 
+results_compare: .res 1
+
 .segment "BSS"
 drum_data_pool: .res 21
 

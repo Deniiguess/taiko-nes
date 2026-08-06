@@ -30,12 +30,6 @@
   STA $C000
   STA $C800
 
-  LDA #161
-  STA ts_ss_timer
-
-  LDA #120
-  STA ts_ss_timer+1
-
 	LDA #$03
 	STA scene
 	LDA #RESULTS_BANK
@@ -47,6 +41,7 @@
 	STA high_score
 	STA results_jt_position
 	STA ts_ss_timer
+	STA ts_ss_timer+1
 
 	RTS
 .endproc
