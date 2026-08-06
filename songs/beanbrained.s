@@ -155,6 +155,8 @@ music_data_adonete:
 	.word @env18
 
 @samples:
+	.byte $EF,$20,$0e,$40 ; 00 don (Pitch:14)
+	.byte $F7,$1f,$0e,$40 ; 01 kat (Pitch:14)
 
 @tempo_env_1_mid:
 	.byte $03,$05,$80
