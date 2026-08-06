@@ -8,6 +8,9 @@
   LDA song_address_start_hi, X
   STA drum_bank_positon+1
 
+  LDA drum_bank_list, X
+  STA $E800
+
   LDA PPUMASK
   AND #%11100111
   STA PPUMASK
@@ -24,8 +27,6 @@
   ; load PRG banks
   LDA #MAING_BANK
   STA $E000
-  LDA #DBANK1_BANK
-  STA $E800
 
   ; load CHR banks
   LDA #$00

@@ -17,7 +17,7 @@
 .include "../songs/euphoria.s" ; include song
 
 .segment "MUSIC_BANK_4"
-;.include "../songs/remix8ds.s" ; include song
+.include "../songs/beanbrained.s" ; include song
 
 .segment "MUSIC_BANK_5"
 .include "../songs/remix8ds.s" ; include song

@@ -14,6 +14,14 @@
   .hibytes dbank1, dbank2, dbank3, dbank4
   .hibytes dbank5, dbank6, dbank7, dbank8
 
+  drum_bank_list:
+  .byte DBANK1_BANK, DBANK1_BANK, DBANK1_BANK, DBANK1_BANK
+  .byte DBANK1_BANK, DBANK1_BANK, DBANK1_BANK, DBANK1_BANK
+  .byte DBANK1_BANK, DBANK1_BANK, DBANK1_BANK, DBANK1_BANK
+  .byte DBANK1_BANK, DBANK1_BANK, DBANK1_BANK, DBANK1_BANK
+  .byte DBANK1_BANK, DBANK1_BANK, DBANK1_BANK, DBANK1_BANK
+  .byte DBANK1_BANK, DBANK1_BANK, DBANK1_BANK, DBANK1_BANK
+
   song_stars:
   .byte $03, $04, $08, $0A
   .byte $09, $03, $02, $01

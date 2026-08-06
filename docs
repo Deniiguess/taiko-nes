@@ -19,11 +19,13 @@ D D    K K
  D
 
 presong metadata:
-HHHHHHHH LLLLLLL
+HHHHHHHH LLLLLLL BBBBBBBB
 
 H - High Address Start
 
 L - Low Address Start
+
+B - PRG-ROM Bank Num
 
 song metadata:
 tS---TTT IIIIIIII
