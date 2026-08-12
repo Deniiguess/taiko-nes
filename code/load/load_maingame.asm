@@ -227,6 +227,10 @@
 
   LDA (drum_bank_positon, X)
   STA clear_bar_inputs+1
+  LSR
+  BNE :+
+  LDA #$01
+  :
   STA clear_bar_input_miss+1
 
   JSR increase_dbp

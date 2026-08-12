@@ -81,9 +81,15 @@
 
   JSR update_clear_bar
 
+  LDA clear_drum_check
+  BEQ :+
+  JSR clear_drum
+  :
+
   LDA drum_inc
   BEQ :+ ; dont increase drum hit pool position if its 0
 
+  increase_dhpp:
   INC drum_hit_pool_pos+1
   LDX drum_hit_pool_pos+1
   CPX #$40 ; check for slot overflow
@@ -93,6 +99,10 @@
   STX drum_hit_pool_pos+1
 
   dont_reset_dhpp1:
+  DEC clear_drum_check
+  LDA clear_drum_check
+  BNE increase_dhpp
+
   LDA #$00
   STA drum_inc ; set drum increase to 0
 
@@ -200,7 +210,7 @@
   INC good_count+3
   LDX #$08+$02
   JSR add_to_4_digit_score
-  JMP clear_drum
+  JMP clear_drum_prep
 
   update_dinp_don:
   ; load the palette timer for DON
@@ -373,6 +383,7 @@
 
   :
   TYA
+  CLC
   ADC #100
   BCC dont_add_max
   INC score_to_add_10
@@ -696,7 +707,7 @@
   LDX #$08+$02
   JSR add_to_4_digit_score
 
-  JMP clear_drum
+  JMP clear_drum_prep
 
   set_ok:
   LDA beat_animation
@@ -713,7 +724,7 @@
   LDX #$0C+$02
   JSR add_to_4_digit_score
 
-  JMP clear_drum
+  JMP clear_drum_prep
 
   set_bad:
   LDA beat_animation
@@ -747,7 +758,7 @@
   LDX #$10+$02
   JSR add_to_4_digit_score
 
-  JMP clear_drum
+  JMP clear_drum_prep
 
   add_points:
   LDA score_to_add
@@ -823,6 +834,7 @@
 
   :
   TYA
+  CLC
   ADC #100
   BCC dont_add_max
   INC score_to_add_10
@@ -1026,6 +1038,30 @@
   RTS
 .endproc
 
+.proc clear_drum_prep
+	; set the frame timing bytes to 0
+  LDY drum_hit_pool_frame_pos+1
+  LDA #$00
+  STA drum_hit_pool_frame, Y
+  INC drum_hit_pool_frame_pos+1
+  INY
+  LDA #$00
+  STA drum_hit_pool_frame, Y
+  INC drum_hit_pool_frame_pos+1
+  INY
+  CPY #128
+  BNE dont_reset_dhpfp1 ; set the position to 0 if its 128
+
+  LDA #$00
+  STA drum_hit_pool_frame_pos+1
+
+  dont_reset_dhpfp1:
+
+  INC clear_drum_check
+
+  RTS
+.endproc
+
 .proc clear_drum
   LDA #$01
   STA draw_bg_over_palette
@@ -1034,7 +1070,7 @@
 
   ; load the pool positions to X and Y
   LDX drum_hit_pool_pos+1
-  LDY drum_hit_pool_frame_pos+1
+  LDY drum_spawn_position_kept_pos+1
 
   ; tranfer the bytes from the saved drum spawn position + Y to drum_disappear_position
   LDA drum_spawn_position_kept, Y
@@ -1112,23 +1148,18 @@
   STA drum_inc
   :
 
-  ; set the frame timing bytes to 0
-  LDY drum_hit_pool_frame_pos+1
-  LDA #$00
-  STA drum_hit_pool_frame, Y
-  INC drum_hit_pool_frame_pos+1
-  INY
-  LDA #$00
-  STA drum_hit_pool_frame, Y
-  INC drum_hit_pool_frame_pos+1
-  INY
-  CPY #128
-  BNE dont_reset_dhpfp1 ; set the position to 0 if its 128
+  LDX clear_drum_check
+  :
+  INC drum_spawn_position_kept_pos+1
+  INC drum_spawn_position_kept_pos+1
+  LDY drum_spawn_position_kept_pos+1
+  BPL dont_reset_dspk
 
-  LDA #$00
-  STA drum_hit_pool_frame_pos+1
-
-  dont_reset_dhpfp1:
+  LDY #$00
+  STY drum_spawn_position_kept_pos+1
+  dont_reset_dspk:
+  DEX
+  BNE :-
 
   LDA #$10 ; set the rating timer (for the sprite appearing) to $10
   STA input_rate_timer
@@ -1273,6 +1304,16 @@
   STA combo_current+1
   STA combo_current+2
   STA combo_current+3
+
+  INC drum_spawn_position_kept_pos+1
+  INC drum_spawn_position_kept_pos+1
+  LDY drum_spawn_position_kept_pos+1
+  BPL dont_reset_dspk
+
+  LDY #$00
+  STY drum_spawn_position_kept_pos+1
+
+  dont_reset_dspk:
 
   LDX #$10+$02
   INC bad_count+3
@@ -1432,7 +1473,7 @@ update_drums:
   CLC
   ASL
   :
-  STX end_timer+1
+  STX end_timer
   JMP force_continue
   :
 

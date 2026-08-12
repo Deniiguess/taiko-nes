@@ -61,6 +61,7 @@ score_to_add: .res 1
 don_inputs: .res 3
 kat_inputs: .res 3
 drum_inc: .res 1
+clear_drum_check: .res 1
 
 beat_animation: .res 1
 beat_anim_frame: .res 2
@@ -198,6 +199,7 @@ drum_hit_pool_pos: .res 2
 drum_hit_pool_frame: .res 128
 drum_hit_pool_frame_pos: .res 2
 drum_spawn_position_kept: .res 128
+drum_spawn_position_kept_pos: .res 2
 
 irq_address: .res 2
 
