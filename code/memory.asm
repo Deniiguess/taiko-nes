@@ -208,6 +208,9 @@ results_jt_position: .res 1
 base_clear_bar_tile_results: .res 1
 base_crown_Y_mem: .res 1
 
+gogo_timer: .res 2
+end_timer: .res 2
+
 .segment "SETT"
 don_color: .res 3
 song_sel_position: .res 3

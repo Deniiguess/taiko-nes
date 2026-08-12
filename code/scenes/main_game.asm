@@ -16,6 +16,8 @@
 
   JSR update_input_detection ; update the input detection pools
 
+  JSR update_timers
+
   LDA #$00
   STA PPUSCROLL_X_stored
 
@@ -1030,15 +1032,6 @@
   LDA #$01
   STA bg_attr+1
 
-  ; reset the previous locations
-  LDA #$00
-  STA draw+7
-  STA draw+8
-  STA draw+12
-  STA draw+13
-  STA draw+17
-  STA draw+18
-
   ; load the pool positions to X and Y
   LDX drum_hit_pool_pos+1
   LDY drum_hit_pool_frame_pos+1
@@ -1066,6 +1059,11 @@
   :
   TAX ; put the value to X
   LDY #$00 ; set Y to 0
+
+  CPX #$03
+  BCC :+
+  LDX #$02
+  :
 
   loop_disappearing:
   ; set the drum disappear positions to the draw buffer
@@ -1328,7 +1326,7 @@
 
 
 
-.proc update_drums
+update_drums:
   LDA misc
   AND #%00000010
   BNE update_drums_p2
@@ -1404,10 +1402,11 @@
 
 
 
-  load_rol_branch:
-  JMP load_rol
+  end_timer_val = $1F
+  gogo_timer_val = $1F
 
   update_drums_p4:
+
   LDX #$00
   LDA (drum_bank_positon, X)
   AND #%11000000
@@ -1417,14 +1416,24 @@
 
   CMP #$80
   BNE :+
-  LDA beat_animation
-  EOR #$80
-  STA beat_animation
+  JSR set_gogo_timer
+  LDA (drum_bank_positon, X)
+  AND #%00000011
+  BEQ force_continue
+  JMP :+++
   :
 
   CMP #$C0
-  BNE :+
-  JMP end_song
+  BNE :++
+  LDX #end_timer_val
+  LDA tempo
+  AND #%01000000
+  BEQ :+
+  CLC
+  ASL
+  :
+  STX end_timer+1
+  JMP force_continue
   :
 
   LDY drum_hit_pool_frame_pos
@@ -1486,6 +1495,9 @@
 
   force_continue:
   JMP done_drawing_small_don
+
+  load_rol_branch:
+  JMP load_rol
 
 
 
@@ -2262,7 +2274,23 @@
   :
 
   RTS
-.endproc
+
+  set_gogo_timer:
+  LDA gogo_timer
+  BNE :+
+  LDA beat_animation
+  BMI :+
+
+  LDA #gogo_timer_val
+  STA gogo_timer
+
+  RTS
+  :
+
+  LDA #gogo_timer_val
+  STA gogo_timer+1
+  RTS
+
 
 
 
@@ -2750,6 +2778,7 @@ tempo_8_table_2x:
 
 
 .proc update_score_combo
+	LDX drum_hit_pool_pos+1
   LDA drum_hit_pool, X
   AND #%00000100
   BEQ dont_check_for_big
@@ -2776,13 +2805,21 @@ tempo_8_table_2x:
 
   dont_check_for_big:
 
+  LDA score_to_add_10
+  BNE :+
   LDA score_to_add
   BEQ dont_inc_score
+  :
 
   LDA score+5
   CLC
   ADC score_to_add
   STA score+5
+
+  LDA score+4
+  CLC
+  ADC score_to_add_10
+  STA score+4
 
   LDX slot_number
   LDA drum_sprite_A, X
@@ -2794,6 +2831,7 @@ tempo_8_table_2x:
 
   LDA #$00
   STA score_to_add
+  STA score_to_add_10
 
   dont_inc_score:
 
@@ -2989,6 +3027,7 @@ tempo_8_table_2x:
   perform_drum_update_loop:
   LDX drum_sprite_T, Y
   LDA drum_sprite_X, Y
+  SEC
   ADC drum_sprite_X_table, X
   LDX #$00
   ADC drum_sprite_X_incr
@@ -3864,7 +3903,7 @@ inc_dbp:
 	AND #$40
 	BNE beat_anim_miss
 	LDA beat_animation
-	BMI beat_anim_alt
+	BMI beat_anim_gogo
 	CMP #$01
 	BEQ beat_anim_full
 
@@ -3902,7 +3941,7 @@ inc_dbp:
 	:
 	RTS
 
-	beat_anim_alt:
+	beat_anim_gogo:
 	LDA #$15
 	STA $9000
 	INC beat_anim_frame+1
@@ -3924,6 +3963,51 @@ inc_dbp:
 
 	byte_20:
 	.byte $20
+.endproc
+
+.proc update_timers
+	LDA misc ; execute every 8 pixel scrolls
+  AND #%00000010
+  BEQ :+
+
+  ; reset the previous locations for drum clear idk where to put this
+  LDA #$00
+  STA draw+7
+  STA draw+8
+  STA draw+12
+  STA draw+13
+  STA draw+17
+  STA draw+18
+
+	LDX end_timer
+	BEQ update_gogo_timer
+	DEC end_timer
+	DEX
+	BNE update_gogo_timer
+	JMP end_song
+
+	update_gogo_timer:
+	LDX gogo_timer
+	BEQ update_gogo_timer_end
+	DEC gogo_timer
+	DEX
+	BNE update_gogo_timer_end
+	LDA beat_animation
+	ORA #%10000000
+	STA beat_animation
+	RTS
+
+	update_gogo_timer_end:
+	LDX gogo_timer+1
+	BEQ :+
+	DEC gogo_timer+1
+	DEX
+	BNE :+
+	LDA beat_animation
+	AND #%01111111
+	STA beat_animation
+	:
+	RTS
 .endproc
 
 .proc set_scroll_score_init
