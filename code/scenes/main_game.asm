@@ -1061,9 +1061,8 @@
   LSR ; shift the bits to bit 1 and 2
   CPX #$00
   BEQ :+
-  CMP #$00
-  BNE :+
-  LDA #$01
+  CLC
+  ADC #$01
   :
   TAX ; put the value to X
   LDY #$00 ; set Y to 0
@@ -1526,8 +1525,15 @@
   AND #%01000000
   TAY
 
+  LDA (drum_bank_positon, X)
+  AND #%00100000
+  PHP
+  LDA #$00
+  PLP
+  BNE :+
   JSR inc_dbp
   LDA (drum_bank_positon, X)
+  :
   CPY #$00
   BEQ :+
   ASL
@@ -1662,8 +1668,15 @@
   AND #%01000000
   TAY
 
+  LDA (drum_bank_positon, X)
+  AND #%00100000
+  PHP
+  LDA #$00
+  PLP
+  BNE :+
   JSR inc_dbp
   LDA (drum_bank_positon, X)
+  :
   CPY #$00
   BEQ :+
   ASL
@@ -1861,8 +1874,15 @@
   AND #%01000000
   TAY
 
+  LDA (drum_bank_positon, X)
+  AND #%00100000
+  PHP
+  LDA #$00
+  PLP
+  BNE :+
   JSR inc_dbp
   LDA (drum_bank_positon, X)
+  :
   CPY #$00
   BEQ :+
   ASL

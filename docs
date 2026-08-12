@@ -51,7 +51,7 @@ S - Scroll Speed
 I - inputs / 64
 
 drums:
-AA-WWSTT LLLLLLLL RRRRRRRR
+AAIWWSTT LLLLLLLL RRRRRRRR
 
 T - type (color)
     0 - nothing
@@ -80,3 +80,5 @@ A - attributes
     1 - force continue (priority over drum)
     2 - change beat animation
     3 - end song (unimplemented)
+
+I - ignore length byte (length $00)
