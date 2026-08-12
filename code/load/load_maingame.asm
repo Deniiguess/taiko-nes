@@ -156,7 +156,7 @@
   LDA #$25
   STA drum_spawn_position+1
   STA drum_spawn_position+3
-  LDA #$0B
+  LDA #$0E
   STA drum_spawn_position+2
   LDA #$03
   STA drum_spawn_position
@@ -300,6 +300,9 @@
 
   DEY
   BNE load_taiko_bg
+
+  LDA #$00
+  STA tiles_remaining
 
   LDA tempo
   AND #$40

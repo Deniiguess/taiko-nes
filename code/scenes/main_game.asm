@@ -638,10 +638,10 @@
   .byte $0B, $0F
 
   ok_times_2:
-  .byte $05, $04
+  .byte $05, $03
 
   bad_times_2:
-  .byte $01, $01
+  .byte $01, $00
 
   set_input_timing:
   LDA tempo
@@ -1029,6 +1029,15 @@
   STA draw_bg_over_palette
   LDA #$01
   STA bg_attr+1
+
+  ; reset the previous locations
+  LDA #$00
+  STA draw+7
+  STA draw+8
+  STA draw+12
+  STA draw+13
+  STA draw+17
+  STA draw+18
 
   ; load the pool positions to X and Y
   LDX drum_hit_pool_pos+1
