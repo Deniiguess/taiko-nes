@@ -37,9 +37,8 @@
   JSR update_attributes ; update the palette attributes
 
   LDA mods
-  AND #%00001001
-  CMP #%00001001
-  BEQ :+
+  AND #%00000001
+  BNE :+
 
   JSR reset_misc_bit_2 ; set the bit 2 in misc to 0
 
@@ -56,11 +55,6 @@
   :
 
   JSR update_autoplay
-
-  LDA mods
-  AND #%00001001
-  CMP #%00001001
-  BNE :+
 
   LDA frame_timer
   LSR
@@ -1368,6 +1362,17 @@
   dont_reset_combo:
   LDA #$01
   STA drum_inc
+
+  INC drum_spawn_position_kept_pos
+  INC drum_spawn_position_kept_pos
+  LDY drum_spawn_position_kept_pos
+  BPL dont_reset_dspk_roll
+
+  LDY #$00
+  STY drum_spawn_position_kept_pos
+
+  dont_reset_dspk_roll:
+
   JMP dont_reset_dhpp1
 .endproc
 

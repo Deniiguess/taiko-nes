@@ -3,7 +3,7 @@
   .lobytes dbank5, dbank6, dbank7, dbank8
   .lobytes dbank1, dbank2, dbank3, dbank4
   .lobytes dbank5, dbank6, dbank7, dbank8
-  .lobytes dbank1, dbank2, dbank3, remix_8_oni
+  .lobytes dbank1, remix_8_normal, dbank3, remix_8_oni
   .lobytes dbank5, dbank6, dbank7, dbank8
 
   song_address_start_hi:
@@ -11,7 +11,7 @@
   .hibytes dbank5, dbank6, dbank7, dbank8
   .hibytes dbank1, dbank2, dbank3, dbank4
   .hibytes dbank5, dbank6, dbank7, dbank8
-  .hibytes dbank1, dbank2, dbank3, remix_8_oni
+  .hibytes dbank1, remix_8_normal, dbank3, remix_8_oni
   .hibytes dbank5, dbank6, dbank7, dbank8
 
   drum_bank_list:
@@ -27,7 +27,7 @@
   .byte $09, $03, $02, $01
   .byte $0A, $04, $03, $09
   .byte $00, $00, $00, $00
-  .byte $00, $00, $00, $0A
+  .byte $00, $04, $00, $0A
   .byte $01, $03, $06, $07
 
   song_author_1: ; ADONETE
