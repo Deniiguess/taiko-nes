@@ -2875,9 +2875,15 @@ tempo_8_table_2x:
   ADC score_to_add_10
   STA score+4
 
+  LDX drum_hit_pool_pos+1
+  LDA drum_hit_pool, X
+  AND #%00000011
+  STA temp_drum_type
+
   LDX slot_number
   LDA drum_sprite_A, X
-  ORA #%00000001
+  ORA temp_drum_type
+  ORA #$01
   STA drum_sprite_A, X
 
   LDA #$01
@@ -3181,8 +3187,7 @@ update_drum_sprites_big:
   BEQ dont_update_drum_sprites_big
 
   AND #%00000010
-  CLC
-  ROR
+  LSR
   STA drum_sprite_A_type
 
   LDY slot_number_big

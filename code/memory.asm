@@ -160,6 +160,8 @@ drum_sprite_A_big: .res 2
 drum_sprite_T_big: .res 2
 drum_big_sprite_loop: .res 1
 
+temp_drum_type: .res 1
+
 temp_screen: .res 1
 cursor_diff_screen: .res 1
 cursor_song_screen: .res 1
