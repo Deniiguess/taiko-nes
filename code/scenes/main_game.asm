@@ -3173,7 +3173,10 @@ tempo_8_table_2x:
 
 
 update_drum_sprites_big:
-  LDA drum_sprite_A, Y
+  LDX drum_sprite_A, Y
+  LDA #$00
+  STA drum_sprite_A, Y
+  TXA
   BIT taiko_bg_1 ; #$01 basically
   BEQ dont_update_drum_sprites_big
 
@@ -3181,9 +3184,6 @@ update_drum_sprites_big:
   CLC
   ROR
   STA drum_sprite_A_type
-
-  LDA #$00
-  STA drum_sprite_A, Y
 
   LDY slot_number_big
 

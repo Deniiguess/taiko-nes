@@ -253,7 +253,7 @@
   STA results_transition_time
   STA results_transition_time+1
   STA jump_frame
-  STA drum_spawn_position_kept_pos+1
+  STA drum_spawn_position_kept_pos
   STA end_timer
   STA gogo_timer
   STA gogo_timer+1
