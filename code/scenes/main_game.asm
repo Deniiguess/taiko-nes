@@ -99,12 +99,16 @@
   STX drum_hit_pool_pos+1
 
   dont_reset_dhpp1:
-  DEC clear_drum_check
   LDA clear_drum_check
-  BNE increase_dhpp
+  CMP #$02
+  BCC dont_increase_dhpp
+  DEC clear_drum_check
+  JMP increase_dhpp
+  dont_increase_dhpp:
 
   LDA #$00
   STA drum_inc ; set drum increase to 0
+  STA clear_drum_check
 
   :
 
@@ -1070,7 +1074,7 @@
 
   ; load the pool positions to X and Y
   LDX drum_hit_pool_pos+1
-  LDY drum_spawn_position_kept_pos+1
+  LDY drum_spawn_position_kept_pos
 
   ; tranfer the bytes from the saved drum spawn position + Y to drum_disappear_position
   LDA drum_spawn_position_kept, Y
@@ -1148,18 +1152,27 @@
   STA drum_inc
   :
 
+
   LDX clear_drum_check
   :
-  INC drum_spawn_position_kept_pos+1
-  INC drum_spawn_position_kept_pos+1
-  LDY drum_spawn_position_kept_pos+1
+  INC drum_spawn_position_kept_pos
+  INC drum_spawn_position_kept_pos
+  LDY drum_spawn_position_kept_pos
   BPL dont_reset_dspk
 
   LDY #$00
-  STY drum_spawn_position_kept_pos+1
+  STY drum_spawn_position_kept_pos
   dont_reset_dspk:
   DEX
   BNE :-
+
+  LDX drum_hit_pool_pos+1
+  LDA drum_hit_pool, X
+  AND #%00000100
+  BEQ :+
+  LDA #$00
+  STA clear_drum_check
+  :
 
   LDA #$10 ; set the rating timer (for the sprite appearing) to $10
   STA input_rate_timer
@@ -1305,13 +1318,13 @@
   STA combo_current+2
   STA combo_current+3
 
-  INC drum_spawn_position_kept_pos+1
-  INC drum_spawn_position_kept_pos+1
-  LDY drum_spawn_position_kept_pos+1
+  INC drum_spawn_position_kept_pos
+  INC drum_spawn_position_kept_pos
+  LDY drum_spawn_position_kept_pos
   BPL dont_reset_dspk
 
   LDY #$00
-  STY drum_spawn_position_kept_pos+1
+  STY drum_spawn_position_kept_pos
 
   dont_reset_dspk:
 

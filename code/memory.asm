@@ -199,7 +199,7 @@ drum_hit_pool_pos: .res 2
 drum_hit_pool_frame: .res 128
 drum_hit_pool_frame_pos: .res 2
 drum_spawn_position_kept: .res 128
-drum_spawn_position_kept_pos: .res 2
+drum_spawn_position_kept_pos: .res 1
 
 irq_address: .res 2
 
