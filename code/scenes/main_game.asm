@@ -34,8 +34,6 @@
 
   JSR update_roll_gfx ; update the drum roll counter
 
-  JSR update_attributes ; update the palette attributes
-
   LDA mods
   AND #%00000001
   BNE :+
@@ -43,6 +41,8 @@
   JSR reset_misc_bit_2 ; set the bit 2 in misc to 0
 
   :
+
+  JSR update_attributes ; update the palette attributes
 
   JSR update_bars ; update bar positions
 
@@ -65,13 +65,13 @@
 
   JSR update_scroll ; update scrolling
 
+  JSR update_score_combo ; update the score and combo
+
   LDA frame_timer
   AND #$01
   BEQ ineedaname
 
   JSR update_big_input ; update the big input timers
-
-  JSR update_score_combo ; update the score and combo
 
   JSR update_clear_bar
 
@@ -1023,6 +1023,11 @@
   escape_rollL:
 
   INC score+4
+  LDA beat_animation
+  BPL :+
+  INC score+5
+  INC score+5
+  :
   LDA roll_size
   BEQ not_big_roll
 
@@ -1031,6 +1036,11 @@
   ORA #%00000100
   STA drum_sprite_A, X
   INC score+4
+  LDA beat_animation
+  BPL :+
+  INC score+5
+  INC score+5
+  :
   not_big_roll:
 
   RTS
@@ -1762,7 +1772,7 @@ update_drums:
   CPY #$00
   BEQ :+
   ASL
-  ADC #$02
+  ADC #$01
   :
 
   STA roll_length

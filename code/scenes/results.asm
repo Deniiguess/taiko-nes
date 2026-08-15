@@ -834,7 +834,11 @@
 	STA draw+55, X
 	STA draw+63, X
 	INX
+	TXA
+	LSR
+	BCS :+
 	INY
+	:
 	CPX #$10
 	BCC skip_clear_bar_gold
 
