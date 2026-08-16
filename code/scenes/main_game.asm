@@ -312,19 +312,31 @@
   ADC #45
   LDX beat_animation
   BPL :+
-  ADC #10
+  ADC #20
   :
   LDX combo_current
   BNE add_max
   LDX combo_current+1
   BNE add_max
 
-  PHA
   LDY combo_current+2
+  add_points_loop:
+  CPY #$00
+  BEQ no_longer_add_points_loop
+  CLC
+  ADC #10
+  BCC :+
+  INC score_to_add_10
+  :
+  DEY
+  JMP add_points_loop
+
+  no_longer_add_points_loop:
+  TAY
   LDX drum_hit_pool_pos+1
   LDA drum_hit_pool, X
   AND #%00000100
-  BEQ :++
+  BEQ :+++
 
   LDA drum_input_don_two
   AND #%11000000
@@ -334,26 +346,19 @@
   LDA drum_input_kat_two
   AND #%11000000
   CMP #$C0
-  BNE :++
+  BNE :+++
 
   :
   TYA
   CLC
   ASL
   TAY
-
-  :
-  PLA
-  add_points_loop:
-  CPY #$00
-  BEQ no_longer_add_points
-  CLC
-  ADC #10
   BCC :+
   INC score_to_add_10
   :
-  DEY
-  JMP add_points_loop
+
+  :
+  TYA
 
   no_longer_add_points:
   STA score_to_add
@@ -382,11 +387,11 @@
   :
   TYA
   CLC
-  ADC #100
-  BCC dont_add_max
+  ASL
+  BCC dont_add_10
   INC score_to_add_10
+  dont_add_10:
   TAY
-
   dont_add_max:
   TYA
   JMP no_longer_add_points
@@ -763,19 +768,31 @@
   ADC #45
   LDX beat_animation
   BPL :+
-  ADC #10
+  ADC #20
   :
   LDX combo_current
   BNE add_max
   LDX combo_current+1
   BNE add_max
 
-  PHA
   LDY combo_current+2
+  add_points_loop:
+  CPY #$00
+  BEQ no_longer_add_points_loop
+  CLC
+  ADC #10
+  BCC :+
+  INC score_to_add_10
+  :
+  DEY
+  JMP add_points_loop
+
+  no_longer_add_points_loop:
+  TAY
   LDX drum_hit_pool_pos+1
   LDA drum_hit_pool, X
   AND #%00000100
-  BEQ :++
+  BEQ :+++
 
   LDA drum_input_don_two
   AND #%11000000
@@ -785,26 +802,19 @@
   LDA drum_input_kat_two
   AND #%11000000
   CMP #$C0
-  BNE :++
+  BNE :+++
 
   :
   TYA
   CLC
   ASL
   TAY
-
-  :
-  PLA
-  add_points_loop:
-  CPY #$00
-  BEQ no_longer_add_points
-  CLC
-  ADC #10
   BCC :+
   INC score_to_add_10
   :
-  DEY
-  JMP add_points_loop
+
+  :
+  TYA
 
   no_longer_add_points:
   STA score_to_add
@@ -832,14 +842,10 @@
 
   :
   TYA
-  CLC
-  ADC #100
+  ASL
   BCC dont_add_max
   INC score_to_add_10
-  TAY
-
   dont_add_max:
-  TYA
   JMP no_longer_add_points
 
 
@@ -851,23 +857,31 @@
   ADC #23
   LDX beat_animation
   BPL :+
-  ADC #5
-  :
-  LDX beat_animation
-  BPL :+
-  ADC #5
+  ADC #10
   :
   LDX combo_current
   BNE add_max_ok
   LDX combo_current+1
   BNE add_max_ok
 
-  PHA
   LDY combo_current+2
+  add_points_loop_ok:
+  CPY #$00
+  BEQ no_longer_add_points_loop_ok
+  CLC
+  ADC #5
+  BCC :+
+  INC score_to_add_10
+  :
+  DEY
+  JMP add_points_loop_ok
+
+  no_longer_add_points_loop_ok:
+  TAY
   LDX drum_hit_pool_pos+1
   LDA drum_hit_pool, X
   AND #%00000100
-  BEQ :++
+  BEQ :+++
 
   LDA drum_input_don_two
   AND #%11000000
@@ -877,26 +891,19 @@
   LDA drum_input_kat_two
   AND #%11000000
   CMP #$C0
-  BNE :++
+  BNE :+++
 
   :
   TYA
   CLC
   ASL
   TAY
-
-  :
-  PLA
-  add_points_loop_ok:
-  CPY #$00
-  BEQ no_longer_add_points_ok
-  CLC
-  ADC #5
   BCC :+
   INC score_to_add_10
   :
-  DEY
-  JMP add_points_loop_ok
+
+  :
+  TYA
 
   no_longer_add_points_ok:
   STA score_to_add
@@ -924,7 +931,7 @@
 
   :
   TYA
-  ADC #100
+  LSR
   BCC dont_add_max_ok
   INC score_to_add_10
   TAY
@@ -2885,10 +2892,23 @@ tempo_8_table_2x:
   ADC score_to_add
   STA score+5
 
-  LDA score+4
+  LDY score_to_add_10
+  BEQ :++
+  :
   CLC
-  ADC score_to_add_10
+  LDA score+5
+  ADC #$06
+  STA score+5
+  LDA score+4
+  ADC #$05
   STA score+4
+  LDA score+3
+  ADC #$02
+  STA score+3
+  DEY
+  BNE :-
+  :
+
 
   LDX drum_hit_pool_pos+1
   LDA drum_hit_pool, X
@@ -3701,11 +3721,11 @@ drum_sprite_tile_big:
 	JMP do_action_at_beat
 	:
 	LDX base_sprite+2
-	LDA #$1F
+	LDA #$27
   STA $8000
-  LDA #$1F
+  LDA #$27
   STA $8800
-  LDA #$1F
+  LDA #$27
   STA $9000
 
   LDA $200
@@ -3970,7 +3990,15 @@ inc_dbp:
 	.byte $14, $14, $14, $14, $14, $14, $11, $0E, $0D, $0D, $0C, $0C, $0B, $0B, $0C, $0D, $0E, $10, $13, $14, $14, $14, $14, $14, $14, $14, $14, $14
 .endproc
 
+base_don_chr_bank = $10
 .proc do_action_at_beat
+	LDY #$00
+	LDA mods
+	LSR
+	BCC :+
+	LDY #10
+	:
+	CLC
 	LDA beat_animation
 	BIT byte_20
 	BNE beat_anim_jump
@@ -3981,19 +4009,22 @@ inc_dbp:
 	CMP #$01
 	BEQ beat_anim_full
 
+	CLC
 	beat_anim_norm:
-	LDA #$0E
+	TYA
+	ADC #base_don_chr_bank
 	STA $9000
 	INC beat_anim_frame+1
 	LDX beat_anim_frame+1
 	CPX #$08
 	BCC :+
-	LDA #$0F
+	ADC #$00
 	STA $9000
 	RTS
 
 	beat_anim_jump:
-	LDA #$17
+	TYA
+	ADC #base_don_chr_bank+7
 	STA $9000
 	INC beat_anim_frame+1
 	LDA jump_frame
@@ -4002,7 +4033,8 @@ inc_dbp:
 	RTS
 
 	beat_anim_full:
-	LDA #$12
+	TYA
+	ADC #base_don_chr_bank+1
 	STA $9000
 	INC beat_anim_frame+1
 	LDA beat_anim_frame+1
@@ -4010,13 +4042,15 @@ inc_dbp:
 	LSR
 	LSR
 	BCC :+
-	LDA #$13
+	TYA
+	ADC #base_don_chr_bank+2
 	STA $9000
 	:
 	RTS
 
 	beat_anim_gogo:
-	LDA #$15
+	TYA
+	ADC #base_don_chr_bank+5
 	STA $9000
 	INC beat_anim_frame+1
 	LDA beat_anim_frame+1
@@ -4024,13 +4058,15 @@ inc_dbp:
 	LSR
 	LSR
 	BCC :+
-	LDA #$16
+	TYA
+	ADC #base_don_chr_bank+5
 	STA $9000
 	:
 	RTS
 
 	beat_anim_miss:
-	LDA #$14
+	TYA
+	ADC #base_don_chr_bank+4
 	STA $9000
 	INC beat_anim_frame+1
 	RTS

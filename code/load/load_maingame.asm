@@ -257,6 +257,8 @@
   STA end_timer
   STA gogo_timer
   STA gogo_timer+1
+  STA drum_inc
+  STA clear_drum_check
 
   LDA #$02
   STA beat_anim_frame+1

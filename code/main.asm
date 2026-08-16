@@ -125,10 +125,10 @@ results_song:
 .include "../CHR-ROM/pause.asm"
 
 ; donchan frames (10kB)
-.incbin "../CHR-ROM/don_beat_1.chr"
-.incbin "../CHR-ROM/don_beat_2.chr"
 .incbin "../CHR-ROM/don_sett_1.chr"
 .incbin "../CHR-ROM/don_sett_2.chr"
+.incbin "../CHR-ROM/don_beat_1.chr"
+.incbin "../CHR-ROM/don_beat_2.chr"
 .incbin "../CHR-ROM/don_full_1.chr"
 .incbin "../CHR-ROM/don_full_2.chr"
 .incbin "../CHR-ROM/don_miss.chr"
@@ -141,3 +141,13 @@ results_song:
 
 ; background continuation same reason (1kB)
 .include "../CHR-ROM/results_trans.asm"
+
+; mechadon frames (8kB)
+.incbin "../CHR-ROM/don_beat_1_mecha.chr"
+.incbin "../CHR-ROM/don_beat_2_mecha.chr"
+.incbin "../CHR-ROM/don_full_1_mecha.chr"
+.incbin "../CHR-ROM/don_full_2_mecha.chr"
+.incbin "../CHR-ROM/don_miss_mecha.chr"
+.incbin "../CHR-ROM/don_gogo_1_mecha.chr"
+.incbin "../CHR-ROM/don_gogo_2_mecha.chr"
+.incbin "../CHR-ROM/don_jump_mecha.chr"

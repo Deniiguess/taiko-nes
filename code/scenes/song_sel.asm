@@ -2047,11 +2047,11 @@ MAX_SONG_COUNT = $05
 .proc update_donchan
 	LDA beat_anim_frame
 	BEQ :+
-	LDA #$10
+	LDA #$0E
 	STA $9800
 	RTS
 	:
-	LDA #$11
+	LDA #$0F
 	STA $9800
 	RTS
 .endproc
