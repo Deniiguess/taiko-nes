@@ -67,11 +67,11 @@
 
   JSR update_score_combo ; update the score and combo
 
+  JSR update_big_input ; update the big input timers
+
   LDA frame_timer
   AND #$01
   BEQ ineedaname
-
-  JSR update_big_input ; update the big input timers
 
   JSR update_clear_bar
 
