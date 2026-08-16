@@ -132,8 +132,8 @@ results_song:
 .incbin "../CHR-ROM/don_full_1.chr"
 .incbin "../CHR-ROM/don_full_2.chr"
 .incbin "../CHR-ROM/don_miss.chr"
-.incbin "../CHR-ROM/don_altb_1.chr"
-.incbin "../CHR-ROM/don_altb_2.chr"
+.incbin "../CHR-ROM/don_gogo_1.chr"
+.incbin "../CHR-ROM/don_gogo_2.chr"
 .incbin "../CHR-ROM/don_jump.chr"
 
 ; tiles continuation because im not shifiting the banks (1kB)
