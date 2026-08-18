@@ -259,6 +259,7 @@
   STA gogo_timer+1
   STA drum_inc
   STA clear_drum_check
+  STA roll_active
 
   LDA #$02
   STA beat_anim_frame+1

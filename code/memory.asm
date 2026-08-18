@@ -49,6 +49,7 @@ address_table: .res 2
 roll_length: .res 3
 roll_size: .res 1
 roll_time: .res 1
+roll_active: .res 1
 
 bar_level: .res 1
 

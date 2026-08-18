@@ -149,9 +149,7 @@
   BCS update_dinp_kat
   exit_dinp_kat:
 
-  LDA roll_length+2
-  BNE :+
-  LDA roll_length+1
+  LDA roll_active
   BEQ :+
   LDA misc ; execute every 8 pixel scrolls
   AND #%00000010
@@ -240,7 +238,7 @@
   LDA drum_hit_pool, X
   AND #%00000100
   BEQ :+
-  LDA #$C2
+  LDA #$C4
   STA drum_input_don_two
 
   JSR set_sprite_to_big
@@ -262,7 +260,7 @@
   LDA drum_hit_pool, X
   AND #%00000100
   BEQ :+
-  LDA #$C2
+  LDA #$C4
   STA drum_input_kat_two
 
   JSR set_sprite_to_big
@@ -462,7 +460,7 @@
   AND #%11000000
   BNE dont_rest_double_kat
 
-  ORA #%00000010
+  ORA #%00000100
   STA drum_input_kat_two
 
   dont_rest_double_kat:
@@ -496,7 +494,7 @@
   STA drum_input_kat_time
 
   ; perform drum roll code
-  LDA roll_length+1
+  LDA roll_active
   BNE input_roll_branch_kat
   dont_input_roll_kat:
 
@@ -516,11 +514,6 @@
 
   ; branch for drum roll
   input_roll_branch_kat:
-  LDA roll_length+2
-  BEQ input_roll_p2_branch_kat
-  JMP dont_input_roll_kat ; stop code if its 0
-
-  input_roll_p2_branch_kat:
   JMP input_roll_p2_kat
 
 
@@ -575,11 +568,6 @@
 
   ; branch for drum roll
   input_roll_branch_don:
-  LDA roll_length+2
-  BEQ input_roll_p2_branch_don
-  JMP dont_input_roll_don
-
-  input_roll_p2_branch_don:
   JMP input_roll_p2_don ; stop code if its 0
 
 
@@ -597,7 +585,7 @@
   AND #%11000000
   BNE dont_rest_double_don
 
-  ORA #%00000010
+  ORA #%00000100
   STA drum_input_don_two
 
   dont_rest_double_don:
@@ -626,7 +614,7 @@
   LDA #$0A
   STA drum_input_don_time
 
-  LDA roll_length+1
+  LDA roll_active
   BNE input_roll_branch_don
   dont_input_roll_don:
 
@@ -648,10 +636,10 @@
   .byte $12, $15
 
   ok_times_1:
-  .byte $0E, $13
+  .byte $0E, $12
 
   good_times:
-  .byte $0B, $0F
+  .byte $0B, $0E
 
   ok_times_2:
   .byte $05, $03
@@ -845,7 +833,9 @@
   ASL
   BCC dont_add_max
   INC score_to_add_10
+  TAY
   dont_add_max:
+  TYA
   JMP no_longer_add_points
 
 
@@ -2310,15 +2300,21 @@ update_drums:
   end_uri_alt:
   INC roll_length+2
   DEC roll_length+1
+  LDA roll_length+1
+  STA roll_active
   RTS
 
   update_roll_inputs:
+  LDA #$00
+  STA roll_active
   LDA roll_length+1
   BEQ end_uri
   DEC roll_length+2
   LDA roll_length+2
   BNE end_uri
   DEC roll_length+1
+  LDA roll_length+1
+  STA roll_active
   RTS
 
 
@@ -2774,14 +2770,12 @@ tempo_8_table_2x:
   STA drum_input_kat_two
   dont_reset_dikt:
 
+  LDA roll_active
+  BNE dont_update_big_input
+
   LDX drum_hit_pool_pos+1
   LDA drum_hit_pool, X
   AND #%00000100
-  BEQ dont_update_big_input
-
-  LDA drum_hit_pool, X
-  AND #%00000011
-  CMP #%00000011
   BEQ dont_update_big_input
 
   LDA drum_input_don_two
@@ -2854,6 +2848,9 @@ tempo_8_table_2x:
 
 
 .proc update_score_combo
+	LDA roll_active
+	BNE dont_check_for_big
+
 	LDX drum_hit_pool_pos+1
   LDA drum_hit_pool, X
   AND #%00000100
@@ -4504,13 +4501,13 @@ dinp_don_pal:
   .byte $20, $20, $36, $36, $36, $26, $26, $26, $16, $16, $16
 
 dinp_don_pal_two:
-  .byte $20, $26, $26, $26
+  .byte $20, $26, $26, $26, $26
 
 dinp_kat_pal:
   .byte $20, $20, $31, $31, $31, $21, $21, $21, $11, $11, $11
 
 dinp_kat_pal_two:
-  .byte $20, $21, $21, $21
+  .byte $20, $21, $21, $21, $21
 
 bar_sprite_data_pool:
   .byte $3F, $0E, $22, $00, $4F, $0E, $22, $00
