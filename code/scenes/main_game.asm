@@ -129,15 +129,7 @@
 .endproc
 
 .proc update_autoplay
-  LDA #$00
-  STA clear_bar
-  STA clear_bar+1
-  STA clear_bar+2
-  STA clear_bar+3
-  STA clear_bar+4
-  STA clear_bar+5
-  STA clear_bar+6
-  STA clear_bar+7
+
 
   ; update the DON drum palette
   LDX drum_input_don_time
@@ -208,6 +200,7 @@
   INC good_count+3
   LDX #$08+$02
   JSR add_to_4_digit_score
+  JSR increase_clear_bar
   JMP clear_drum_prep
 
   update_dinp_don:

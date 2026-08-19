@@ -43,7 +43,7 @@ dbank8:
 .byte $00
 
 remix_8_normal:
-.byte $C5, $04
+.byte $C5, $04, $3D
 .byte $40, $23
 .byte $0A, $07, $0A, $07, $0A, $03, $0A, $03, $16, $03
 .byte $15, $03, $0A, $03, $09, $01, $09, $01, $0A, $03
@@ -193,8 +193,8 @@ remix_8_oni:
 .byte $E0, $00, $00
 
 finned_frontier_easy:
-.byte $83, $01, $04
-.byte $40, $1F
+.byte $83, $02, $02
+.byte $40, $3F
 .byte $09, $07, $0A, $07
 .byte $09, $03, $09, $03, $09, $07
 .byte $09, $07, $0A, $07
@@ -241,4 +241,4 @@ finned_frontier_easy:
 
 
 finned_frontier_normal:
-.byte $C3, $02
+.byte $C3, $02, $00
