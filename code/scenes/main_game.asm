@@ -122,6 +122,8 @@
 
   JSR update_don
 
+  JSR check_clear_bar_for_0s
+
   JMP stay_here ; go to the forever loop
 
 .endproc
@@ -691,7 +693,7 @@
   LDA #$02
   STA input_rate
   INC combo_current+3
-  INC clear_bar_inputs
+  JSR increase_clear_bar
   JSR add_points
 
   INC good_count+3
@@ -708,7 +710,7 @@
   LDA #$01
   STA input_rate
   INC combo_current+3
-  INC clear_bar_inputs
+  JSR increase_clear_bar
   JSR add_points_ok
 
   INC ok_count+3
@@ -736,7 +738,7 @@
   STA drum_inc
   :
 
-  INC clear_bar_input_miss
+  JSR increase_clear_bar_miss
 
   LDA #$00
   STA input_rate
@@ -1299,7 +1301,9 @@
   LDX drum_hit_pool_frame_pos+1
   LDA drum_hit_pool_frame, X
   CMP #$01
-  BNE dont_add_dhpfp
+  BEQ :+
+  RTS
+  :
   LDA drum_hit_pool_frame+1, X
   CMP #$FE
   BCS dont_add_dhpfp
@@ -1338,7 +1342,7 @@
   INC bad_count+3
   JSR add_to_4_digit_score
 
-  INC clear_bar_input_miss
+  JSR increase_clear_bar_miss
 
   INC drum_hit_pool_pos+1
   LDX drum_hit_pool_pos+1
@@ -3565,31 +3569,29 @@ drum_sprite_tile_big:
 .proc update_clear_bar
   LDA clear_bar_inputs
   CMP clear_bar_inputs+1
-  BNE dont_increase_cb
+  BCC dont_increase_cb
 
   INC clear_bar
-  LDA #$00
+  SBC clear_bar_inputs+1
   STA clear_bar_inputs
 
   dont_increase_cb:
 
   LDA clear_bar_input_miss
   CMP clear_bar_input_miss+1
-  BNE :+
+  BCC :+
+  SBC clear_bar_input_miss+1
+  STA clear_bar_input_miss
 
   LDX #$07
   dont_decrease_cb_loop:
   LDA clear_bar, X
   BEQ dont_decrease_cb
   DEC clear_bar, X
-  JMP escape_decrease_cb
+  JMP :+
   dont_decrease_cb:
   DEX
   BPL dont_decrease_cb_loop
-
-  escape_decrease_cb:
-  LDA #$00
-  STA clear_bar_input_miss
 
   :
 
@@ -3723,6 +3725,89 @@ drum_sprite_tile_big:
   bg_pal_4_table:
   .byte $11, $21, $31
 
+.endproc
+
+.proc check_clear_bar_for_0s
+  LDA clear_bar_check_if_0
+  AND #$03
+  BEQ leave_subroutine
+  CMP #$03
+  BEQ clear_everything
+  CMP #$02
+  BEQ clear_modulo
+
+  LDA clear_bar_check_if_0
+  AND #$04
+  BEQ :+
+  INC clear_bar
+  :
+
+  LDA clear_bar_check_if_0
+  AND #$08
+  BEQ :+
+
+  LDX #$07
+  dont_decrease_cb_loop:
+  LDA clear_bar, X
+  BEQ dont_decrease_cb
+  DEC clear_bar, X
+  JMP :+
+  dont_decrease_cb:
+  DEX
+  BPL dont_decrease_cb_loop
+  :
+
+  LDA clear_bar_check_if_0
+  AND #$03
+  STA clear_bar_check_if_0
+  RTS
+
+  clear_everything:
+  LDA #$00
+  STA clear_bar_inputs
+  STA clear_bar_input_miss
+  clear_modulo:
+  LDA #$00
+  STA clear_bar_inputs_modulo
+  STA clear_bar_input_miss_modulo
+
+  leave_subroutine:
+  LDA clear_bar_check_if_0
+  AND #$03
+  STA clear_bar_check_if_0
+	RTS
+.endproc
+
+.proc increase_clear_bar
+  INC clear_bar_inputs
+  INC clear_bar_inputs_modulo
+  LDA clear_bar_inputs_modulo
+  CMP clear_bar_inputs_modulo+1
+  BCC :+
+  INC clear_bar_inputs
+  SBC clear_bar_inputs_modulo+1
+  STA clear_bar_inputs_modulo
+  LDA clear_bar_check_if_0
+  ORA #$04
+  STA clear_bar_check_if_0
+  :
+  RTS
+.endproc
+
+.proc increase_clear_bar_miss
+	INC clear_bar_input_miss
+  INC clear_bar_input_miss_modulo
+  LDA clear_bar_input_miss_modulo
+  CMP clear_bar_input_miss_modulo+1
+  BCC :+
+  INC clear_bar_input_miss
+  SBC clear_bar_input_miss_modulo+1
+  STA clear_bar_input_miss_modulo
+  LDA clear_bar_check_if_0
+  ORA #$08
+  STA clear_bar_check_if_0
+  :
+	RTS
 .endproc
 
 .proc update_pause

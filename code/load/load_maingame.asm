@@ -213,7 +213,7 @@
   reset_clearbar:
   STA clear_bar, X
   INX
-  CPX #13
+  CPX #18
   BNE reset_clearbar
 
   TAX
@@ -239,13 +239,36 @@
 
   JSR increase_dbp
 
+  CLC
   LDA (drum_bank_positon, X)
+  BNE :+
+  LDA clear_bar_check_if_0
+  ORA #$01
+  STA clear_bar_check_if_0
+  LDA #$FF
+  SEC
+  :
   STA clear_bar_inputs+1
-  LSR
+  ROR
   BNE :+
   LDA #$01
   :
   STA clear_bar_input_miss+1
+
+  JSR increase_dbp
+
+  CLC
+  LDA (drum_bank_positon, X)
+  BNE :+
+  LDA clear_bar_check_if_0
+  ORA #$02
+  STA clear_bar_check_if_0
+  LDA #$FF
+  SEC
+  :
+  STA clear_bar_inputs_modulo+1
+  ROR
+  STA clear_bar_input_miss_modulo+1
 
   JSR increase_dbp
 
@@ -285,6 +308,7 @@
 
   ; spawn the sprites for drum hitting
   LDY base_sprite+2
+  LDX #$00
   load_drum_input_sprites:
   LDA drum_input_sprites, X
   STA $22C, Y

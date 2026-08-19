@@ -118,7 +118,7 @@ remix_8_normal:
 .byte $E0, $00, $00
 
 remix_8_oni:
-.byte $C5, $09
+.byte $C5, $09, $33
 .byte $09, $03, $0A, $0B, $09, $03, $0A, $0B
 .byte $09, $01, $09, $01, $0A, $03, $09, $01, $09, $01, $0A, $03
 .byte $09, $01, $09, $01, $0A, $01, $21, $21, $0A, $01, $09, $01, $16, $03
@@ -193,7 +193,7 @@ remix_8_oni:
 .byte $E0, $00, $00
 
 finned_frontier_easy:
-.byte $83, $01
+.byte $83, $01, $04
 .byte $40, $1F
 .byte $09, $07, $0A, $07
 .byte $09, $03, $09, $03, $09, $07
@@ -237,3 +237,8 @@ finned_frontier_easy:
 .byte $09, $03, $09, $03, $0A, $07
 .byte $09, $03, $09, $03, $0A, $03, $0A, $03
 .byte $03, $27, $0C
+.byte $E0, $00, $00
+
+
+finned_frontier_normal:
+.byte $C3, $02

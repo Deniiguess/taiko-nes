@@ -76,8 +76,11 @@ sprite_flicker_toggle: .res 1
 
 clear_bar: .res 8
 clear_bar_inputs: .res 2
+clear_bar_inputs_modulo: .res 2
 clear_bar_input_miss: .res 2
+clear_bar_input_miss_modulo: .res 2
 clear_bar_results_inc: .res 1
+clear_bar_check_if_0: .res 1
 
 ts_ss_timer: .res 3
 
