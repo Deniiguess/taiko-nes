@@ -3018,7 +3018,7 @@ tempo_8_table_2x:
 
   update_drum_sprites_small:
   LDA drum_sprite_A, Y
-  BIT taiko_bg_1 ; #$01 basically
+  BIT bad_sprite+2 ; $01 basically
   BEQ dont_update_drum_sprites
 
   AND #%00000010
@@ -3215,7 +3215,7 @@ update_drum_sprites_big:
   LDA #$00
   STA drum_sprite_A, Y
   TXA
-  BIT taiko_bg_1 ; #$01 basically
+  BIT bad_sprite+2 ; $01 basically
   BEQ dont_update_drum_sprites_big
 
   AND #%00000010
