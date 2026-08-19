@@ -1025,7 +1025,12 @@
   INC score+5
   INC score+5
   :
-  LDA roll_size
+  LDA roll_slot
+  ROL
+  ROL
+  AND #$01
+  TAY
+  LDA roll_size, Y
   BEQ not_big_roll
 
   LDX slot_number
@@ -1442,7 +1447,10 @@ update_drums:
 
   JSR update_roll_inputs
 
-  LDX roll_length
+  LDA roll_slot
+  AND #$01
+  TAY
+  LDX roll_length, Y
   BNE spawn_roll_branch
   escape_spawn_roll:
 
@@ -1695,8 +1703,11 @@ update_drums:
   LDA #$01
   STA draw_bg_over_palette
 
+  LDA roll_slot
+  AND #$01
+  TAY
   LDA #$1E
-  STA roll_length+2
+  STA roll_time_before_input, Y
 
   LDA mods
   AND #$02
@@ -1717,11 +1728,14 @@ update_drums:
 
   leave_attr_roll_2:
 
+  LDA roll_slot
+  AND #$01
+  TAY
   LDA (drum_bank_positon, X)
   AND #%00000100
   LSR A
   LSR A
-  STA roll_size
+  STA roll_size, Y
 
   BNE load_big_rol_branch
 
@@ -1764,6 +1778,9 @@ update_drums:
 
   JSR inc_dbp
 
+  LDA roll_slot
+  AND #$01
+  PHA
   LDA (drum_bank_positon, X)
   AND #$7F
   CPY #$00
@@ -1772,12 +1789,16 @@ update_drums:
   ADC #$01
   :
 
-  STA roll_length
+  TAY
+  PLA
+  TAX
+  TYA
+  STA roll_length, X
   CLC
   ADC #$03
-  STA roll_length+1
+  STA roll_length_input, X
 
-  DEC roll_length
+  DEC roll_length, X
   INC drum_bank_positon
   RTS
 
@@ -1970,16 +1991,23 @@ update_drums:
 
   JSR inc_dbp
 
+  LDA roll_slot
+  AND #$01
+  PHA
   LDA (drum_bank_positon, X)
   CPY #$00
   BEQ :+
   ASL
   ADC #$01
   :
-  STA roll_length
+  TAY
+  PLA
+  TAX
+  TYA
+  STA roll_length, X
   CLC
   ADC #$03
-  STA roll_length+1
+  STA roll_length_input, X
 
   INC drum_bank_positon
   RTS
@@ -2115,9 +2143,12 @@ update_drums:
   STA stop_save
 
   CPX #$01
-  BEQ spawn_roll_last
+  BEQ spawn_roll_last_branch
 
-  LDY roll_size
+  LDA roll_slot
+  AND #01
+  TAY
+  LDA roll_size, Y
   BNE spawn_roll_big
 
   LDA #$02
@@ -2148,9 +2179,15 @@ update_drums:
 
   end_spawn_attr:
 
-  DEC roll_length
+  LDA roll_slot
+  AND #$01
+  TAX
+  DEC roll_length, X
 
   JMP escape_spawn_roll
+
+  spawn_roll_last_branch:
+  JMP spawn_roll_last
 
   spawn_attr_R:
 
@@ -2189,7 +2226,10 @@ update_drums:
 
   end_spawn_attr_big:
 
-  DEC roll_length
+  LDA roll_slot
+  AND #$01
+  TAX
+  DEC roll_length, X
 
   JMP escape_spawn_roll
 
@@ -2207,7 +2247,10 @@ update_drums:
   LDA #$01
   STA draw_bg_over_palette
 
-  LDY roll_size
+  LDA roll_slot
+  AND #$01
+  TAY
+  LDA roll_size, Y
   BNE spawn_roll_last_big
 
   LDA #$02
@@ -2238,7 +2281,14 @@ update_drums:
 
   end_spawn_attr_end:
 
-  DEC roll_length
+  LDA roll_slot
+  AND #$01
+  TAX
+  DEC roll_length, X
+
+  LDA roll_slot
+  EOR #$01
+  STA roll_slot
 
   JMP escape_spawn_roll
 
@@ -2277,7 +2327,14 @@ update_drums:
 
   end_spawn_attr_end_big:
 
-  DEC roll_length
+  LDA roll_slot
+  AND #$01
+  TAX
+  DEC roll_length, X
+
+  LDA roll_slot
+  EOR #$01
+  STA roll_slot
 
   JMP escape_spawn_roll
 
@@ -2295,26 +2352,37 @@ update_drums:
   end_uri:
   CMP #$FF
   BEQ end_uri_alt
-  RTS
+  JMP end_update_roll_inputs_loop
 
   end_uri_alt:
-  INC roll_length+2
-  DEC roll_length+1
-  LDA roll_length+1
+  INC roll_time_before_input, X
+  DEC roll_length_input, X
+  LDA roll_length_input, X
   STA roll_active
-  RTS
+  BNE :+
+  LDA roll_slot
+  EOR #$80
+  STA roll_slot
+  :
+  JMP end_update_roll_inputs_loop
 
   update_roll_inputs:
-  LDA #$00
-  STA roll_active
-  LDA roll_length+1
+  LDX #$00
+
+  loop_update_roll_inputs:
+  LDA roll_length_input, X
   BEQ end_uri
-  DEC roll_length+2
-  LDA roll_length+2
+  DEC roll_time_before_input, X
+  LDA roll_time_before_input, X
   BNE end_uri
-  DEC roll_length+1
-  LDA roll_length+1
+  DEC roll_length_input, X
+  LDA roll_length_input, X
   STA roll_active
+
+  end_update_roll_inputs_loop:
+  INX
+  CPX #$02
+  BNE loop_update_roll_inputs
   RTS
 
 
@@ -2683,6 +2751,9 @@ tempo_8_table_2x:
   STA drum_roll
   STA drum_roll+1
   STA drum_roll+2
+
+  LDA roll_time
+  BNE load_roll_gfx
 
   LDA #$F0
   STA $22C, Y

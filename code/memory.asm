@@ -46,10 +46,13 @@ bar_x: .res 1
 tempo: .res 2
 address_table: .res 2
 
-roll_length: .res 3
-roll_size: .res 1
+roll_length: .res 2
+roll_length_input: .res 2
+roll_time_before_input: .res 2
+roll_size: .res 2
 roll_time: .res 1
 roll_active: .res 1
+roll_slot: .res 1
 
 bar_level: .res 1
 

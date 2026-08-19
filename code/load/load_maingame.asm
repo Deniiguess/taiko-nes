@@ -256,8 +256,6 @@
   STA PPUSCROLL_Y_speed
   STA pause
   STA tempo+1
-  STA roll_length
-  STA roll_length+1
   STA roll_time
   STA input_rate_timer
   STA drum_input_don_time
@@ -274,6 +272,13 @@
   STA drum_inc
   STA clear_drum_check
   STA roll_active
+
+  LDX #$00
+  reset_roll_values:
+  STA roll_length, X
+  INX
+  CPX #11
+  BNE reset_roll_values
 
   LDA #$02
   STA beat_anim_frame+1

@@ -4,7 +4,7 @@
   .lobytes dbank1, dbank2, dbank3, dbank4
   .lobytes dbank5, dbank6, dbank7, dbank8
   .lobytes dbank1, remix_8_normal, dbank3, remix_8_oni
-  .lobytes dbank5, dbank6, dbank7, dbank8
+  .lobytes finned_frontier_easy, dbank6, dbank7, dbank8
 
   song_address_start_hi:
   .hibytes dbank1, dbank2, dbank3, dbank4
@@ -12,7 +12,7 @@
   .hibytes dbank1, dbank2, dbank3, dbank4
   .hibytes dbank5, dbank6, dbank7, dbank8
   .hibytes dbank1, remix_8_normal, dbank3, remix_8_oni
-  .hibytes dbank5, dbank6, dbank7, dbank8
+  .hibytes finned_frontier_easy, dbank6, dbank7, dbank8
 
   drum_bank_list:
   .byte DBANK1_BANK, DBANK1_BANK, DBANK1_BANK, DBANK1_BANK
@@ -28,7 +28,7 @@
   .byte $0A, $04, $03, $09
   .byte $00, $00, $00, $00
   .byte $00, $04, $00, $0A
-  .byte $01, $03, $06, $07
+  .byte $02, $04, $04, $06
 
   song_author_1: ; ADONETE
   .byte $40, $43, $4E, $4D, $44, $53, $44, $02, $02, $02, $02, $02
@@ -53,5 +53,5 @@
   .byte $02, $02, $02, $02, $02, $02, $02, $02, $02, $02, $02, $02
   song_chartr_5: ; TFD500
   .byte $53, $45, $43, $5F, $5A, $5A, $02, $02, $02, $02, $02, $02
-  song_chartr_6: ; [blank]
-  .byte $02, $02, $02, $02, $02, $02, $02, $02, $02, $02, $02, $02
+  song_chartr_6: ; DENI_IGUESS (i made it!! i had no other choice-)
+  .byte $43, $44, $4D, $48, $67, $48, $46, $54, $44, $52, $52, $02
