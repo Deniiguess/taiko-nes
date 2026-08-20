@@ -53,6 +53,7 @@ roll_size: .res 2
 roll_time: .res 1
 roll_active: .res 1
 roll_slot: .res 1
+roll_autoplay_timer: .res 1
 
 bar_level: .res 1
 

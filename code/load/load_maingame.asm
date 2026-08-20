@@ -300,7 +300,7 @@
   reset_roll_values:
   STA roll_length, X
   INX
-  CPX #11
+  CPX #12
   BNE reset_roll_values
 
   LDA #$02

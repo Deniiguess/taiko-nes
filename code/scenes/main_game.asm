@@ -152,10 +152,13 @@
   exit_dinp_kat:
 
   LDA roll_active
-  BEQ :+
-  LDA misc ; execute every 8 pixel scrolls
-  AND #%00000010
-  BEQ :+
+  BEQ :++
+
+  LDA roll_autoplay_timer
+  SEC
+  SBC PPUSCROLL_X_speed
+  STA roll_autoplay_timer
+  BCS :++
 
   LDA #$0A
   STA drum_input_don_time
@@ -172,6 +175,18 @@
   STA roll_time
 
   JSR inc_roll
+
+  LDA tempo
+  AND #$40
+  TAX
+  LDA roll_autoplay_timer
+  CLC
+  ADC #8
+  CPX #$40
+  BNE :+
+  ADC #7
+  :
+  STA roll_autoplay_timer
 
   RTS
 
@@ -1483,6 +1498,9 @@ update_drums:
   end_timer_val = $1F
   gogo_timer_val = $1F
 
+  force_continue:
+  JMP done_drawing_small_don
+
   update_drums_p4:
 
   LDX #$00
@@ -1511,7 +1529,11 @@ update_drums:
   ASL
   :
   STX end_timer
-  JMP force_continue
+  LDA #<zero_byte
+  STA drum_bank_positon
+  LDA #>zero_byte
+  STA drum_bank_positon+1
+  RTS
   :
 
   LDY drum_hit_pool_frame_pos
@@ -1570,9 +1592,6 @@ update_drums:
   BEQ load_rol_branch
 
   RTS
-
-  force_continue:
-  JMP done_drawing_small_don
 
   load_rol_branch:
   JMP load_rol
@@ -2381,6 +2400,8 @@ update_drums:
   LDA roll_slot
   EOR #$80
   STA roll_slot
+  LDA #$00
+  STA roll_autoplay_timer
   :
   JMP end_update_roll_inputs_loop
 
@@ -2427,8 +2448,6 @@ update_drums:
 	STA BTN_Press
 	STA BTN_Hold
   JSR famistudio_music_play
-
-  JMP done_drawing_small_don
   :
 
   RTS

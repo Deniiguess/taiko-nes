@@ -80,6 +80,6 @@ A - attributes
     0 - nothing
     1 - force continue (priority over drum)
     2 - go-go time
-    3 - end song (unimplemented)
+    3 - end song
 
 I - ignore length byte (length $00)

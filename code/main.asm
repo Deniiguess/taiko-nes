@@ -83,6 +83,9 @@ init_song_alt:
   JSR famistudio_init ; initialize songs
   RTS
 
+zero_byte:
+ .byte $00
+
 taiko_sfx:
 .include "../songs/taiko.s"
 

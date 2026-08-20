@@ -4,7 +4,7 @@
   .lobytes dbank1, dbank2, dbank3, dbank4
   .lobytes dbank5, dbank6, dbank7, dbank8
   .lobytes dbank1, remix_8_normal, dbank3, remix_8_oni
-  .lobytes finned_frontier_easy, dbank6, dbank7, dbank8
+  .lobytes finned_frontier_easy, finned_frontier_normal, finned_frontier_hard, dbank8
 
   song_address_start_hi:
   .hibytes dbank1, dbank2, dbank3, dbank4
@@ -12,7 +12,7 @@
   .hibytes dbank1, dbank2, dbank3, dbank4
   .hibytes dbank5, dbank6, dbank7, dbank8
   .hibytes dbank1, remix_8_normal, dbank3, remix_8_oni
-  .hibytes finned_frontier_easy, dbank6, dbank7, dbank8
+  .hibytes finned_frontier_easy, finned_frontier_normal, finned_frontier_hard, dbank8
 
   drum_bank_list:
   .byte DBANK1_BANK, DBANK1_BANK, DBANK1_BANK, DBANK1_BANK
