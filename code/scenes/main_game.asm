@@ -129,7 +129,15 @@
 .endproc
 
 .proc update_autoplay
-
+	LDA #$00
+	STA clear_bar
+	STA clear_bar+1
+	STA clear_bar+2
+	STA clear_bar+3
+	STA clear_bar+4
+	STA clear_bar+5
+	STA clear_bar+6
+	STA clear_bar+7
 
   ; update the DON drum palette
   LDX drum_input_don_time
@@ -200,7 +208,6 @@
   INC good_count+3
   LDX #$08+$02
   JSR add_to_4_digit_score
-  JSR increase_clear_bar
   JMP clear_drum_prep
 
   update_dinp_don:
@@ -1706,6 +1713,12 @@ update_drums:
   LDA #$1E
   STA roll_time_before_input, Y
 
+  LDA (drum_bank_positon, X)
+  AND #%00000100
+  LSR A
+  LSR A
+  STA roll_size, Y
+
   LDA mods
   AND #$02
   BNE dont_draw_rol
@@ -1725,15 +1738,7 @@ update_drums:
 
   leave_attr_roll_2:
 
-  LDA roll_slot
-  AND #$01
-  TAY
-  LDA (drum_bank_positon, X)
-  AND #%00000100
-  LSR A
-  LSR A
-  STA roll_size, Y
-
+  LDA roll_size, Y
   BNE load_big_rol_branch
 
   LDA #%01000000
@@ -1797,6 +1802,14 @@ update_drums:
 
   DEC roll_length, X
   INC drum_bank_positon
+
+  LDA mods
+  AND #$02
+  BEQ :+
+  LDA roll_slot
+  EOR #$01
+  STA roll_slot
+  :
   RTS
 
 
@@ -2007,6 +2020,14 @@ update_drums:
   STA roll_length_input, X
 
   INC drum_bank_positon
+
+  LDA mods
+  AND #$02
+  BEQ :+
+  LDA roll_slot
+  EOR #$01
+  STA roll_slot
+  :
   RTS
 
 
