@@ -152,7 +152,8 @@
   exit_dinp_kat:
 
   LDA roll_active
-  BEQ :++
+  CMP #$02
+  BCC :++
 
   LDA roll_autoplay_timer
   SEC
@@ -180,8 +181,7 @@
   AND #$40
   TAX
   LDA roll_autoplay_timer
-  CLC
-  ADC #7
+  ADC #8
   CPX #$40
   BNE :+
   ADC #7
@@ -1719,7 +1719,7 @@ update_drums:
   JMP leave_attr_roll_2
 
   dont_draw_rol:
-  JMP :+
+  JMP :++
 
   load_rol:
 
@@ -1729,9 +1729,16 @@ update_drums:
   LDA roll_slot
   AND #$01
   TAY
-  LDA #$1E
+  LDX #$1E
+  LDA mods
+  LSR
+  BCC :+
+  LDX #$1F
+  :
+  TXA
   STA roll_time_before_input, Y
 
+  LDX #$00
   LDA (drum_bank_positon, X)
   AND #%00000100
   LSR A
@@ -1809,7 +1816,6 @@ update_drums:
   ASL
   ADC #$01
   :
-
   TAY
   PLA
   TAX
@@ -2027,15 +2033,15 @@ update_drums:
   CPY #$00
   BEQ :+
   ASL
-  ADC #$01
   :
   TAY
+  DEY
   PLA
   TAX
   TYA
   STA roll_length, X
   CLC
-  ADC #$03
+  ADC #$04
   STA roll_length_input, X
 
   INC drum_bank_positon
@@ -2356,7 +2362,7 @@ update_drums:
   ; attributes
   LDA bg_attr_position+2
   AND #%00000010
-  BNE spawn_attr_F_end_big
+  BEQ spawn_attr_F_end_big
 
   LDA bg_attr
   ORA #%00010001

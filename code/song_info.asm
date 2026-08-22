@@ -1,5 +1,5 @@
   song_address_start_lo:
-  .lobytes empty, empty, karippa_boss_hard, karippa_boss_oni
+  .lobytes karippa_boss_easy, karippa_boss_normal, karippa_boss_hard, karippa_boss_oni
   .lobytes empty, empty, empty, empty
   .lobytes empty, empty, empty, empty
   .lobytes empty, empty, empty, empty
@@ -7,7 +7,7 @@
   .lobytes finned_frontier_easy, finned_frontier_normal, finned_frontier_hard, finned_frontier_oni
 
   song_address_start_hi:
-  .hibytes empty, empty, karippa_boss_hard, karippa_boss_oni
+  .hibytes karippa_boss_easy, karippa_boss_normal, karippa_boss_hard, karippa_boss_oni
   .hibytes empty, empty, empty, empty
   .hibytes empty, empty, empty, empty
   .hibytes empty, empty, empty, empty
