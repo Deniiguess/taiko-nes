@@ -181,7 +181,7 @@
   TAX
   LDA roll_autoplay_timer
   CLC
-  ADC #8
+  ADC #7
   CPX #$40
   BNE :+
   ADC #7

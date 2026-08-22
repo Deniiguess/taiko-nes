@@ -1,18 +1,18 @@
   song_address_start_lo:
-  .lobytes dbank1, dbank2, dbank3, dbank4
-  .lobytes dbank5, dbank6, dbank7, dbank8
-  .lobytes dbank1, dbank2, dbank3, dbank4
-  .lobytes dbank5, dbank6, dbank7, dbank8
-  .lobytes dbank1, remix_8_normal, dbank3, remix_8_oni
-  .lobytes finned_frontier_easy, finned_frontier_normal, finned_frontier_hard, dbank8
+  .lobytes empty, empty, karippa_boss_hard, karippa_boss_oni
+  .lobytes empty, empty, empty, empty
+  .lobytes empty, empty, empty, empty
+  .lobytes empty, empty, empty, empty
+  .lobytes empty, remix_8_normal, empty, remix_8_oni
+  .lobytes finned_frontier_easy, finned_frontier_normal, finned_frontier_hard, finned_frontier_oni
 
   song_address_start_hi:
-  .hibytes dbank1, dbank2, dbank3, dbank4
-  .hibytes dbank5, dbank6, dbank7, dbank8
-  .hibytes dbank1, dbank2, dbank3, dbank4
-  .hibytes dbank5, dbank6, dbank7, dbank8
-  .hibytes dbank1, remix_8_normal, dbank3, remix_8_oni
-  .hibytes finned_frontier_easy, finned_frontier_normal, finned_frontier_hard, dbank8
+  .hibytes empty, empty, karippa_boss_hard, karippa_boss_oni
+  .hibytes empty, empty, empty, empty
+  .hibytes empty, empty, empty, empty
+  .hibytes empty, empty, empty, empty
+  .hibytes empty, remix_8_normal, empty, remix_8_oni
+  .hibytes finned_frontier_easy, finned_frontier_normal, finned_frontier_hard, finned_frontier_oni
 
   drum_bank_list:
   .byte DBANK1_BANK, DBANK1_BANK, DBANK1_BANK, DBANK1_BANK
@@ -23,9 +23,9 @@
   .byte DBANK1_BANK, DBANK1_BANK, DBANK1_BANK, DBANK1_BANK
 
   song_stars:
-  .byte $03, $04, $08, $0A
-  .byte $09, $03, $02, $01
-  .byte $0A, $04, $03, $09
+  .byte $02, $05, $05, $08
+  .byte $00, $00, $00, $00
+  .byte $00, $00, $00, $00
   .byte $00, $00, $00, $00
   .byte $00, $04, $00, $0A
   .byte $02, $04, $04, $06
@@ -43,8 +43,8 @@
   song_author_6: ; THEPURPLANON
   .byte $53, $47, $44, $4F, $54, $51, $4F, $4B, $40, $4D, $4E, $4D
 
-  song_chartr_1: ; [blank]
-  .byte $02, $02, $02, $02, $02, $02, $02, $02, $02, $02, $02, $02
+  song_chartr_1: ; DIAMONDN1NJA
+  .byte $43, $48, $40, $4C, $4E, $4D, $43, $4D, $5B, $4D, $49, $40
   song_chartr_2: ; [blank]
   .byte $02, $02, $02, $02, $02, $02, $02, $02, $02, $02, $02, $02
   song_chartr_3: ; [blank]

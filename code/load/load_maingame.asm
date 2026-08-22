@@ -226,15 +226,7 @@
   TAX
 
   ; set tempo
-  LDA mods
-  AND #$08
-  TAY
-
   LDA (drum_bank_positon, X)
-  CPY #$08
-  BNE :+
-  EOR #$40
-  :
   STA tempo
 
   JSR increase_dbp

@@ -373,15 +373,14 @@ update_SEL:
   LDA #$04
   STA draw
   STA draw+1
-  LDA #$2A
+  LDA #$2B
   STA draw+2
-  LDA #$F0
+  LDA #$10
   STA draw+3
   LDA #$F6
   STA draw+4
   STA draw+5
   STA draw+6
-  STA draw+7
 
   LDX #$00 ; load $00 to X (prepare loop)
   LDA mods ; load mods to A
@@ -398,7 +397,7 @@ update_SEL:
   :
   ROR ; rotate bits right
   INX ; increase X
-  CPX #$04 ; repeat 4 times
+  CPX #$03 ; repeat 3 times
   BNE check_mods
 
   ; load the 4 square sprites for color drum picker
@@ -441,10 +440,10 @@ update_SEL:
   JSR famistudio_sfx_sample_play
   INC options_position ; increase options_position
   LDA options_position ; load options_position to A
-  CMP #$06 ; if its 6
+  CMP #$05 ; if its 5
   BEQ set_op_pos_to_0 ; set the position to 0
-  CMP #$09 ; if its 9
-  BCS set_op_pos_to_6 ; set the position to 6
+  CMP #$08 ; if its 9
+  BCS set_op_pos_to_5 ; set the position to 5
   ; to prevent accessing unmapped values, leading to a crash (restart)
 
   return_down:
@@ -458,11 +457,11 @@ update_SEL:
   JSR famistudio_sfx_sample_play
   DEC options_position ; decrease options_position
   LDA options_position ; load options_position to A
-  BMI set_op_pos_to_5 ; if its above $80 (to $FF), set the position to 6
-  CMP #$05 ; if its 5
-  BEQ set_op_pos_to_8 ; set the position to 8
-  CMP #$08 ; if its 8
+  BMI set_op_pos_to_4 ; if its above $80 (to $FF), set the position to 5
+  CMP #$04 ; if its 5
   BEQ set_op_pos_to_7 ; set the position to 7
+  CMP #$07 ; if its 8
+  BEQ set_op_pos_to_6 ; set the position to 6
 
   return_up:
 
@@ -480,38 +479,38 @@ update_SEL:
   STA options_position
   BEQ return_down
 
-  ; set the options_position to $00 (FLIPPED DRUMS [ ])
-  set_op_pos_to_5:
-  LDA #$05
+  ; set the options_position to $04 (FLIPPED DRUMS [ ])
+  set_op_pos_to_4:
+  LDA #$04
   STA options_position
   BNE return_up
 
-  ; set the options_position to $06 (TYPE-B)
-  set_op_pos_to_6:
-  LDA #$06
+  ; set the options_position to $05 (TYPE-B)
+  set_op_pos_to_5:
+  LDA #$05
   STA options_position
   RTS
 
   move_cursor_right:
   LDA options_position ; load options_position to A
   CMP #$02 ; if its smaller than $02 ($00 or $01)
-  BCC add_6_to_opt_pos ; jump to add_6_to_opt_pos
-  CMP #$08 ; if its $08
+  BCC add_5_to_opt_pos ; jump to add_5_to_opt_pos
+  CMP #$07 ; if its $07
   BEQ inc_opt_pos ; jumo to inc_opt_pos
-  CMP #$06 ; if its equal or higher than $06
+  CMP #$05 ; if its equal or higher than $05
   BCS :+ ; leave subroutine (dont do anything)
   ; otherwise
   LDA #$04 ; play KAT sample
   JSR famistudio_sfx_sample_play
-  LDA #$08 ; load $08 to A
+  LDA #$07 ; load $07 to A
   STA options_position ; and store it to A
   :
   RTS
 
-  ; add 6 to options_position
+  ; add 5 to options_position
   ; CLC is not needed because you cant access this with carry flag at 1
-  add_6_to_opt_pos:
-  ADC #$06
+  add_5_to_opt_pos:
+  ADC #$05
   STA options_position
 
   LDA #$04 ; play KAT sample
@@ -525,27 +524,27 @@ update_SEL:
   INC options_position
   RTS
 
-  ; sets options_position to $07 (TYPE-D)
+  ; sets options_position to $06 (TYPE-D)
+  set_op_pos_to_6:
+  LDA #$06
+  STA options_position
+  RTS
+
+  ; sets options_position to $07 (left color picker)
   set_op_pos_to_7:
   LDA #$07
   STA options_position
   RTS
 
-  ; sets options_position to $08 (left color picker)
-  set_op_pos_to_8:
-  LDA #$08
-  STA options_position
-  RTS
-
   move_cursor_left:
   LDA options_position ; load options_position to A
-  CMP #$06 ; if its $06
+  CMP #$05 ; if its $05
   BEQ set_op_pos_to_0_alt ; jump to set_op_pos_to_0_alt
-  CMP #$07 ; if its $07
+  CMP #$06 ; if its $06
   BEQ set_op_pos_to_1 ; jump to set_op_pos_to_1
-  CMP #$08 ; if its $08
+  CMP #$07 ; if its $07
   BEQ set_op_pos_to_2 ; jump to set_op_pos_to_2
-  CMP #$09 ; if its $09
+  CMP #$08 ; if its $08
   BNE :+ ; leave subroutine
   ; otherwise
   LDA #$04 ; play KAT sample
@@ -581,11 +580,11 @@ update_SEL:
 
   opt_position_lo:
   .lobytes opt_position_1, opt_position_2, opt_position_3, opt_position_4, opt_position_5
-  .lobytes opt_position_6, opt_position_7, opt_position_8, opt_position_9, opt_position_10
+  .lobytes opt_position_6, opt_position_7, opt_position_8, opt_position_9
 
   opt_position_hi:
   .hibytes opt_position_1, opt_position_2, opt_position_3, opt_position_4, opt_position_5
-  .hibytes opt_position_6, opt_position_7, opt_position_8, opt_position_9, opt_position_10
+  .hibytes opt_position_6, opt_position_7, opt_position_8, opt_position_9
 
   opt_position_1: ; TYPE-A
   LDA #$64
@@ -633,8 +632,8 @@ update_SEL:
 
   LDA #$88
   STA $247 ; set X to $88
-  LDA #$B6
-  STA cursor_sett_Y ; set Y to $B6
+  LDA #$BE
+  STA cursor_sett_Y ; set Y to $BE
 
   LDA #$40
   STA $246 ; flip arrow horizontally (arrow pointing right)
@@ -658,8 +657,8 @@ update_SEL:
 
   LDA #$88
   STA $247 ; set X to $88
-  LDA #$BE
-  STA cursor_sett_Y ; set Y to $BE
+  LDA #$C6
+  STA cursor_sett_Y ; set Y to $C6
 
   LDA #$40
   STA $246 ; flip arrow horizontally (arrow pointing right)
@@ -683,8 +682,8 @@ update_SEL:
 
   LDA #$88
   STA $247 ; set X to $88
-  LDA #$C6
-  STA cursor_sett_Y ; set Y to $C6
+  LDA #$CE
+  STA cursor_sett_Y ; set Y to $CE
 
   LDA #$40
   STA $246 ; flip arrow horizontally (arrow pointing right)
@@ -702,32 +701,7 @@ update_SEL:
   :
   RTS
 
-  opt_position_6: ; FLIPPED SPEED [ ]
-  LDA #$64
-	STA $245 ; set the tile to $64 (arrow pointing left)
-
-  LDA #$88
-  STA $247 ; set X to $88
-  LDA #$CE
-  STA cursor_sett_Y ; set Y to $CE
-
-  LDA #$40
-  STA $246 ; flip arrow horizontally (arrow pointing right)
-
-  LDA #$00
-  STA $249 ; set 2nd tile to $00 (blank)
-
-  JSR press_A ; upon pressing A
-  BEQ :+
-
-  ; flip bit 3 in mods
-  LDA mods
-  EOR #%00001000
-  STA mods
-  :
-  RTS
-
-  opt_position_7: ; TYPE-B
+  opt_position_6: ; TYPE-B
   LDA #$64
 	STA $245 ; set the tile to $64 (arrow pointing left)
 
@@ -747,7 +721,7 @@ update_SEL:
   :
   RTS
 
-  opt_position_8: ; TYPE-D
+  opt_position_7: ; TYPE-D
   LDA #$64
 	STA $245 ; set the tile to $64 (arrow pointing left)
 
@@ -767,7 +741,7 @@ update_SEL:
   :
   RTS
 
-  opt_position_9: ; color picker left
+  opt_position_8: ; color picker left
   LDA #$00 ; make the palette a priority instead of the bg in vblank
   STA draw_bg_over_palette
 
@@ -834,7 +808,7 @@ update_SEL:
   :
   RTS
 
-  opt_position_10:
+  opt_position_9:
   LDA #$00 ; make the palette a priority instead of the bg in vblank
   STA draw_bg_over_palette
 
