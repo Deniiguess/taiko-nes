@@ -942,7 +942,7 @@ update_SEL:
   ; set specific sprites to use red circles instead of blue
   LDA #$74
   STA $261 ; LEFT
-  STA $269 ; DOWN
+  STA $25D ; UP
   STA $271 ; A
   RTS
 
@@ -1992,12 +1992,12 @@ MAX_SONG_COUNT = $05
   type_b:
   LDA #%01000000
   STA don_inputs
-  LDA #%00001001
+  LDA #%00000101
   STA don_inputs+1
 
   LDA #%10000000
   STA kat_inputs
-  LDA #%00000110
+  LDA #%00001010
   STA kat_inputs+1
   RTS
 
