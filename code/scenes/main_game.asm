@@ -122,6 +122,8 @@
 
   JSR update_don
 
+  JSR update_gogo
+
   JSR check_clear_bar_for_0s
 
   JMP stay_here ; go to the forever loop
@@ -4309,6 +4311,38 @@ base_don_chr_bank = $10
 	AND #%01111111
 	STA beat_animation
 	:
+	RTS
+.endproc
+
+.proc update_gogo
+	CLC
+	LDA #$05
+	STA palette+9
+	ADC #$10
+	STA palette+10
+	ADC #$10
+	STA palette+11
+	LDA #$00
+	STA palette+22
+
+	LDA beat_animation
+	BPL dont_update_gogo
+
+	LDA #$17
+	STA palette+22
+
+	LDA beat_anim_frame+1
+	LSR
+	BCS dont_update_gogo
+
+	LDA #$15
+	STA palette+9
+	ADC #$10
+	STA palette+10
+	ADC #$10
+	STA palette+11
+
+	dont_update_gogo:
 	RTS
 .endproc
 
