@@ -2315,6 +2315,9 @@ update_drums:
   INY
   STY drum_data_pool+5
 
+  LDA tempo
+  AND #$40
+  BNE end_spawn_attr_end_onex
   ; attributes
   LDA bg_attr_position+2
   AND #%00000010
@@ -2341,6 +2344,18 @@ update_drums:
   LDA #%01010101
   STA bg_attr
 
+  JMP end_spawn_attr_end
+
+  end_spawn_attr_end_onex:
+  ; attributes
+  LDA bg_attr_position+2
+  BEQ end_spawn_attr_end
+  AND #%00000010
+  BEQ spawn_attr_F_end
+
+  LDA bg_attr
+  ORA #%00010001
+  STA bg_attr
   JMP end_spawn_attr_end
 
   spawn_roll_last_big:

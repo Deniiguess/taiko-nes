@@ -401,7 +401,7 @@
   RTS
 
   song_bank_numbers:
-  .byte $06, $07, $08, $09, $0A, $0B
+  .byte MBANK1_BANK, MBANK2_BANK, MBANK3_BANK, MBANK4_BANK, MBANK5_BANK, MBANK6_BANK
 
   extra_tiles:
   .byte $78, $77, $77, $76, $75, $74
