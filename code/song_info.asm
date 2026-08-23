@@ -1,17 +1,17 @@
   song_address_start_lo:
   .lobytes karippa_boss_easy, karippa_boss_normal, karippa_boss_hard, karippa_boss_oni
-  .lobytes empty, empty, empty, empty
+  .lobytes who_unleashed_the_dog_easy, who_unleashed_the_dog_normal, who_unleashed_the_dog_hard, who_unleashed_the_dog_oni
   .lobytes euphoria_easy, euphoria_normal, euphoria_hard, euphoria_oni
-  .lobytes empty, empty, empty, empty
-  .lobytes empty, remix_8_normal, empty, remix_8_oni
+  .lobytes bean_brained_easy, bean_brained_normal, bean_brained_hard, bean_brained_oni
+  .lobytes remix_8_easy, remix_8_normal, remix_8_hard, remix_8_oni
   .lobytes finned_frontier_easy, finned_frontier_normal, finned_frontier_hard, finned_frontier_oni
 
   song_address_start_hi:
   .hibytes karippa_boss_easy, karippa_boss_normal, karippa_boss_hard, karippa_boss_oni
-  .hibytes empty, empty, empty, empty
+  .hibytes who_unleashed_the_dog_easy, who_unleashed_the_dog_normal, who_unleashed_the_dog_hard, who_unleashed_the_dog_oni
   .hibytes euphoria_easy, euphoria_normal, euphoria_hard, euphoria_oni
-  .hibytes empty, empty, empty, empty
-  .hibytes empty, remix_8_normal, empty, remix_8_oni
+  .hibytes bean_brained_easy, bean_brained_normal, bean_brained_hard, bean_brained_oni
+  .hibytes remix_8_easy, remix_8_normal, remix_8_hard, remix_8_oni
   .hibytes finned_frontier_easy, finned_frontier_normal, finned_frontier_hard, finned_frontier_oni
 
   drum_bank_list:

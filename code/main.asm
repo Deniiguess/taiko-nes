@@ -47,7 +47,13 @@ dmc_data:
 .include "memory.asm"
 .include "header.asm"
 .include "musicbnk.asm"
-.include "drumbnk.asm"
+
+.include "cues/karippaboss.asm"
+.include "cues/whounleashedthedog.asm"
+.include "cues/euphoria.asm"
+.include "cues/beanbrained.asm"
+.include "cues/remix8ds.asm"
+.include "cues/finnedfrontier.asm"
 
 .segment "START"
 
