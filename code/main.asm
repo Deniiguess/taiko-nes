@@ -40,7 +40,7 @@ FAMISTUDIO_EXP_N163_CHN_CNT = 8
 .if FAMISTUDIO_CFG_DPCM_SUPPORT
 .segment "DMC"
 dmc_data:
-.incbin "../songs/taiko.dmc"
+.incbin "songs/taiko.dmc"
 .endif
 
 .include "constants.asm"
@@ -69,7 +69,7 @@ dmc_data:
 .include "load/load_results.asm"
 
 .include "song_info.asm"
-.include "../songs/soundeffects.s"
+.include "songs/soundeffects.s"
 
 init_song:
 ; define song
@@ -93,7 +93,7 @@ zero_byte:
  .byte $00
 
 taiko_sfx:
-.include "../songs/taiko.s"
+.include "songs/taiko.s"
 
 
 .segment "TITL_SCEN_SONG_SEL"
@@ -107,9 +107,9 @@ taiko_sfx:
 .include "scenes/main_game.asm"
 
 .segment "MUSIC_BANK_RESULTSS"
-.incbin "../songs/results.dmc"
+.incbin "songs/results.dmc"
 results_song:
-.include "../songs/results.s"
+.include "songs/results.s"
 
 .segment "VECTORS"
 .addr nmi_handler, reset_handler, irq_handler
