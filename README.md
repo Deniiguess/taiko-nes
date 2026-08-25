@@ -5,13 +5,17 @@
 This is an NES port of Taiko No Tatsujin written completely in assembly using the N163 mapper chip for better audio and for more code and graphics space.
 
 > [!NOTE]
+> **Make sure that you're using a compatible emulator (ex. Mesen). Not all emulators support that mapper chip.**
+>
+> Incompatible emulators usually get stuck on a blank screen at start up, or don't emulate the mapper properly (ex. nametable bank switching).
+
+> [!NOTE]
 > This ROM is only so far for NTSC (60Hz) systems only. Playing this on PAL (50Hz) systems is going to have scrolling issues and wrong speeds.
+> 
 > If you only have a PAL (50Hz) system, you'll have to wait for a PAL supported ROM. *If that even happens...*
 
 > [!NOTE]
-> **Make sure that you're using a compatible emulator (ex. Mesen). Not all emulators support that mapper chip.**
-
-**There has been little to no hardware testing. If you try it on hardware please let me know.**
+> **There has been little to no hardware testing. If you try it on hardware please let me know.**
 
 ## Credits
 ### Song List
