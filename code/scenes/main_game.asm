@@ -131,16 +131,6 @@
 .endproc
 
 .proc update_autoplay
-	LDA #$00
-	STA clear_bar
-	STA clear_bar+1
-	STA clear_bar+2
-	STA clear_bar+3
-	STA clear_bar+4
-	STA clear_bar+5
-	STA clear_bar+6
-	STA clear_bar+7
-
   ; update the DON drum palette
   LDX drum_input_don_time
   CPX #$01
@@ -200,7 +190,7 @@
   CMP #$02
   BNE :+
   LDA drum_hit_pool_frame+1, Y
-  CMP #$0B
+  CMP tempo_input_ap
   BCS :+
 
   LDA drum_hit_pool, X
@@ -216,16 +206,6 @@
 
   update_dinp_kat:
   JMP update_dinp_kat_branch
-
-  force_good:
-  LDA #$02
-  STA input_rate
-  INC combo_current+3
-  JSR add_points
-  INC good_count+3
-  LDX #$08+$02
-  JSR add_to_4_digit_score
-  JMP clear_drum_prep
 
   update_dinp_don:
   ; load the palette timer for DON
@@ -270,7 +250,17 @@
   LDA drum_sprite_A, X
   AND #%11111101
   STA drum_sprite_A, X
-  JMP force_good
+
+  force_good:
+  LDA #$02
+  STA input_rate
+  INC combo_current+3
+  JSR add_points
+  INC good_count+3
+  LDX #$08+$02
+  JSR add_to_4_digit_score
+  JSR increase_clear_bar
+  JMP clear_drum_prep
 
   kat_ap:
   LDA #$0A
@@ -1298,14 +1288,12 @@
 
   INX
   LDA drum_hit_pool_frame, X
-  EOR #$80
   SEC
   SBC PPUSCROLL_X_stored
-  EOR #$80
   STA drum_hit_pool_frame, X
   DEX
 
-  BVC dont_decrease_dhpf
+  BCS dont_decrease_dhpf
 
   DEC drum_hit_pool_frame, X
 
@@ -1828,7 +1816,7 @@ update_drums:
   STA roll_length_input, X
 
   DEC roll_length, X
-  INC drum_bank_positon
+  JSR inc_dbp
 
   LDA mods
   AND #$02
@@ -2046,7 +2034,7 @@ update_drums:
   ADC #$04
   STA roll_length_input, X
 
-  INC drum_bank_positon
+  JSR inc_dbp
 
   LDA mods
   AND #$02
@@ -4034,11 +4022,9 @@ drum_sprite_tile_big:
 
 inc_dbp:
   LDA drum_bank_positon
-  EOR #$80
   CLC
   ADC #$01
-  EOR #$80
-  BVC :+
+  BCC :+
   INC drum_bank_positon+1
   :
   STA drum_bank_positon

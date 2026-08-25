@@ -48,12 +48,12 @@ dmc_data:
 .include "header.asm"
 .include "musicbnk.asm"
 
-.include "cues/karippaboss.asm"
-.include "cues/whounleashedthedog.asm"
-.include "cues/euphoria.asm"
-.include "cues/beanbrained.asm"
-.include "cues/remix8ds.asm"
-.include "cues/finnedfrontier.asm"
+.include "charts/karippaboss.asm"
+.include "charts/whounleashedthedog.asm"
+.include "charts/euphoria.asm"
+.include "charts/beanbrained.asm"
+.include "charts/remix8ds.asm"
+.include "charts/finnedfrontier.asm"
 
 .segment "START"
 

@@ -229,6 +229,14 @@
   LDA (drum_bank_positon, X)
   STA tempo
 
+  PHP
+  LDA #$0B
+  STA tempo_input_ap
+  PLP
+  BMI :+
+  DEC tempo_input_ap
+  :
+
   JSR increase_dbp
 
   CLC

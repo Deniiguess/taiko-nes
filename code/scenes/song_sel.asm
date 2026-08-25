@@ -1618,12 +1618,10 @@ MAX_SONG_COUNT = $05
   LDA #$0A
   STA draw+5, X ; set draw+5 + X and draw+3 + X
   LDA draw+3, X ; to $0A (uh idk..)
-  EOR #$80 ; flip bit 7
   SEC ; now set carry finally
   SBC #$20 ; subtract $20 from A
-  EOR #$80 ; flip bit 7 again ooooh overflow/underflow detection
-  BVC :+
-  DEC draw+2, X ; if it overflowed, decrease draw+2 + X
+  BCS :+
+  DEC draw+2, X ; if it underflowed, decrease draw+2 + X
   :
   STA draw+3, X ; store the result in A to draw+3 + X
   LDA #$01 ; load $01 to A

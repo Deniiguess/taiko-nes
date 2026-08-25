@@ -833,10 +833,14 @@
 	ADC #$D7
 	STA draw+55, X
 	STA draw+63, X
+	SBC #$D8
 	INX
+	AND #$08
+	BEQ :+
 	TXA
 	LSR
-	BCS :+
+	BCS :++
+	:
 	INY
 	:
 	CPX #$10

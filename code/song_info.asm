@@ -18,7 +18,7 @@
   .byte DBANK1_BANK, DBANK1_BANK, DBANK1_BANK, DBANK1_BANK
   .byte DBANK1_BANK, DBANK1_BANK, DBANK1_BANK, DBANK1_BANK
   .byte DBANK1_BANK, DBANK2_BANK, DBANK1_BANK, DBANK1_BANK
-  .byte DBANK1_BANK, DBANK1_BANK, DBANK1_BANK, DBANK1_BANK
+  .byte DBANK1_BANK, DBANK2_BANK, DBANK2_BANK, DBANK2_BANK
   .byte DBANK1_BANK, DBANK1_BANK, DBANK1_BANK, DBANK1_BANK
   .byte DBANK1_BANK, DBANK1_BANK, DBANK1_BANK, DBANK1_BANK
 
@@ -26,7 +26,7 @@
   .byte $02, $05, $05, $08
   .byte $00, $00, $00, $00
   .byte $02, $04, $07, $09
-  .byte $00, $00, $00, $00
+  .byte $01, $03, $04, $06
   .byte $00, $04, $00, $08
   .byte $02, $04, $04, $06
 
@@ -45,12 +45,12 @@
 
   song_chartr_1: ; DIAMONDN1NJA
   .byte $43, $48, $40, $4C, $4E, $4D, $43, $4D, $5B, $4D, $49, $40
-  song_chartr_2: ; [blank]
-  .byte $02, $02, $02, $02, $02, $02, $02, $02, $02, $02, $02, $02
+  song_chartr_2: ; EGGZ
+  .byte $44, $46, $46, $59, $02, $02, $02, $02, $02, $02, $02, $02
   song_chartr_3: ; RYUTO
   .byte $51, $58, $54, $53, $4E, $02, $02, $02, $02, $02, $02, $02
-  song_chartr_4: ; [blank]
-  .byte $02, $02, $02, $02, $02, $02, $02, $02, $02, $02, $02, $02
+  song_chartr_4: ; DIAMONDN1NJA
+  .byte $43, $48, $40, $4C, $4E, $4D, $43, $4D, $5B, $4D, $49, $40
   song_chartr_5: ; TFD500
   .byte $53, $45, $43, $5F, $5A, $5A, $02, $02, $02, $02, $02, $02
   song_chartr_6: ; DENI_IGUESS (i made it!! i had no other choice-)

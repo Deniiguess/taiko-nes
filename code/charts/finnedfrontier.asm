@@ -1,7 +1,7 @@
 .segment "DRUM_BANK_1"
 
 finned_frontier_easy:
-.byte $83, $02, $02
+.byte $83, $01, $0C
 .byte $40, $3F
 .byte $09, $07, $0A, $07
 .byte $09, $03, $09, $03, $09, $07
@@ -49,7 +49,7 @@ finned_frontier_easy:
 
 
 finned_frontier_normal:
-.byte $C3, $02, $0A
+.byte $C3, $02, $03
 .byte $40, $1F
 .byte $09, $07, $09, $07
 .byte $03, $0F, $0C
@@ -98,7 +98,7 @@ finned_frontier_normal:
 .byte $C0
 
 finned_frontier_hard:
-.byte $C3, $04, $03
+.byte $C3, $03, $05
 .byte $09, $03, $09, $03, $0A, $03, $0A, $03
 .byte $09, $03, $09, $03, $0A, $01, $0A, $01, $09, $01, $09, $01
 .byte $09, $03, $09, $03, $0A, $03, $0A, $03
@@ -148,7 +148,7 @@ finned_frontier_hard:
 .byte $C0
 
 finned_frontier_oni:
-.byte $C3, $06, $04
+.byte $C3, $05, $09
 .byte $09, $02, $09, $02, $09, $01, $0A, $01, $0A, $01, $0A, $03
 .byte $09, $02, $09, $02, $09, $01, $0A, $01, $0A, $01, $22, $22, $09, $01
 .byte $09, $02, $09, $02, $09, $01, $0A, $01, $0A, $01, $0A, $03
