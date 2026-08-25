@@ -4,11 +4,14 @@
 ## About
 This is an NES port of Taiko No Tatsujin written completely in assembly using the N163 mapper chip for better audio and for more code and graphics space.
 
-**Make sure that you're using a compatible emulator (ex. Mesen). Not all emulators support that mapper chip.**
+> [!NOTE]
+> This ROM is only so far for NTSC (60Hz) systems only. Playing this on PAL (50Hz) systems is going to have scrolling issues and wrong speeds.
+> If you only have a PAL (50Hz) system, you'll have to wait for a PAL supported ROM. *If that even happens...*
+
+> [!NOTE]
+> **Make sure that you're using a compatible emulator (ex. Mesen). Not all emulators support that mapper chip.**
 
 **There has been little to no hardware testing. If you try it on hardware please let me know.**
-
-**This is for NTSC systems only, PAL systems are not compatible.**
 
 ## Credits
 ### Song List
@@ -24,8 +27,22 @@ This is an NES port of Taiko No Tatsujin written completely in assembly using th
 
 **Finned Frontier** - ThePurpleAnon *(THEPURPLANON in-game)*
 
+### Song Charts
+**Karippa Boss** - DiamondN1nja
+
+**Who Unleashed The Dog** - Eggz *(hasn't been made yet)*
+
+**Euphoria** - Ryuto Setsujin *(RYUTO in-game)*
+
+**Bean Brained** - DiamondN1nja
+
+**Remix 8 DS** - TFD500 *(only Normal and Oni so far)*
+
+**Finned Frontier** - Deni_iguess *(me)*
+
 ### Other
 **Results Theme, SFX** - FluffyKn1ght
+**Playtesters** - DonKirbo, Eggz, TheAlternateDoctor, FluffyKn1ght
 
 ## Disclamer
 This port is **NOT AFFILIATED** with Bandai Namco or the Taiko No Tatsujin franchise in any way, nor uses any music, charts, code or graphics from any Taiko No Tatsujin game.
