@@ -46,6 +46,7 @@ This is an NES port of Taiko No Tatsujin written completely in assembly using th
 
 ### Other
 **Results Theme, SFX** - FluffyKn1ght
+
 **Playtesters** - DonKirbo, Eggz, TheAlternateDoctor, FluffyKn1ght
 
 ## Disclamer
