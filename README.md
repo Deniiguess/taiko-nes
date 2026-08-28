@@ -34,13 +34,13 @@ This is an NES port of Taiko No Tatsujin written completely in assembly using th
 ### Song Charts
 **Karippa Boss** - DiamondN1nja
 
-**Who Unleashed The Dog** - Eggz *(hasn't been made yet)*
+**Who Unleashed The Dog** - Eggz
 
 **Euphoria** - Ryuto Setsujin *(RYUTO in-game)*
 
 **Bean Brained** - DiamondN1nja
 
-**Remix 8 DS** - TFD500 *(only Normal and Oni so far)*
+**Remix 8 DS** - TFD500
 
 **Finned Frontier** - Deni_iguess *(me)*
 
