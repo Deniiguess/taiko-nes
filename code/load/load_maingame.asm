@@ -179,11 +179,11 @@
   ; for spawning and dispawning
   LDA #$27
   STA bg_attr_position
-  STA bg_attr_position+3
+  STA bg_attr_position+2
   LDA #$D1
   STA bg_attr_position+1
   LDA #$D2
-  STA bg_attr_position+4
+  STA bg_attr_position+3
 
   ; set the X coordinate of the bars
   LDA #$28

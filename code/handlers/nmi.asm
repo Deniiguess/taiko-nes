@@ -446,9 +446,9 @@ loop:
 
   ; reset the palette offscreen after a drum roll
   LDA PPUSTATUS
-  LDA bg_attr_position+3
+  LDA bg_attr_position+2
   STA PPUADDR
-  LDA bg_attr_position+4
+  LDA bg_attr_position+3
   STA PPUADDR
   LDA #$00
   STA PPUDATA

@@ -36,7 +36,8 @@ misc: .res 1
 position_8px: .res 3
 drum_spawn_position: .res 4
 bg_attr: .res 2
-bg_attr_position: .res 5
+bg_attr_position: .res 4
+bg_attr_placement: .res 1
 
 tiles_remaining: .res 1
 drum_bank_positon: .res 2

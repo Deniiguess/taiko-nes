@@ -642,19 +642,19 @@
   JMP exit_input
 
   bad_times_1:
-  .byte $12, $15
+  .byte $12, $17
 
   ok_times_1:
-  .byte $0E, $12
+  .byte $0E, $15
 
   good_times:
   .byte $0B, $0E
 
   ok_times_2:
-  .byte $05, $03
+  .byte $07, $03
 
   bad_times_2:
-  .byte $01, $00
+  .byte $03, $00
 
   set_input_timing:
   LDA tempo
@@ -1242,18 +1242,6 @@
   ORA #%00001010
   STA misc
 
-  LDA bg_attr_position+2
-  EOR #%00000001
-  STA bg_attr_position+2
-  AND #$01
-  BNE dont_change_bit_two
-
-  LDA bg_attr_position+2
-  EOR #%00000010
-  STA bg_attr_position+2
-
-  dont_change_bit_two:
-
   PLA
 
   SBC #$08
@@ -1716,6 +1704,8 @@ update_drums:
   LDA #$01
   STA draw_bg_over_palette
 
+  JSR set_bg_attr_position
+
   LDA roll_slot
   AND #$01
   TAY
@@ -1739,8 +1729,7 @@ update_drums:
   AND #$02
   BNE dont_draw_rol
 
-  LDA bg_attr_position+2
-  AND #%00000010
+  LDA bg_attr_placement
   BEQ load_attr_roll_R
 
   LDA #%01000100
@@ -2166,6 +2155,12 @@ update_drums:
   LDA #$01
   STA draw_bg_over_palette
 
+  TXA
+  PHA
+  JSR set_bg_attr_position
+  PLA
+  TAX
+
   LDA stop_save
   ROL
   TAY
@@ -2202,8 +2197,7 @@ update_drums:
   STY drum_data_pool+5
 
   ; attributes
-  LDA bg_attr_position+2
-  AND #%00000010
+  LDA bg_attr_placement
   BEQ spawn_attr_R
 
   LDA bg_attr
@@ -2249,8 +2243,7 @@ update_drums:
   STY drum_data_pool+6
 
   ; attributes
-  LDA bg_attr_position+2
-  AND #%00000010
+  LDA bg_attr_placement
   BEQ spawn_attr_R_big
 
   LDA bg_attr
@@ -2303,12 +2296,8 @@ update_drums:
   INY
   STY drum_data_pool+5
 
-  LDA tempo
-  AND #$40
-  BNE end_spawn_attr_end_onex
   ; attributes
-  LDA bg_attr_position+2
-  AND #%00000010
+  LDA bg_attr_placement
   BNE spawn_attr_F_end
 
   LDA bg_attr
@@ -2334,18 +2323,6 @@ update_drums:
 
   JMP end_spawn_attr_end
 
-  end_spawn_attr_end_onex:
-  ; attributes
-  LDA bg_attr_position+2
-  BEQ end_spawn_attr_end
-  AND #%00000010
-  BEQ spawn_attr_F_end
-
-  LDA bg_attr
-  ORA #%00010001
-  STA bg_attr
-  JMP end_spawn_attr_end
-
   spawn_roll_last_big:
   LDA #$03
   STA drum_data_pool ; length
@@ -2365,9 +2342,8 @@ update_drums:
   STY drum_data_pool+6
 
   ; attributes
-  LDA bg_attr_position+2
-  AND #%00000010
-  BEQ spawn_attr_F_end_big
+  LDA bg_attr_placement
+  BNE spawn_attr_F_end_big
 
   LDA bg_attr
   ORA #%00010001
@@ -2392,6 +2368,30 @@ update_drums:
 
   JMP end_spawn_attr_end_big
 
+  set_bg_attr_position:
+  LDA drum_spawn_position
+  LSR
+  LSR
+  AND #%00000111
+  TAX
+  INX
+  LDY #$CF
+  set_attr_position:
+  INY
+  DEX
+  BNE set_attr_position
+  STY bg_attr_position+1
+
+  LDA drum_spawn_position+1
+  CLC
+  ADC #$02
+  STA bg_attr_position
+
+  LDA drum_spawn_position
+  LSR
+  AND #$01
+  STA bg_attr_placement
+  RTS
 
 
 
@@ -2495,31 +2495,18 @@ update_drums:
   LDA bg_attr+1
   BNE dont_update_attr
 
-  INC bg_attr_position+1
-  LDX bg_attr_position+1
+  INC bg_attr_position+3
+  LDX bg_attr_position+3
   CPX #$D8
   BNE dont_update_nametable
 
   LDX #$D0
-  STX bg_attr_position+1
-  LDA bg_attr_position
+  STX bg_attr_position+3
+  LDA bg_attr_position+2
   EOR #%00000100
-  STA bg_attr_position
+  STA bg_attr_position+2
 
   dont_update_nametable:
-
-  INC bg_attr_position+4
-  LDX bg_attr_position+4
-  CPX #$D8
-  BNE dont_update_nametable_2
-
-  LDX #$D0
-  STX bg_attr_position+4
-  LDA bg_attr_position+3
-  EOR #%00000100
-  STA bg_attr_position+3
-
-  dont_update_nametable_2:
 
   LDA misc
   EOR #%00000100
