@@ -14,9 +14,6 @@ This is an NES port of Taiko No Tatsujin written completely in assembly using th
 > 
 > If you only have a PAL (50Hz) system, you'll have to wait for a PAL supported ROM. *If that even happens...*
 
-> [!NOTE]
-> There has been little to no hardware testing. If you try it on hardware please let me know.
-
 ## Credits
 ### Song List
 **Karippa Boss** - Adonete
