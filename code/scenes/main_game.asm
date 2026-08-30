@@ -4442,6 +4442,8 @@ base_don_chr_bank = $10
 	NOP
 	NOP
 	NOP
+	NOP
+	NOP
 	LDA PPUMASK
 	AND #%11101111
 	STA PPUMASK
@@ -4566,7 +4568,7 @@ base_don_chr_bank = $10
 	.byte $A0, $80, $60, $40, $20, $00, $E0, $C0, $A0, $80, $60, $40, $20
 
 	scroll_Y_pool_up_hi:
-	.byte $0F, $1F, $0F, $0F, $0F, $1F, $0E, $0E, $0E, $0E, $0E, $1E, $0E
+	.byte $1F, $1F, $1F, $1F, $1F, $1F, $1E, $1E, $1E, $1E, $1E, $1E, $1E
 
 .endproc
 
@@ -4629,7 +4631,7 @@ base_don_chr_bank = $10
 	.byte $00, $00, $00, $00, $00, $00, $00, $01, $01, $01, $01, $01, $01, $01, $01
 
 	irq_cycle_timer_results_tr_lo:
-	.byte $75, $07, $99, $DB, $BD, $4F, $E1, $73, $05, $97, $29, $BB
+	.byte $75, $07, $9B, $DF, $C1, $54, $E7, $78, $05, $97, $29, $BB
 
 	irq_cycle_timer_results_tr_hi:
 	.byte $D7, $DB, $DE, $E2, $E5, $E9, $EC, $F0, $F4, $F7, $FB, $FE
@@ -4689,7 +4691,7 @@ base_don_chr_bank = $10
 	.byte $00, $00, $00, $00, $00, $00, $00, $01, $01, $01, $01, $01, $01, $01, $01
 
 	irq_cycle_timer_results_tr_lo:
-	.byte $75, $07, $99, $DB, $BD, $4F, $E1, $73, $05, $97, $29, $D3, $20, $20
+	.byte $75, $07, $99, $DB, $BD, $4F, $E1, $73, $05, $97, $29, $D3, $1C, $16
 
 	irq_cycle_timer_results_tr_hi:
 	.byte $D7, $DB, $DE, $E2, $E5, $E9, $EC, $F0, $F4, $F7, $FB, $FE, $F1, $F9
