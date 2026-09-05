@@ -1,7 +1,13 @@
 .segment "DRUM_BANK_1"
 
 karippa_boss_easy:
-.byte $C3, $01, $02
+.if ROM_PAL
+.byte $C4 ; PAL tempo
+.else
+.byte $C3 ; NTSC tempo
+.endif
+.byte $01, $02
+
 .byte $09, $07, $09, $07
 .byte $09, $03, $09, $03, $09, $07
 .byte $15, $07, $09, $07
@@ -47,7 +53,13 @@ karippa_boss_easy:
 .byte $C0
 
 karippa_boss_normal:
-.byte $C3, $03, $08
+.if ROM_PAL
+.byte $C4 ; PAL tempo
+.else
+.byte $C3 ; NTSC tempo
+.endif
+.byte $03, $08
+
 .byte $09, $03, $0A, $03, $09, $03, $0A, $03
 .byte $09, $03, $09, $03, $09, $01, $09, $01, $09, $03
 .byte $15, $03, $09, $03, $09, $01, $09, $01, $09, $03
@@ -93,7 +105,13 @@ karippa_boss_normal:
 .byte $C0
 
 karippa_boss_hard:
-.byte $C3, $03, $06
+.if ROM_PAL
+.byte $C4 ; PAL tempo
+.else
+.byte $C3 ; NTSC tempo
+.endif
+.byte $03, $06
+
 .byte $09, $03, $0A, $03, $09, $03, $0A, $03
 .byte $09, $03, $09, $03, $09, $01, $09, $01, $09, $01, $09, $01
 .byte $0D, $01, $09, $01, $09, $02, $09, $02, $0A, $01, $0A, $03
@@ -139,7 +157,13 @@ karippa_boss_hard:
 .byte $C0
 
 karippa_boss_oni:
-.byte $C3, $08, $02
+.if ROM_PAL
+.byte $C4 ; PAL tempo
+.else
+.byte $C3 ; NTSC tempo
+.endif
+.byte $08, $02
+
 .byte $09, $01, $22, $22, $0A, $03, $09, $01, $22, $22, $0A, $03
 .byte $09, $01, $22, $22, $09, $01, $22, $22, $09, $01, $09, $01, $0A, $01, $09, $01
 .byte $0D, $01, $22, $21, $0A, $01, $22, $22, $21, $21, $22, $21, $0A, $01, $0A, $01

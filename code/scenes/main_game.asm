@@ -2452,12 +2452,24 @@ update_drums:
   LDX #<results_song ; load low byte to X
   LDY #>results_song ; load high byte to Y
 
+  .if ROM_PAL
+  LDA #$00 ; PAL speed
+  .else
   LDA #$01 ; NTSC speed
+  .endif
   JSR famistudio_init ; initialize songs
+
+  LDA #$00
+  STA $8000
+  LDA #$01
+  STA $8800
+  LDA #$0E
+  STA $9000
 
   LDA #$00
 	STA BTN_Press
 	STA BTN_Hold
+	STA pause
   JSR famistudio_music_play
   :
 
@@ -2592,6 +2604,7 @@ update_drums:
   :
 
   RTS
+.endproc
 
 tempo_tables_lo:
   .lobytes tempo_1_table, tempo_2_table, tempo_3_table, tempo_4_table
@@ -2609,6 +2622,59 @@ tempo_tables_hi_2x:
   .hibytes tempo_1_table_2x, tempo_2_table_2x, tempo_3_table_2x, tempo_4_table_2x
   .hibytes tempo_5_table_2x, tempo_6_table_2x, tempo_7_table_2x, tempo_8_table_2x
 
+.if ROM_PAL
+; PAL tempo speeds
+tempo_1_table:
+  .byte $01, $01, $00, $01, $01, $00, $20
+
+tempo_2_table:
+  .byte $01, $01, $00, $01, $01, $00, $01, $01, $00, $01, $01, $00, $20
+
+tempo_3_table:
+  .byte $01, $01, $01, $00, $01, $01, $01, $00, $01, $01, $00, $20
+
+tempo_4_table:
+  .byte $01, $01, $01, $00, $01, $01, $01, $00, $01, $01, $20
+
+tempo_5_table:
+  .byte $01, $01, $01, $01, $20
+
+tempo_6_table:
+  .byte $01, $01, $01, $01, $01, $01, $01, $01, $20
+
+tempo_7_table:
+  .byte $21
+
+tempo_8_table:
+	.byte $02, $01, $01, $01, $01, $01, $21
+
+
+tempo_1_table_2x:
+  .byte $01, $01, $01, $02, $01, $01, $21
+
+tempo_2_table_2x:
+  .byte $01, $01, $01, $02, $01, $01, $02, $01, $01, $02, $01, $01, $21
+
+tempo_3_table_2x:
+  .byte $01, $02, $01, $01, $02, $02, $01, $01, $02, $01, $01, $21
+
+tempo_4_table_2x:
+  .byte $02, $02, $01, $01, $02, $02, $01, $01, $02, $01, $21
+
+tempo_5_table_2x:
+  .byte $02, $02, $02, $01, $01, $01, $02, $02, $02, $21
+
+tempo_6_table_2x:
+  .byte $02, $02, $02, $02, $02, $02, $02, $01, $21
+
+tempo_7_table_2x:
+  .byte $22
+
+tempo_8_table_2x:
+	.byte $03, $03, $02, $02, $02, $02, $22
+
+.else
+; NTSC tempo speeds
 tempo_1_table:
   .byte $01, $01, $00, $01, $01, $00, $00, $01, $01, $00, $00, $01, $01, $00, $20
 
@@ -2658,8 +2724,7 @@ tempo_7_table_2x:
 
 tempo_8_table_2x:
   .byte $22
-.endproc
-
+.endif
 
 
 
@@ -3842,6 +3907,10 @@ drum_sprite_tile_big:
 .endproc
 
 .proc update_pause
+	LDA results_transition_time
+	BEQ :+
+	RTS
+	:
 	LDA BTN_Press
 	AND #BTN_START
 	BNE pause_unpause_game
@@ -4017,7 +4086,7 @@ inc_dbp:
   STA drum_bank_positon
   RTS
 
-.proc update_don
+update_don:
 	LDA #$14
 	STA base_don_Y
 
@@ -4131,7 +4200,11 @@ inc_dbp:
 	STA base_don_Y
 
 	LDA jump_frame
-	CMP #$1B+$80
+	.if ROM_PAL
+	CMP #$16+$80
+	.else
+	CMP #$1B+$80 ; NTSC speed
+	.endif
 	BNE :+
 	LDA #$00
 	STA jump_frame
@@ -4143,9 +4216,17 @@ inc_dbp:
 	:
 
 	LDA jump_frame
-	CMP #$06+$80
+	.if ROM_PAL
+	CMP #$05+$80 ; PAL speed
+	.else
+	CMP #$06+$80 ; NTSC speed
+	.endif
 	BCC jump_start_finish
-	CMP #$13+$80
+	.if ROM_PAL
+	CMP #$10+$80 ; PAL speed
+	.else
+	CMP #$13+$80 ; NTSC speed
+	.endif
 	BCS jump_start_finish
 
 	LDX #$00
@@ -4168,12 +4249,16 @@ inc_dbp:
 	RTS
 
 	don_Y_heights:
-
+	.if ROM_PAL
+	; PAL jump heights
+	.byte $14, $14, $14, $14, $14, $11, $0E, $0D, $0C, $0B, $0B, $0B, $0C, $0D, $10, $13, $14, $14, $14, $14, $14, $14, $14
+	.else
+	; NTSC jump heights
 	.byte $14, $14, $14, $14, $14, $14, $11, $0E, $0D, $0D, $0C, $0C, $0B, $0B, $0C, $0D, $0E, $10, $13, $14, $14, $14, $14, $14, $14, $14, $14, $14
-.endproc
+	.endif
 
 base_don_chr_bank = $10
-.proc do_action_at_beat
+do_action_at_beat:
 	LDY #$00
 	LDA mods
 	LSR
@@ -4200,6 +4285,16 @@ base_don_chr_bank = $10
 	LDX beat_anim_frame+1
 	CPX #$08
 	BCC :+
+	.if ROM_PAL
+	; waste time otherwise itll change the bank too early
+	LDX #$00
+	waste_time_PAL:
+	INX
+	BNE waste_time_PAL
+	waste_time_PAL2:
+	INX
+	BNE waste_time_PAL2
+	.endif
 	ADC #$00
 	STA $9000
 	RTS
@@ -4255,7 +4350,6 @@ base_don_chr_bank = $10
 
 	byte_20:
 	.byte $20
-.endproc
 
 .proc update_timers
 	LDA misc ; execute every 8 pixel scrolls
@@ -4334,13 +4428,20 @@ base_don_chr_bank = $10
 	RTS
 .endproc
 
-.proc set_scroll_score_init
+set_scroll_score_init:
 	PHA
 
+	.if ROM_PAL
+	LDA #$55
+	STA $5000
+	LDA #$56+$80
+	STA $5800
+	.else
 	LDA #$90
 	STA $5000
 	LDA #$53+$80
 	STA $5800
+	.endif
 
 	LDA #<set_scroll_score
   STA irq_address
@@ -4349,7 +4450,6 @@ base_don_chr_bank = $10
 
 	PLA
 	RTI
-.endproc
 
 .proc set_scroll_score
 	PHA
@@ -4427,7 +4527,7 @@ base_don_chr_bank = $10
 	RTI
 .endproc
 
-.proc results_transition_high
+results_transition_high:
 	PHA
 	TXA
 	PHA
@@ -4435,7 +4535,11 @@ base_don_chr_bank = $10
 	PHA
 
 	LDX results_transition_time+1
+	.if ROM_PAL
+	CPX #120
+	.else
 	CPX #150
+	.endif
 	BCC :+
 	NOP
 	NOP
@@ -4502,7 +4606,11 @@ base_don_chr_bank = $10
 	STA $5800
 
 	LDA results_transition_time+1
+	.if ROM_PAL
+	CMP #120
+	.else
 	CMP #150
+	.endif
 	BCC :+
 	LDA irq_cycle_timer_results_tr_lo_up, X
 	STA $5000
@@ -4569,8 +4677,6 @@ base_don_chr_bank = $10
 
 	scroll_Y_pool_up_hi:
 	.byte $1F, $1F, $1F, $1F, $1F, $1F, $1E, $1E, $1E, $1E, $1E, $1E, $1E
-
-.endproc
 
 .proc set_scroll_game
 	PHA

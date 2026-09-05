@@ -1,7 +1,12 @@
 .segment "DRUM_BANK_1"
 
 euphoria_easy:
-.byte $C3, $01, $00
+.if ROM_PAL
+.byte $C4 ; PAL tempo
+.else
+.byte $C3 ; NTSC tempo
+.endif
+.byte $01, $00
 .byte $09, $07, $09, $07
 .byte $09, $07, $09, $07
 .byte $09, $07, $09, $07
@@ -102,7 +107,12 @@ euphoria_easy:
 .segment "DRUM_BANK_2"
 
 euphoria_normal:
-.byte $C3, $05, $08
+.if ROM_PAL
+.byte $C4 ; PAL tempo
+.else
+.byte $C3 ; NTSC tempo
+.endif
+.byte $05, $08
 .byte $09, $03, $09, $03, $09, $03, $09, $03
 .byte $09, $03, $09, $03, $09, $03, $09, $03
 .byte $09, $03, $09, $03, $09, $03, $09, $03
@@ -207,7 +217,12 @@ euphoria_normal:
 .segment "DRUM_BANK_1"
 
 euphoria_hard:
-.byte $C3, $07, $0C
+.if ROM_PAL
+.byte $C4 ; PAL tempo
+.else
+.byte $C3 ; NTSC tempo
+.endif
+.byte $07, $0C
 .byte $09, $03, $21, $09, $01, $09, $02, $09, $02, $21, $09, $01
 .byte $09, $03, $21, $09, $01, $09, $02, $09, $02, $21, $09, $01
 .byte $09, $03, $21, $09, $01, $09, $02, $09, $02, $21, $09, $01
@@ -310,7 +325,12 @@ euphoria_hard:
 .byte $C0
 
 euphoria_oni:
-.byte $C3, $0D, $30
+.if ROM_PAL
+.byte $C4 ; PAL tempo
+.else
+.byte $C3 ; NTSC tempo
+.endif
+.byte $0D, $30
 .byte $09, $01, $0A, $01, $21, $0A, $01, $22, $09, $01, $0A, $01, $21, $22, $09, $01
 .byte $09, $01, $0A, $01, $21, $0A, $01, $22, $09, $01, $0A, $01, $21, $22, $09, $01
 .byte $09, $01, $0A, $01, $21, $0A, $01, $22, $09, $01, $0A, $01, $21, $22, $09, $01

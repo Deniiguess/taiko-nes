@@ -1,7 +1,8 @@
 .segment "DRUM_BANK_1"
 
 bean_brained_easy:
-.byte $46, $01, $03
+.byte $46
+.byte $01, $03
 .byte $09, $0F
 .byte $09, $0F
 .byte $09, $0F
@@ -61,7 +62,8 @@ bean_brained_easy:
 .segment "DRUM_BANK_2"
 
 bean_brained_normal:
-.byte $46, $02, $28
+.byte $46
+.byte $02, $28
 .byte $09, $03, $09, $03, $09, $03, $09, $03
 .byte $09, $0F
 .byte $09, $03, $09, $03, $09, $03, $09, $03
@@ -120,7 +122,8 @@ bean_brained_normal:
 .byte $C0
 
 bean_brained_hard:
-.byte $46, $03, $50
+.byte $46
+.byte $03, $50
 .byte $0A, $01, $0A, $01, $0A, $03, $09, $01, $09, $01, $0A, $01, $09, $01
 .byte $09, $0F
 .byte $0A, $01, $0A, $01, $0A, $03, $09, $01, $09, $01, $0A, $01, $09, $01
@@ -179,7 +182,8 @@ bean_brained_hard:
 .byte $C0
 
 bean_brained_oni:
-.byte $46, $06, $05
+.byte $46
+.byte $06, $05
 .byte $0A, $01, $0A, $01, $0A, $01, $09, $01, $0A, $01, $0A, $01, $09, $01, $0A, $01
 .byte $09, $0B, $09, $01, $09, $01
 .byte $0A, $01, $0A, $01, $0A, $01, $21, $21, $0A, $01, $0A, $01, $09, $01, $09, $01

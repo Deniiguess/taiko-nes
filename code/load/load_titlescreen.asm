@@ -1,4 +1,4 @@
-.proc load_title_screen
+load_title_screen:
   ; load PRG banks
   LDA #$01
   STA $E000
@@ -26,7 +26,11 @@
   LDX #<(taiko_sfx) ; load low byte to X
   LDY #>(taiko_sfx) ; load high byte to Y
 
+  .if ROM_PAL
+  LDA #$00 ; PAL speed
+  .else
   LDA #$01 ; NTSC speed
+  .endif
   JSR famistudio_init ; initialize songs
 
   LDA #$01
@@ -88,7 +92,6 @@
   STA irq_address+1
 
   RTS
-.endproc
 
 .segment "TITL_SCEN_SONG_SEL"
 title_bg_1:

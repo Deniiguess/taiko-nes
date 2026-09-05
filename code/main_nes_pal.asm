@@ -1,5 +1,5 @@
 ; FAMISTUDIO_CFG_NTSC_SUPPORT  = 1 ; for NTSC
-; FAMISTUDIO_CFG_PAL_SUPPORT   = 1 ; for PAL
+FAMISTUDIO_CFG_PAL_SUPPORT   = 1 ; for PAL
 FAMISTUDIO_CFG_EXTERNAL       = 1 ; enables external configuration
 
 ; FAMISTUDIO_CFG_SMOOTH_VIBRATO = 1 ; for a smooth vibrato
@@ -29,6 +29,8 @@ FAMISTUDIO_DPCM_OFF = dmc_data ; sets DPCM location
 FAMISTUDIO_EXP_N163 = 1
 FAMISTUDIO_EXP_N163_CHN_CNT = 8
 
+ROM_PAL = 1
+
 ; CA65-specifc config.
 .define FAMISTUDIO_CA65_ZP_SEGMENT   ZEROPAGE
 .define FAMISTUDIO_CA65_RAM_SEGMENT  BSS
@@ -46,7 +48,7 @@ dmc_data:
 .include "constants.asm"
 .include "memory.asm"
 .include "header.asm"
-.include "musicbnk.asm"
+.include "musicbnkpal.asm"
 
 .include "charts/karippaboss.asm"
 .include "charts/whounleashedthedog.asm"
@@ -69,14 +71,14 @@ dmc_data:
 .include "load/load_results.asm"
 
 .include "song_info.asm"
-.include "songs/soundeffects.s"
+.include "songs/soundeffectsPAL.s"
 
 init_song:
 ; define song
   LDX #<$C000 ; load low byte to X
   LDY #>$C000 ; load high byte to Y
 
-  LDA #$01 ; NTSC speed
+  LDA #$00 ; PAL speed
   JSR famistudio_init ; initialize songs
   RTS
 
@@ -85,7 +87,7 @@ init_song_alt:
   LDX #<$A000 ; load low byte to X
   LDY #>$A000 ; load high byte to Y
 
-  LDA #$01 ; NTSC speed
+  LDA #$00 ; PAL speed
   JSR famistudio_init ; initialize songs
   RTS
 
@@ -109,7 +111,7 @@ taiko_sfx:
 .segment "MUSIC_BANK_RESULTSS"
 .incbin "songs/results.dmc"
 results_song:
-.include "songs/results.s"
+.include "songs/resultsPAL.s"
 
 .segment "VECTORS"
 .addr nmi_handler, reset_handler, irq_handler

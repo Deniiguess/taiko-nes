@@ -72,7 +72,7 @@
   JMP load_song_sel
 .endproc
 
-.proc title_screen_irq_init
+title_screen_irq_init:
 	PHA
   LDA #<title_screen_irq_1
   STA irq_address
@@ -81,14 +81,20 @@
 
   LDA #$00
 	STA $5000
+.if ROM_PAL
+	; PAL timing
+	LDA #$71+$80
+	STA $5800
+.else
+	; NTSC timing
 	LDA #$70+$80
 	STA $5800
-
+.endif
   PLA
-	RTI
-.endproc
 
-.proc title_screen_irq_1
+	RTI
+
+title_screen_irq_1:
 	PHA
 	LDA #$00
   STA $2005
@@ -99,14 +105,22 @@
   LDA #>title_screen_irq_2
   STA irq_address+1
 
-  LDA #$00
+.if ROM_PAL
+	; PAL timing
+	LDA #$00
+	STA $5000
+	LDA #$39+$80
+	STA $5800
+.else
+	; NTSC timing
+	LDA #$00
 	STA $5000
 	LDA #$35+$80
 	STA $5800
+.endif
 
   PLA
 	RTI
-.endproc
 
 .proc title_screen_irq_2
 	PHA

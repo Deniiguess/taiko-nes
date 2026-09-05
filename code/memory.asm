@@ -14,7 +14,6 @@ PPUSCROLL_X: .res 1
 PPUSCROLL_Y: .res 1
 PPUSCROLL_X_speed: .res 1
 PPUSCROLL_Y_speed: .res 1
-PPUSCROLL_Y_overflow: .res 1
 
 PPUSCROLL_X_stored: .res 1
 
@@ -102,6 +101,7 @@ in_color_set: .res 1
 pause: .res 2
 pause_pos: .res 1
 pause_sprite_backup: .res 4
+can_pause: .res 1
 
 drum_bank_position_chart_backup: .res 1
 

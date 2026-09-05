@@ -1,14 +1,23 @@
-.proc nmi_handler
+nmi_handler:
   PHA
   TXA
   PHA
   TYA
   PHA
 
-  LDA #$40
+.if ROM_PAL
+	; PAL timing
+  LDA #$FF
   STA $5000
-  LDA #%11110111
+  LDA #$62+$80
   STA $5800
+.else
+	; NTSC timing
+	LDA #$40
+  STA $5000
+  LDA #$77+$80
+  STA $5800
+.endif
   CLI
 
   ; update PPUMASK
@@ -37,12 +46,12 @@
 
   ; clear drums in pool after drawing them
   LDX #$00
-  clear_drum:
+  clear_drum_data_pool:
   LDA #$00
   STA drum_data_pool, X
   INX
   CPX #21
-  BNE clear_drum
+  BNE clear_drum_data_pool
 
   escape_draw_palette:
 
@@ -199,7 +208,6 @@ loop:
 
   scroll_Y_values:
   .byte $00, $F0
-.endproc
 
 
 .proc update_fade

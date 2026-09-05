@@ -1,7 +1,12 @@
 .segment "DRUM_BANK_3"
 
 who_unleashed_the_dog_easy:
-.byte $C4, $03, $05
+.if ROM_PAL
+.byte $C5 ; PAL tempo
+.else
+.byte $C4 ; NTSC tempo
+.endif
+.byte $03, $05
 .byte $40, $0F
 .byte $15, $07, $15, $07
 .byte $0A, $07, $0A, $03, $09, $07
@@ -96,7 +101,12 @@ who_unleashed_the_dog_easy:
 .byte $C0
 
 who_unleashed_the_dog_normal:
-.byte $C4, $00, $00
+.if ROM_PAL
+.byte $C5 ; PAL tempo
+.else
+.byte $C4 ; NTSC tempo
+.endif
+.byte $05, $18
 .byte $09, $05, $09, $01, $09, $07
 .byte $15, $03, $15, $03, $15, $03, $15, $03
 .byte $0A, $01, $0A, $03, $0A, $01, $0A, $03, $09, $01, $09, $03
@@ -191,7 +201,12 @@ who_unleashed_the_dog_normal:
 .byte $C0
 
 who_unleashed_the_dog_hard:
-.byte $C4, $07, $1F
+.if ROM_PAL
+.byte $C5 ; PAL tempo
+.else
+.byte $C4 ; NTSC tempo
+.endif
+.byte $07, $1F
 .byte $09, $05, $0A, $01, $09, $05, $09, $01
 .byte $15, $03, $15, $03, $15, $03, $15, $03
 .byte $0A, $01, $09, $03, $0A, $01, $09, $03, $21, $21, $09, $03
@@ -287,7 +302,12 @@ who_unleashed_the_dog_hard:
 
 
 who_unleashed_the_dog_oni:
-.byte $C4, $09, $20
+.if ROM_PAL
+.byte $C5 ; PAL tempo
+.else
+.byte $C4 ; NTSC tempo
+.endif
+.byte $09, $20
 .byte $09, $03, $0A, $01, $21, $21, $0A, $02, $22, $0A, $01, $09, $01
 .byte $15, $03, $15, $03, $15, $03, $15, $03
 .byte $0A, $01, $09, $03, $0A, $01, $09, $03, $21, $21, $09, $03

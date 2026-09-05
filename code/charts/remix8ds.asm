@@ -1,7 +1,12 @@
 .segment "DRUM_BANK_2"
 
 remix_8_easy:
-.byte $85, $02, $02
+.if ROM_PAL
+.byte $86 ; PAL tempo
+.else
+.byte $85 ; NTSC tempo
+.endif
+.byte $02, $02
 .byte $40, $3F
 .byte $15, $07, $0A, $07
 .byte $09, $03, $09, $03, $09, $07
@@ -76,7 +81,12 @@ remix_8_easy:
 
 .segment "DRUM_BANK_1"
 remix_8_normal:
-.byte $C5, $03, $30
+.if ROM_PAL
+.byte $C6 ; PAL tempo
+.else
+.byte $C5 ; NTSC tempo
+.endif
+.byte $03, $30
 .byte $40, $23
 .byte $0A, $07, $0A, $07, $0A, $03, $0A, $03, $16, $03
 .byte $15, $03, $0A, $03, $09, $01, $09, $01, $0A, $03
@@ -152,7 +162,12 @@ remix_8_normal:
 
 .segment "DRUM_BANK_2"
 remix_8_hard:
-.byte $C5, $05, $20
+.if ROM_PAL
+.byte $C6 ; PAL tempo
+.else
+.byte $C5 ; NTSC tempo
+.endif
+.byte $05, $20
 .byte $09, $03, $0A, $0F
 .byte $0A, $0B
 .byte $09, $03, $0A, $03, $09, $03, $0A, $03
@@ -232,7 +247,12 @@ remix_8_hard:
 
 .segment "DRUM_BANK_1"
 remix_8_oni:
-.byte $C5, $09, $13
+.if ROM_PAL
+.byte $C6 ; PAL tempo
+.else
+.byte $C5 ; NTSC tempo
+.endif
+.byte $09, $13
 .byte $09, $03, $0A, $0B
 .byte $09, $03, $0A, $0B
 .byte $09, $01, $09, $01, $0A, $03, $09, $01, $09, $01, $0A, $03

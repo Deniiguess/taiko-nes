@@ -47,7 +47,7 @@
   JMP stay_here
 .endproc
 
-.proc update_pauses
+update_pauses:
   LDA ts_ss_timer+1 ; load ts_ss_timer+1 to A
   BNE :+
   RTS ; dont do anything if ts_ss_timer+1 is $00
@@ -63,7 +63,12 @@
   JSR famistudio_sfx_sample_play
   ; and continue with the subroutine
   :
-  CMP #182 ; check if A is 182
+  ; check if A is 182 (NTSC) or 151 (PAL)
+  .if ROM_PAL
+  CMP #151
+  .else
+  CMP #182
+  .endif
   BNE dont_load_main_game ; if not, leave the subroutine
 
   ; load the correct chart
@@ -101,9 +106,8 @@
 
   ; return
   RTS
-.endproc
 
-.proc update_START
+update_START:
   LDA ts_ss_timer+1 ; load ts_ss_timer+1 to A
   BNE start_game ; if it isnt $00, jump to start_game
 
@@ -183,10 +187,15 @@
 
   INC ts_ss_timer+1 ; increase ts_ss_timer+1
 
-  ; load #121 to ts_ss_timer to prevent the song from playing
+  ; load #121 or #100 to ts_ss_timer to prevent the song from playing
   ; if you select a song too quickly
+  .if ROM_PAL
+  LDA #100
+  .else
   LDA #121
+  .endif
   STA ts_ss_timer
+
 
   ; make song_sel_position+2 minus to prevent the song from playing
   ; if you select a song too quickly
@@ -194,7 +203,6 @@
   STA song_sel_position+2
   :
   RTS
-.endproc
 
 update_B:
   LDA song_sel_entry ; check if song_sel_entry is $02
@@ -238,17 +246,21 @@ update_SEL:
 
   JMP down ; jump to down (run scroll down setup code)
 
-.proc update_song_select_value
-  LDA ts_ss_timer ; check if ts_ss_timer is 100 (or higher)
-  CMP #100 ; if it is, continue
-  BCS :+ ; in other words, wait 100 frames before running this code
+update_song_select_value:
+  LDA ts_ss_timer ; check if ts_ss_timer is 100 (or higher) on NTSC; 83 (or higher) on PAL
+  .if ROM_PAL
+  CMP #83 ; if it is, continue
+  .else
+  CMP #100
+  .endif
+  BCS :+ ; in other words, wait 100 or 83 frames before running this code
 
   INC ts_ss_timer ; increase ts_ss_timer
   RTS ; and then leave subroutine
 
   :
 
-  BNE :+++ ; then check if its exactly 100
+  BNE :+++ ; then check if its exactly 100 or 83
   ; if not, skip some code
 
   LDA song_sel_position+2 ; load song_sel_position+2 to A
@@ -267,7 +279,11 @@ update_SEL:
   STA $F000
   JSR init_song
 
-  LDA #20 ; load $20 to A
+  .if ROM_PAL
+  LDA #16
+  .else
+  LDA #20
+  .endif
   STA song_sel_position+2 ; and store it in song_sel_position+2
 
   JSR famistudio_music_stop ; stop the music
@@ -290,7 +306,6 @@ update_SEL:
   JSR famistudio_music_play
   :
   RTS ; leave subroutine
-.endproc
 
 .proc update_Y_scroll
   LDA song_sel_entry+1 ; load song_sel_entry+1 to A
@@ -964,9 +979,14 @@ byte_01:
 
 MAX_SONG_COUNT = $05
 
-.proc song_cursor
+song_cursor:
   LDA song_sel_cursor_time ; load song_sel_cursor_time to A
-  CMP #19 ; check if its 19
+   ; check if its 19 (NTSC) or 15 (PAL)
+  .if ROM_PAL
+  CMP #15
+  .else
+  CMP #19
+  .endif
   BNE :+ ; if it isnt, skip song initialize code
 
   ; set up PRG-ROM banks
@@ -990,7 +1010,11 @@ MAX_SONG_COUNT = $05
   LDA song_sel_cursor_time ; load song_sel_cursor_time to A
   BNE :+ ; if its not $00, skip some code
 
+  .if ROM_PAL
+  LDA #16
+  .else
   LDA #20
+  .endif
   STA song_sel_cursor_time ; set song_sel_cursor_time and
   STA song_sel_position+2 ; song_sel_position+2 to $20
 
@@ -1014,7 +1038,11 @@ MAX_SONG_COUNT = $05
   LDA song_sel_cursor_time ; load song_sel_cursor_time to A
   BNE :+ ; if its not $00, skip some code
 
+  .if ROM_PAL
+  LDA #16
+  .else
   LDA #20
+  .endif
   STA song_sel_cursor_time ; set song_sel_cursor_time and
   STA song_sel_position+2 ; song_sel_position+2 to $20
 
@@ -1048,7 +1076,6 @@ MAX_SONG_COUNT = $05
   RTS
 
   BASE_CURSOR_X_POSITION_SONG_SEL = $28
-.endproc
 
 .proc diff_cursor
   LDA diff_sel_cursor_time ; load diff_sel_cursor_time to A
@@ -1183,7 +1210,7 @@ MAX_SONG_COUNT = $05
 	donchan_base_sprite = $274
 	crown_base_sprite = $294
 
-.proc update_controller_highlight ; and that donchan icon and the cursors
+update_controller_highlight: ; and that donchan icon and the cursors
 ; future deni here: basiaclly almost every sprite
   LDA PPUSCROLL_Y_speed ; load PPUSCROLL_Y_speed to A
   BPL :+ ; if its above $80
@@ -1202,7 +1229,12 @@ MAX_SONG_COUNT = $05
   ; switch the visibility of it every half a second
   INC frame_timer_controller ; increase frame_timer_controller
   LDA frame_timer_controller ; load frame_timer_controller to A
-  CMP #30 ; if its 30
+  ; if its 30 (NTSC) or 25 (PAL)
+  .if ROM_PAL
+  CMP #25
+  .else
+  CMP #30
+  .endif
   BNE :+ ; skip some code
   LDA #0
   STA frame_timer_controller ; set frame_timer_controller 0
@@ -1492,7 +1524,6 @@ MAX_SONG_COUNT = $05
   :
 
   RTS
-.endproc
 
 .proc update_donchan_color
 	LDX don_color_pos ; load don_color_pos to X
