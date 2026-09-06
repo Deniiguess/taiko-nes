@@ -145,19 +145,23 @@
 
   LDA roll_active
   CMP #$02
-  BCC :++
+  BCC :+++
 
   LDA roll_autoplay_timer
   SEC
   SBC PPUSCROLL_X_speed
   STA roll_autoplay_timer
-  BCS :++
+  BCS :+++
 
   LDA #$0A
   STA drum_input_don_time
 
+  LDA mods
+	AND #$08
+	BNE :+
   LDA #$01
   JSR famistudio_sfx_sample_play
+  :
 
   LDX slot_number
   LDA drum_sprite_A, X
@@ -244,8 +248,12 @@
   JSR set_sprite_to_big
   :
 
+  LDA mods
+	AND #$08
+	BNE :+
   LDA #$01
   JSR famistudio_sfx_sample_play
+  :
 
   LDX slot_number
   LDA drum_sprite_A, X
@@ -277,8 +285,12 @@
   JSR set_sprite_to_big
   :
 
+  LDA mods
+	AND #$08
+	BNE :+
   LDA #$02
   JSR famistudio_sfx_sample_play
+  :
 
   LDX slot_number
   LDA drum_sprite_A, X
@@ -467,8 +479,12 @@ double_drum_frame = 4
 
 
   kat:
+  LDA mods
+	AND #$08
+	BNE :+
   LDA #$02 ; play the KAT sample
   JSR famistudio_sfx_sample_play
+  :
 
   LDX slot_number
   LDA drum_sprite_A, X
@@ -592,8 +608,12 @@ double_drum_frame = 4
 
 
   don:
+  LDA mods
+	AND #$08
+	BNE :+
   LDA #$01 ; play the DON sample
   JSR famistudio_sfx_sample_play
+  :
 
   LDX slot_number
   LDA drum_sprite_A, X
