@@ -12,7 +12,7 @@ This is an NES port of Taiko No Tatsujin written completely in assembly using th
 > [!NOTE]
 > This ROM is only so far for NTSC (60Hz) systems only. Playing this on PAL (50Hz) systems is going to have scrolling issues and wrong speeds.
 > 
-> If you only have a PAL (50Hz) system, you'll have to wait for a PAL supported ROM. *If that even happens...*
+> If you only have a PAL (50Hz) system, you'll have to wait until the next release, or build the ROM yourself.
 
 ## Credits
 ### Song List
