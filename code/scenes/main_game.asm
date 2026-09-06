@@ -1627,7 +1627,7 @@ update_drums:
   JSR prepare_data_small
 
   ; tiles
-  LDY #$30
+  LDY #$40
   STY drum_data_pool+4
   INY
   STY drum_data_pool+5
@@ -1690,7 +1690,7 @@ update_drums:
   JSR prepare_data_small
 
   ; tiles
-  LDY #$34
+  LDY #$44
   STY drum_data_pool+4
   INY
   STY drum_data_pool+5
@@ -1782,7 +1782,7 @@ update_drums:
   JSR prepare_data_small
 
   ; tiles
-  LDY #$48
+  LDY #$58
   STY drum_data_pool+4
   INY
   STY drum_data_pool+5
@@ -1868,7 +1868,7 @@ update_drums:
 
   JSR prepare_data_big
 
-  LDY #$40
+  LDY #$50
   STY drum_data_pool+4
   INY
   STY drum_data_pool+5
@@ -1901,7 +1901,7 @@ update_drums:
 
   JSR prepare_data_big
 
-  LDY #$38
+  LDY #$48
   STY drum_data_pool+4
   INY
   STY drum_data_pool+5
@@ -1992,7 +1992,7 @@ update_drums:
   STA drum_data_pool+17
 
   ; tiles
-  LDY #$50
+  LDY #$60
   STY drum_data_pool+4
   INY
   STY drum_data_pool+5
@@ -2221,7 +2221,7 @@ update_drums:
   STA drum_data_pool+3 ; 1
 
   ; tiles
-  LDY #$4C
+  LDY #$5C
   STY drum_data_pool+4
   INY
   STY drum_data_pool+5
@@ -2265,7 +2265,7 @@ update_drums:
   STA drum_data_pool+3 ; 1
 
   ; tiles
-  LDY #$59
+  LDY #$69
   STY drum_data_pool+4
   INY
   STY drum_data_pool+5
@@ -2321,7 +2321,7 @@ update_drums:
   STA drum_data_pool+3 ; 1
 
   ; tiles
-  LDY #$4E
+  LDY #$5E
   STY drum_data_pool+4
   INY
   STY drum_data_pool+5
@@ -2364,7 +2364,7 @@ update_drums:
   STA drum_data_pool+3 ; 1
 
   ; tiles
-  LDY #$5C
+  LDY #$6C
   STY drum_data_pool+4
   INY
   STY drum_data_pool+5

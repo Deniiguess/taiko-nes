@@ -506,7 +506,7 @@ loop:
 
   loop_clear_bar_1:
   LDA clear_bar, X
-  ADC #$80
+  ADC #$90
   STA PPUDATA
   INX
   CPX #$06
@@ -516,7 +516,7 @@ loop:
 
   loop_clear_bar_2:
   LDA clear_bar, X
-  ADC #$90
+  ADC #$A0
   STA PPUDATA
   INX
   CPX #$08

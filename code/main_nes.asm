@@ -120,8 +120,8 @@ results_song:
 ; tiles (12kB)
 .incbin "../CHR-ROM/gfx_drum1.chr" ; includes sprites for the main game
 .incbin "../CHR-ROM/gfx_drum2_sel.chr" ; includes a part of the circle, numbers and some menu stuff as sprites
-.incbin "../CHR-ROM/gfx_font_drumbg1.chr" ; includes the main font and a part of the drum bg tiles
-.incbin "../CHR-ROM/gfx_drumbg2_bg.chr" ; includes the rest of the drum bg tiles and the main game background
+.incbin "../CHR-ROM/gfx_font.chr" ; includes the main font
+.incbin "../CHR-ROM/gfx_drum_bg.chr" ; includes the drum bg tiles and the main game background
 .incbin "../CHR-ROM/gfx_clearbar_pause.chr" ; includes the clear bar tiles and "RETRY" in the pause menu
 .incbin "../CHR-ROM/gfx_title1.chr" ; includes the first part of the title screen tiles
 .incbin "../CHR-ROM/gfx_title2.chr" ; includes the second part of the title screen tiles
