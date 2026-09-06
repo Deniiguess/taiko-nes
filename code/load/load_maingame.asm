@@ -185,11 +185,6 @@
   LDA #$D2
   STA bg_attr_position+3
 
-  ; set the X coordinate of the bars
-  LDA #$28
-  STA bar_x
-  JSR update_bars
-
   ; set misc and metronome_v to 1
   ; misc to 1 to toggle sprite 0 hit execution
   ; metronome_v to start executing at beat 0 instead of beat 1

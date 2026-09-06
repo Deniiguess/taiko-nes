@@ -164,7 +164,7 @@
   AND #%11111101
   STA drum_sprite_A, X
 
-  LDA #30
+  LDA #roll_time_frames
   STA roll_time
 
   JSR inc_roll
@@ -237,7 +237,8 @@
   LDA drum_hit_pool, X
   AND #%00000100
   BEQ :+
-  LDA #$C4
+  LDA #$C0
+  ORA #double_drum_frame
   STA drum_input_don_two
 
   JSR set_sprite_to_big
@@ -269,7 +270,8 @@
   LDA drum_hit_pool, X
   AND #%00000100
   BEQ :+
-  LDA #$C4
+  LDA #$C0
+  ORA #double_drum_frame
   STA drum_input_kat_two
 
   JSR set_sprite_to_big
@@ -404,6 +406,14 @@
   JMP no_longer_add_points
 .endproc
 
+.if ROM_PAL
+roll_time_frames = 25
+double_drum_frame = 3
+.else
+roll_time_frames = 30
+double_drum_frame = 4
+.endif
+
 .proc update_inputs
   ; reset the drum clear bytes every other frame
   LDA frame_timer
@@ -469,7 +479,7 @@
   AND #%11000000
   BNE dont_rest_double_kat
 
-  ORA #%00000100
+  ORA #double_drum_frame
   STA drum_input_kat_two
 
   dont_rest_double_kat:
@@ -594,7 +604,7 @@
   AND #%11000000
   BNE dont_rest_double_don
 
-  ORA #%00000100
+  ORA #double_drum_frame
   STA drum_input_don_two
 
   dont_rest_double_don:
@@ -941,7 +951,7 @@
 
 
   input_roll_p2_don:
-  LDA #30
+  LDA #roll_time_frames
   STA roll_time
 
   JSR inc_roll
@@ -949,7 +959,7 @@
   JMP exit_input
 
   input_roll_p2_kat:
-  LDA #30
+  LDA #roll_time_frames
   STA roll_time
 
   JSR inc_roll
@@ -2757,10 +2767,9 @@ tempo_8_table_2x:
   CPY #$10
   BNE set_bar_sprite_data
 
-  LDA bar_x
+  LDA #$28
   SEC
-  SBC PPUSCROLL_X_speed
-  STA bar_x
+  SBC PPUSCROLL_X
   ; set X
   LDX base_sprite+2
   STA $21F, X
@@ -4451,7 +4460,7 @@ set_scroll_score_init:
 	PLA
 	RTI
 
-.proc set_scroll_score
+set_scroll_score:
 	PHA
 	TXA
 	PHA
@@ -4478,9 +4487,9 @@ set_scroll_score_init:
   LDA #>results_transition_low
   STA irq_address+1
 
-  LDA irq_cycle_timer_results_tr_lo, X
+  LDA irq_cycle_timer_results_tr_ss_lo, X
   STA $5000
-  LDA irq_cycle_timer_results_tr_hi, X
+  LDA irq_cycle_timer_results_tr_ss_hi, X
   STA $5800
 
   LDA PPUMASK
@@ -4498,15 +4507,7 @@ set_scroll_score_init:
   PLA
 	RTI
 
-	irq_cycle_timer_results_tr_lo:
-	.byte $12, $9B, $24, $AD, $66, $BF, $48, $D1, $5A, $E3, $6C, $F5, $7E, $07, $90
-
-	irq_cycle_timer_results_tr_hi:
-	.byte $C2, $C5, $C9, $CC, $D0, $D3, $D7, $DA, $DE, $E1, $E5, $E8, $EC, $F0, $F3
-
-.endproc
-
-.proc results_transition_low
+results_transition_low:
 	PHA
 	LDA #$0C
 	STA PPUADDR
@@ -4525,7 +4526,6 @@ set_scroll_score_init:
 
 	PLA
 	RTI
-.endproc
 
 results_transition_high:
 	PHA
@@ -4600,9 +4600,9 @@ results_transition_high:
   LDA #>set_scroll_game
   STA irq_address+1
 
-  LDA irq_cycle_timer_results_tr_lo, X
+  LDA irq_cycle_timer_results_tr_hi_lo, X
 	STA $5000
-	LDA irq_cycle_timer_results_tr_hi, X
+	LDA irq_cycle_timer_results_tr_hi_hi, X
 	STA $5800
 
 	LDA results_transition_time+1
@@ -4612,9 +4612,9 @@ results_transition_high:
 	CMP #150
 	.endif
 	BCC :+
-	LDA irq_cycle_timer_results_tr_lo_up, X
+	LDA irq_cycle_timer_results_tr_hi_lo_up, X
 	STA $5000
-	LDA irq_cycle_timer_results_tr_hi_up, X
+	LDA irq_cycle_timer_results_tr_hi_hi_up, X
 	STA $5800
 	LDA scroll_Y_pool_up_hi, X
   STA PPUADDR
@@ -4657,28 +4657,7 @@ results_transition_high:
 	PLA
 	RTI
 
-	irq_cycle_timer_results_tr_lo:
-	.byte $CE, $40, $B2, $24, $96, $08, $7A, $EC, $5E, $D0, $42, $B4, $08, $80, $DA
-
-	irq_cycle_timer_results_tr_hi:
-	.byte $FC, $F9, $F5, $F2, $EE, $EB, $E7, $E3, $E0, $DC, $D9, $D5, $D2, $CE, $CA
-
-	irq_cycle_timer_results_tr_lo_up:
-	.byte $19, $8A, $00, $6B, $E0, $4E, $C0, $35, $AE, $20, $92, $04, $53
-
-	irq_cycle_timer_results_tr_hi_up:
-	.byte $FD, $F9, $F6, $F2, $EE, $EB, $E7, $E4, $E0, $DD, $D9, $D6, $D2
-
-	scroll_Y_pool:
-	.byte $E8, $E0, $D8, $D0, $C8, $C0, $B8, $B0, $A8, $A0, $98, $90, $88, $80, $78
-
-	scroll_Y_pool_up_lo:
-	.byte $A0, $80, $60, $40, $20, $00, $E0, $C0, $A0, $80, $60, $40, $20
-
-	scroll_Y_pool_up_hi:
-	.byte $1F, $1F, $1F, $1F, $1F, $1F, $1E, $1E, $1E, $1E, $1E, $1E, $1E
-
-.proc set_scroll_game
+set_scroll_game:
 	PHA
 	TXA
 	PHA
@@ -4713,9 +4692,9 @@ results_transition_high:
 	LDA #$00
 	STA $2005
 
-	LDA irq_cycle_timer_results_tr_lo, X
+	LDA irq_cycle_timer_results_tr_sg_lo, X
 	STA $5000
-	LDA irq_cycle_timer_results_tr_hi, X
+	LDA irq_cycle_timer_results_tr_sg_hi, X
 	STA $5800
 
 	LDA #<set_scroll_score
@@ -4730,20 +4709,7 @@ results_transition_high:
 	PLA
 	RTI
 
-	irq_ppu_render_loc_lo:
-	.byte $20, $40, $60, $80, $A0, $C0, $E0, $00, $20, $40, $60, $80, $A0, $C0, $E0
-
-	irq_ppu_render_loc_hi:
-	.byte $00, $00, $00, $00, $00, $00, $00, $01, $01, $01, $01, $01, $01, $01, $01
-
-	irq_cycle_timer_results_tr_lo:
-	.byte $75, $07, $9B, $DF, $C1, $54, $E7, $78, $05, $97, $29, $BB
-
-	irq_cycle_timer_results_tr_hi:
-	.byte $D7, $DB, $DE, $E2, $E5, $E9, $EC, $F0, $F4, $F7, $FB, $FE
-.endproc
-
-.proc set_scroll_gamealt
+set_scroll_gamealt:
 	PHA
 	TXA
 	PHA
@@ -4764,9 +4730,9 @@ results_transition_high:
 	STA $2005
 	STA $2005
 
-	LDA irq_cycle_timer_results_tr_lo, X
+	LDA irq_cycle_timer_results_tr_sg_lo, X
 	STA $5000
-	LDA irq_cycle_timer_results_tr_hi, X
+	LDA irq_cycle_timer_results_tr_sg_hi, X
 	STA $5800
 
 	LDA #<results_transition_low
@@ -4790,18 +4756,86 @@ results_transition_high:
 	PLA
 	RTI
 
-	irq_ppu_render_loc_lo:
+.if ROM_PAL
+; PAL
+
+; for score (2)
+irq_cycle_timer_results_tr_sg_lo:
+	.byte $0C, $5C, $AB, $0F, $5A, $B4, $04, $54, $A4, $F4, $44, $94, $DA, $80
+
+irq_cycle_timer_results_tr_sg_hi:
+	.byte $DA, $DD, $E0, $E4, $E7, $EA, $EE, $F1, $F4, $F7, $FB, $FE, $F2, $F9
+
+; for bottom part (3)
+irq_cycle_timer_results_tr_ss_lo:
+	.byte $F4, $44, $06, $60, $A3, $02, $BA, $14, $6E, $CB, $22, $7C, $D6, $30, $8A
+
+irq_cycle_timer_results_tr_ss_hi:
+	.byte $C5, $C9, $CD, $D0, $D3, $D7, $DA, $DE, $E1, $E4, $E8, $EB, $EE, $F2, $F5
+
+; for top part (1)
+irq_cycle_timer_results_tr_hi_lo:
+	.byte $00, $AA, $58, $06, $AE, $62, $0A, $B2, $5A, $02, $B3, $62, $FA, $A2, $2A
+
+irq_cycle_timer_results_tr_hi_hi:
+	.byte $FD, $F9, $F6, $F3, $EF, $EC, $E9, $E5, $E2, $DF, $DB, $D8, $D4, $D1, $CE
+
+; for top part (going up)
+irq_cycle_timer_results_tr_hi_lo_up:
+	.byte $50, $FC, $AC, $54, $00, $AC, $58, $04, $B0, $5C, $08, $AC, $48
+
+irq_cycle_timer_results_tr_hi_hi_up:
+	.byte $FD, $FA, $F6, $F3, $F0, $EC, $E9, $E6, $E2, $DF, $DC, $D8, $D5
+
+.else
+; NTSC
+
+; for score
+irq_cycle_timer_results_tr_sg_lo:
+	.byte $75, $07, $9B, $DF, $C1, $54, $E7, $78, $05, $97, $29, $BB, $1C, $16
+
+irq_cycle_timer_results_tr_sg_hi:
+	.byte $D7, $DB, $DE, $E2, $E5, $E9, $EC, $F0, $F4, $F7, $FB, $FE, $F1, $F9
+
+; for bottom part
+irq_cycle_timer_results_tr_ss_lo:
+	.byte $12, $9B, $24, $AD, $66, $BF, $48, $D1, $5A, $E3, $6C, $F5, $7E, $07, $90
+
+irq_cycle_timer_results_tr_ss_hi:
+	.byte $C2, $C5, $C9, $CC, $D0, $D3, $D7, $DA, $DE, $E1, $E5, $E8, $EC, $F0, $F3
+
+; for top part
+irq_cycle_timer_results_tr_hi_lo:
+	.byte $CE, $40, $B2, $24, $96, $08, $7A, $EC, $5E, $D0, $42, $B4, $08, $80, $D2
+
+irq_cycle_timer_results_tr_hi_hi:
+	.byte $FC, $F9, $F5, $F2, $EE, $EB, $E7, $E3, $E0, $DC, $D9, $D5, $D2, $CE, $CA
+
+; for top part (going up)
+irq_cycle_timer_results_tr_hi_lo_up:
+	.byte $19, $8A, $00, $6B, $E0, $4E, $C0, $35, $AE, $20, $92, $04, $53
+
+irq_cycle_timer_results_tr_hi_hi_up:
+	.byte $FD, $F9, $F6, $F2, $EE, $EB, $E7, $E4, $E0, $DD, $D9, $D6, $D2
+.endif
+
+; for bottom part (vram position)
+irq_ppu_render_loc_lo:
 	.byte $20, $40, $60, $80, $A0, $C0, $E0, $00, $20, $40, $60, $80, $A0, $C0, $E0
 
-	irq_ppu_render_loc_hi:
+irq_ppu_render_loc_hi:
 	.byte $00, $00, $00, $00, $00, $00, $00, $01, $01, $01, $01, $01, $01, $01, $01
 
-	irq_cycle_timer_results_tr_lo:
-	.byte $75, $07, $99, $DB, $BD, $4F, $E1, $73, $05, $97, $29, $D3, $1C, $16
+; for top part (scroll)
+scroll_Y_pool:
+	.byte $E8, $E0, $D8, $D0, $C8, $C0, $B8, $B0, $A8, $A0, $98, $90, $88, $80, $78
 
-	irq_cycle_timer_results_tr_hi:
-	.byte $D7, $DB, $DE, $E2, $E5, $E9, $EC, $F0, $F4, $F7, $FB, $FE, $F1, $F9
-.endproc
+; for top part (vram position; going up)
+scroll_Y_pool_up_lo:
+	.byte $A0, $80, $60, $40, $20, $00, $E0, $C0, $A0, $80, $60, $40, $20
+
+scroll_Y_pool_up_hi:
+	.byte $1F, $1F, $1F, $1F, $1F, $1F, $1E, $1E, $1E, $1E, $1E, $1E, $1E
 
 main_g_pal:
   .byte $0F, $21, $16, $20

@@ -41,8 +41,6 @@ bg_attr_placement: .res 1
 tiles_remaining: .res 1
 drum_bank_positon: .res 2
 
-bar_x: .res 1
-
 tempo: .res 2
 tempo_input_ap: .res 1
 address_table: .res 2
