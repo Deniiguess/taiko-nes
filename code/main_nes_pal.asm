@@ -162,3 +162,6 @@ results_song:
 .incbin "../CHR-ROM/don_gogo_1_mecha.chr"
 .incbin "../CHR-ROM/don_gogo_2_mecha.chr"
 .incbin "../CHR-ROM/don_jump_mecha.chr"
+
+; 2nd drum frame (1kB)
+.incbin "../CHR-ROM/gfx_drum_bg_smile.chr" ; includes the drum bg tiles (happi) and the main game background

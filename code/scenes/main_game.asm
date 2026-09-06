@@ -126,6 +126,8 @@
 
   JSR check_clear_bar_for_0s
 
+  JSR update_drum_happiness
+
   JMP stay_here ; go to the forever loop
 
 .endproc
@@ -4454,6 +4456,30 @@ do_action_at_beat:
 	STA palette+11
 
 	dont_update_gogo:
+	RTS
+.endproc
+
+.proc update_drum_happiness
+	LDA #$03
+	STA $A800
+
+	LDA beat_anim_frame+1
+	LSR
+	BCC dont_update_happiness
+
+	LDA combo_current+0
+	BNE force_update_happiness
+	LDA combo_current+1
+	BNE force_update_happiness
+	LDA combo_current+2
+	CMP #05
+	BCC dont_update_happiness
+
+	force_update_happiness:
+	LDA #$22
+	STA $A800
+
+	dont_update_happiness:
 	RTS
 .endproc
 
