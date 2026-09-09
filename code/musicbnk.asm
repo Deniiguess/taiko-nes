@@ -8,19 +8,23 @@
 .include "songs/songselect.s"
 
 .segment "MUSIC_BANK_1"
-.include "songs/treeclimberboss.s" ; include song
+.include "songs/KarippaBoss/treeclimberboss.s" ; include song
 
 .segment "MUSIC_BANK_2"
-.include "songs/whounleashedthedog.s" ; include song
+.include "songs/WhoUnleashedTheDog/whounleashedthedog.s" ; include song
 
 .segment "MUSIC_BANK_3"
-.include "songs/euphoria.s" ; include song
+.include "songs/Euphoria/euphoria.s" ; include song
 
 .segment "MUSIC_BANK_4"
-.include "songs/beanbrained.s" ; include song
+.include "songs/BeanBrained/beanbrained.s" ; include song
 
 .segment "MUSIC_BANK_5"
-.include "songs/remix8ds.s" ; include song
+.include "songs/Remix8DS/remix8ds.s" ; include song
 
 .segment "MUSIC_BANK_6"
-.include "songs/finnedfrontier.s" ; include song
+.include "songs/FinnedFrontier/finnedfrontier.s" ; include song
+
+.segment "MUSIC_BANK_2A03_1"
+.include "songs/KarippaBoss/treeclimberboss2A03.s" ; include song
+.include "songs/Remix8DS/remix8ds2A03.s" ; include song

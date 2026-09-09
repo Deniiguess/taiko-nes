@@ -8,19 +8,23 @@
 .include "songs/songselectpal.s"
 
 .segment "MUSIC_BANK_1"
-.include "songs/treeclimberbossPAL.s" ; include song
+.include "songs/KarippaBoss/treeclimberbossPAL.s" ; include song
 
 .segment "MUSIC_BANK_2"
-.include "songs/whounleashedthedogPAL.s" ; include song
+.include "songs/WhoUnleashedTheDog/whounleashedthedogPAL.s" ; include song
 
 .segment "MUSIC_BANK_3"
-.include "songs/euphoriaPAL.s" ; include song
+.include "songs/Euphoria/euphoriaPAL.s" ; include song
 
 .segment "MUSIC_BANK_4"
-.include "songs/beanbrainedPAL.s" ; include song
+.include "songs/BeanBrained/beanbrainedPAL.s" ; include song
 
 .segment "MUSIC_BANK_5"
-.include "songs/remix8dsPAL.s" ; include song
+.include "songs/Remix8DS/remix8dsPAL.s" ; include song
 
 .segment "MUSIC_BANK_6"
-.include "songs/finnedfrontierPAL.s" ; include song
+.include "songs/FinnedFrontier/finnedfrontierPAL.s" ; include song
+
+.segment "MUSIC_BANK_2A03_1"
+.include "songs/KarippaBoss/treeclimberboss2A03.s" ; include song
+.include "songs/Remix8DS/remix8ds2A03.s" ; include song

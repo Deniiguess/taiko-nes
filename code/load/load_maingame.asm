@@ -386,9 +386,39 @@
 
   LDA song_bank_numbers, X
   STA $F000
-  JSR init_song
 
-  LDA #$00 ; song number
+  .endproc
+
+  LDA mods
+  AND #%00010000
+  BEQ :+
+
+  LDA song_bank_numbers_2A03, X
+  STA $F000
+
+  TXA
+  TAY
+
+  LDA song_location_low, Y
+  TAX
+  LDA song_location_high, Y
+  TAY
+
+.if ROM_PAL
+ 	LDA #$00
+.else
+ 	LDA #$01
+.endif
+  JSR famistudio_init
+
+  LDA #$00
+  JSR famistudio_music_play ; play song
+
+  JMP stay_here
+  :
+
+  JSR init_song
+  LDA #$00
   JSR famistudio_music_play ; play song
 
   JMP stay_here
@@ -403,12 +433,13 @@
   INC drum_bank_positon
   RTS
 
-  song_bank_numbers:
-  .byte MBANK1_BANK, MBANK2_BANK, MBANK3_BANK, MBANK4_BANK, MBANK5_BANK, MBANK6_BANK
+  song_location_high:
+
+  song_location_low:
+
 
   extra_tiles:
   .byte $88, $87, $87, $86, $85, $84
-.endproc
 
 .segment "MAIN_GAME"
 taiko_bg:

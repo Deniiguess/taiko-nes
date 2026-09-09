@@ -22,6 +22,28 @@
   .byte DBANK2_BANK, DBANK1_BANK, DBANK2_BANK, DBANK1_BANK
   .byte DBANK1_BANK, DBANK1_BANK, DBANK1_BANK, DBANK1_BANK
 
+  song_bank_numbers:
+  .byte MBANK1_BANK, MBANK2_BANK, MBANK3_BANK, MBANK4_BANK, MBANK5_BANK, MBANK6_BANK
+
+  song_bank_numbers_2A03:
+  .byte MBANK2A03_1_BANK, MBANK2A03_1_BANK, MBANK2A03_1_BANK, MBANK2A03_1_BANK, MBANK2A03_1_BANK, MBANK2A03_1_BANK
+
+  song_location_2A03_low:
+  .lobytes music_data_tree_climber_2A03
+  .lobytes music_data_tree_climber_2A03
+  .lobytes music_data_tree_climber_2A03
+  .lobytes music_data_tree_climber_2A03
+  .lobytes music_data_remix8ds2A03
+  .lobytes music_data_tree_climber_2A03
+
+  song_location_2A03_high:
+  .hibytes music_data_tree_climber_2A03
+  .hibytes music_data_tree_climber_2A03
+  .hibytes music_data_tree_climber_2A03
+  .hibytes music_data_tree_climber_2A03
+  .hibytes music_data_remix8ds2A03
+  .hibytes music_data_tree_climber_2A03
+
   song_stars:
   .byte $02, $05, $05, $08
   .byte $04, $04, $07, $07
