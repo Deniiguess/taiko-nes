@@ -391,7 +391,7 @@
 
   LDA mods
   AND #%00010000
-  BEQ :+
+  BNE :+
 
   LDA song_bank_numbers_2A03, X
   STA $F000
