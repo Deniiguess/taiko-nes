@@ -28,3 +28,11 @@
 .segment "MUSIC_BANK_2A03_1"
 .include "songs/KarippaBoss/treeclimberboss2A03.s" ; include song
 .include "songs/Remix8DS/remix8ds2A03.s" ; include song
+
+.segment "MUSIC_BANK_2A03_2"
+.include "songs/WhoUnleashedTheDog/whounleashedthedog2A03.s" ; include song
+.include "songs/BeanBrained/beanbrained2A03.s"
+
+.segment "MUSIC_BANK_2A03_3"
+.include "songs/Euphoria/euphoria2A03.s"
+.include "songs/FinnedFrontier/finnedfrontier2A03.s"

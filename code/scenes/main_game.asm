@@ -2499,9 +2499,17 @@ update_drums:
   STA $9000
 
   LDA #$00
+  TAX
 	STA BTN_Press
 	STA BTN_Hold
 	STA pause
+
+	LDA mods
+	AND #$10
+	BEQ N163_results
+	INX
+	N163_results:
+	TXA
   JSR famistudio_music_play
   :
 
@@ -4845,7 +4853,7 @@ irq_cycle_timer_results_tr_sg_hi:
 
 ; for bottom part
 irq_cycle_timer_results_tr_ss_lo:
-	.byte $12, $9B, $24, $AD, $66, $BF, $48, $D1, $5A, $E3, $6C, $F5, $7E, $07, $90
+	.byte $12, $9B, $24, $AD, $6B, $BF, $48, $D1, $5D, $E3, $6C, $FC, $7E, $07, $90
 
 irq_cycle_timer_results_tr_ss_hi:
 	.byte $C2, $C5, $C9, $CC, $D0, $D3, $D7, $DA, $DE, $E1, $E5, $E8, $EC, $F0, $F3

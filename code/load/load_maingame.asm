@@ -399,9 +399,9 @@
   TXA
   TAY
 
-  LDA song_location_low, Y
+  LDA song_location_2A03_low, Y
   TAX
-  LDA song_location_high, Y
+  LDA song_location_2A03_high, Y
   TAY
 
 .if ROM_PAL
@@ -432,11 +432,6 @@
 
   INC drum_bank_positon
   RTS
-
-  song_location_high:
-
-  song_location_low:
-
 
   extra_tiles:
   .byte $88, $87, $87, $86, $85, $84

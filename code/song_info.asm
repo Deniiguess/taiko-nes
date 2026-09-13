@@ -1,4 +1,5 @@
-  song_address_start_lo:
+; chart locations
+song_address_start_lo:
   .lobytes karippa_boss_easy, karippa_boss_normal, karippa_boss_hard, karippa_boss_oni
   .lobytes who_unleashed_the_dog_easy, who_unleashed_the_dog_normal, who_unleashed_the_dog_hard, who_unleashed_the_dog_oni
   .lobytes euphoria_easy, euphoria_normal, euphoria_hard, euphoria_oni
@@ -22,28 +23,32 @@
   .byte DBANK2_BANK, DBANK1_BANK, DBANK2_BANK, DBANK1_BANK
   .byte DBANK1_BANK, DBANK1_BANK, DBANK1_BANK, DBANK1_BANK
 
+; PRG-ROM bank numbers
   song_bank_numbers:
   .byte MBANK1_BANK, MBANK2_BANK, MBANK3_BANK, MBANK4_BANK, MBANK5_BANK, MBANK6_BANK
 
+; PRG-ROM bank numbers (2A03)
   song_bank_numbers_2A03:
-  .byte MBANK2A03_1_BANK, MBANK2A03_1_BANK, MBANK2A03_1_BANK, MBANK2A03_1_BANK, MBANK2A03_1_BANK, MBANK2A03_1_BANK
+  .byte MBANK2A03_1_BANK, MBANK2A03_2_BANK, MBANK2A03_3_BANK, MBANK2A03_2_BANK, MBANK2A03_1_BANK, MBANK2A03_3_BANK
 
+; song (2A03) locations (because there are multiple in one bank)
   song_location_2A03_low:
   .lobytes music_data_tree_climber_2A03
-  .lobytes music_data_tree_climber_2A03
-  .lobytes music_data_tree_climber_2A03
-  .lobytes music_data_tree_climber_2A03
+  .lobytes music_data_ddrkirbyisq_2A03
+  .lobytes music_data_rave_racer_2A03
+  .lobytes music_data_adonete_2A03
   .lobytes music_data_remix8ds2A03
-  .lobytes music_data_tree_climber_2A03
+  .lobytes music_data_finned_frontier_2A03
 
   song_location_2A03_high:
   .hibytes music_data_tree_climber_2A03
-  .hibytes music_data_tree_climber_2A03
-  .hibytes music_data_tree_climber_2A03
-  .hibytes music_data_tree_climber_2A03
+  .hibytes music_data_ddrkirbyisq_2A03
+  .hibytes music_data_rave_racer_2A03
+  .hibytes music_data_adonete_2A03
   .hibytes music_data_remix8ds2A03
-  .hibytes music_data_tree_climber_2A03
+  .hibytes music_data_finned_frontier_2A03
 
+; difficulty stars for the charts
   song_stars:
   .byte $02, $05, $05, $08
   .byte $04, $04, $07, $07
@@ -52,6 +57,7 @@
   .byte $03, $04, $06, $09
   .byte $02, $04, $04, $06
 
+; song creators
   song_author_1: ; ADONETE
   .byte $40, $43, $4E, $4D, $44, $53, $44, $02, $02, $02, $02, $02
   song_author_2: ; DDRKIRBY ISQ
@@ -65,6 +71,7 @@
   song_author_6: ; THEPURPLANON
   .byte $53, $47, $44, $4F, $54, $51, $4F, $4B, $40, $4D, $4E, $4D
 
+; chart creators
   song_chartr_1: ; DIAMONDN1NJA
   .byte $43, $48, $40, $4C, $4E, $4D, $43, $4D, $5B, $4D, $49, $40
   song_chartr_2: ; EGGZ
