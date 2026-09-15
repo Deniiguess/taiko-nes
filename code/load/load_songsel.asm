@@ -55,7 +55,6 @@
 
   STA song_sel_entry
 
-  ; load nametable banks
   ; load PPU nametables
   LDA #$E1
   STA $C800
@@ -174,6 +173,7 @@
 
   LDA #$0C
   STA $C000
+  STA $C800
 
   LDA #<song_sel_irq_init
   STA irq_address

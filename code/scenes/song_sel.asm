@@ -1013,7 +1013,9 @@ update_song_select_value:
   STA draw+16
   STA draw+17
   STA draw+21
-  LDA #$27
+  LDY settings_base_nametable
+  INY
+  TYA
   STA draw+10
   STA draw+18
   LDA #$DA
