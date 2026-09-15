@@ -84,9 +84,10 @@ clear_bar_check_if_0: .res 1
 
 ts_ss_timer: .res 3
 
-song_sel_entry: .res 2
+song_sel_entry: .res 3
 song_sel_cursor_time: .res 1
 diff_sel_cursor_time: .res 1
+settings_base_nametable: .res 1
 
 frame_timer_controller: .res 1
 
@@ -94,6 +95,7 @@ sram_location: .res 3
 crown_spawn_pos: .res 1
 
 options_position: .res 1
+options_position_kept: .res 1
 in_color_set: .res 1
 
 pause: .res 2

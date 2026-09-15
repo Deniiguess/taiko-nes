@@ -175,9 +175,9 @@
   LDA #$0C
   STA $C000
 
-  LDA #<return_from_irq
+  LDA #<song_sel_irq_init
   STA irq_address
-  LDA #>return_from_irq
+  LDA #>song_sel_irq_init
   STA irq_address+1
 
   LDA #$02

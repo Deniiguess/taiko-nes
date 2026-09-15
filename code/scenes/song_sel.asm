@@ -24,8 +24,8 @@
   ; update the pause when you fully select a song
   JSR update_pauses
 
-  ; update the Y scroll
-  JSR update_Y_scroll
+  ; update the X and Y scroll
+  JSR update_scrolling
 
   ; despite its name, update all sprites and their Y positions
   JSR update_controller_highlight
@@ -158,6 +158,7 @@ update_START:
   ; change PPU banks to difficulty select
   LDA #$E0
   STA $D000
+  STA $D800
   LDA #$0A
   STA $B800
 
@@ -239,8 +240,19 @@ update_SEL:
   BEQ :- ; if it isnt pressed, leave subroutine
 
   ; change PPU banks to settings
-  LDA #$E1
-  STA $D000
+  LDX #$E1
+  LDA PPUCTRL
+  AND #$01
+  BEQ :+
+  LDA #$2E
+  STA settings_base_nametable
+  STX $D800
+  BNE :++
+  :
+  LDA #$2A
+  STA settings_base_nametable
+  STX $D000
+  :
   LDA #$0B
   STA $B800
 
@@ -307,7 +319,7 @@ update_song_select_value:
   :
   RTS ; leave subroutine
 
-.proc update_Y_scroll
+.proc update_scrolling
   LDA song_sel_entry+1 ; load song_sel_entry+1 to A
   AND #$7F ; get rid of bit 7
   TAX ; copy the result to X
@@ -337,6 +349,37 @@ update_song_select_value:
   LDA PPUSCROLL_Y_speed ; load PPUSCROLL_Y_speed to A
   BPL :+ ; if its below $80
   INC PPUSCROLL_Y_speed ; increase it
+  : ; otherwise dont
+
+  LDA song_sel_entry+2 ; load song_sel_entry+1 to A
+  AND #$7F ; get rid of bit 7
+  TAX ; copy the result to X
+
+  LDA X_scroll_table, X ; load the proper value of how many pixels to scroll to A
+  PHA ; push A to stack
+  LDA song_sel_entry+2 ; load song_sel_entry+1 to A
+  AND #$80 ; get rid of every bit except bit 7
+  BNE :+ ; if its not 0, skip some code
+  PLA ; pull A from stack
+  EOR #$FF ; flip all bits
+  PHA ; push A to stack (to prevent SP issues from the following PLA)
+  :
+  PLA ; pull A from stack
+  STA PPUSCROLL_X_speed ; store A to PPUSCROLL_Y_speed
+  BEQ :+ ; if its 0, dont decrease song_sel_entry+1
+  DEC song_sel_entry+2 ; decrease song_sel_entry+1
+  :
+
+  LDA song_sel_entry+2 ; load song_sel_entry+1 to A
+  CMP #$80 ; check if A is $80
+  BNE :+
+  ASL ; if yes, get rid of bit 7 by shifting A to the left
+  STA song_sel_entry+2 ; store the result to song_sel_entry+1 (result is always $00)
+  :
+
+  LDA PPUSCROLL_X_speed ; load PPUSCROLL_Y_speed to A
+  BPL :+ ; if its below $80
+  INC PPUSCROLL_X_speed ; increase it
   : ; otherwise dont
   RTS ; leave subroutine
 .endproc
@@ -388,7 +431,7 @@ update_song_select_value:
   LDA #$04
   STA draw
   STA draw+1
-  LDA #$2A
+  LDA settings_base_nametable
   STA draw+2
   LDA #$F0
   STA draw+3
@@ -454,13 +497,16 @@ update_song_select_value:
   ; play KAT sample
   LDA #$04
   JSR famistudio_sfx_sample_play
+  LDA options_position
+  CMP #$0A
+  BEQ return_down
   INC options_position ; increase options_position
   LDA options_position ; load options_position to A
   CMP #$06 ; if its 6
   BEQ set_op_pos_to_0 ; set the position to 0
   CMP #$09 ; if its 9
   BCS set_op_pos_to_6 ; set the position to 6
-  ; to prevent accessing unmapped values, leading to a crash (restart)
+  ; to prevent accessing unmapped values, leading to a crash
 
   return_down:
 
@@ -471,6 +517,9 @@ update_song_select_value:
   ; play KAT sample
   LDA #$04
   JSR famistudio_sfx_sample_play
+  LDA options_position
+  CMP #$0A
+  BEQ return_up
   DEC options_position ; decrease options_position
   LDA options_position ; load options_position to A
   BMI set_op_pos_to_5 ; if its above $80 (to $FF), set the position to 6
@@ -507,14 +556,31 @@ update_song_select_value:
   STA options_position
   RTS
 
+  set_op_pos_to_10:
+  LDA PPUSCROLL_X
+  BNE :+
+  LDA options_position
+  STA options_position_kept
+  LDA #$0A
+  STA options_position
+  LDA #$87
+  STA song_sel_entry+2
+
+  LDA #$04 ; play KAT sample
+  JSR famistudio_sfx_sample_play
+  :
+  RTS
+
   move_cursor_right:
   LDA options_position ; load options_position to A
   CMP #$02 ; if its smaller than $02 ($00 or $01)
   BCC add_6_to_opt_pos ; jump to add_6_to_opt_pos
   CMP #$08 ; if its $08
-  BEQ inc_opt_pos ; jumo to inc_opt_pos
-  CMP #$06 ; if its equal or higher than $06
+  BEQ inc_opt_pos ; jump to inc_opt_pos
+  CMP #$0A
   BCS :+ ; leave subroutine (dont do anything)
+  CMP #$06 ; if its equal or higher than $06
+  BCS set_op_pos_to_10 ; jump to set_op_pos_to_10
   ; otherwise
   LDA #$04 ; play KAT sample
   JSR famistudio_sfx_sample_play
@@ -560,12 +626,26 @@ update_song_select_value:
   BEQ set_op_pos_to_1 ; jump to set_op_pos_to_1
   CMP #$08 ; if its $08
   BEQ set_op_pos_to_2 ; jump to set_op_pos_to_2
-  CMP #$09 ; if its $09
+  CMP #$0A
+  BCS dec_opt_pos_w_scroll
+  CMP #$09 ; if its not $09
   BNE :+ ; leave subroutine
   ; otherwise
   LDA #$04 ; play KAT sample
   JSR famistudio_sfx_sample_play
   DEC options_position ; decrease options_position
+  :
+  RTS
+
+  dec_opt_pos_w_scroll:
+  LDA PPUSCROLL_X
+  BNE :+
+  LDA options_position_kept
+  STA options_position
+  LDA #$07
+  STA song_sel_entry+2
+  LDA #$04 ; play KAT sample
+  JSR famistudio_sfx_sample_play
   :
   RTS
 
@@ -597,10 +677,12 @@ update_song_select_value:
   opt_position_lo:
   .lobytes opt_position_1, opt_position_2, opt_position_3, opt_position_4, opt_position_5
   .lobytes opt_position_6, opt_position_7, opt_position_8, opt_position_9, opt_position_10
+  .lobytes opt_position_11
 
   opt_position_hi:
   .hibytes opt_position_1, opt_position_2, opt_position_3, opt_position_4, opt_position_5
   .hibytes opt_position_6, opt_position_7, opt_position_8, opt_position_9, opt_position_10
+  .hibytes opt_position_11
 
   opt_position_1: ; TYPE-A
   LDA #$64
@@ -917,6 +999,9 @@ update_song_select_value:
   press_A:
   LDA BTN_Press
   AND #BTN_A
+  RTS
+
+  opt_position_11:
   RTS
 
   update_controller_type:
@@ -2085,6 +2170,77 @@ update_controller_highlight: ; and that donchan icon and the cursors
 	RTS
 .endproc
 
+song_sel_irq_init:
+	PHA
+
+	LDA #$00
+	STA $5800
+	LDA PPUSCROLL_X_speed
+	BEQ :+
+	LDA song_sel_entry
+	CMP #$01
+	BNE :+
+
+	LDA PPUCTRL
+	STA $2000
+	LDA #$00
+	STA $2005
+	LDA PPUSCROLL_Y
+	STA $2005
+
+	LDA #$00
+	STA $5000
+	LDA #$72+$80
+	STA $5800
+
+	LDA #<song_sel_scroll_1
+	STA irq_address
+	LDA #>song_sel_scroll_1
+	STA irq_address+1
+
+	:
+
+	PLA
+	RTI
+
+song_sel_scroll_1:
+	PHA
+
+	LDA #$00
+	STA $5000
+	LDA #$3C+$80
+	STA $5800
+
+	LDA PPUSCROLL_X
+	STA $2005
+	LDA PPUSCROLL_Y
+	STA $2005
+
+	LDA #<song_sel_scroll_2
+	STA irq_address
+	LDA #>song_sel_scroll_2
+	STA irq_address+1
+
+	PLA
+	RTI
+
+song_sel_scroll_2:
+	PHA
+
+	LDA #$00
+	STA $2005
+	STA $5800
+	LDA PPUSCROLL_Y
+	STA $2005
+
+	LDA #<song_sel_irq_init
+	STA irq_address
+	LDA #>song_sel_irq_init
+	STA irq_address+1
+
+	PLA
+	RTI
+
   score_text: ; TOP SCORE:
   .byte $53, $4E, $4F, $02, $52, $42, $4E, $51, $44, $64
 
@@ -2105,6 +2261,9 @@ update_controller_highlight: ; and that donchan icon and the cursors
 
   Y_scroll_table:
   .byte $FF, $01, $02, $0B, $11, $2F, $44, $5E
+
+  X_scroll_table:
+  .byte $FF, $01, $02, $0C, $12, $31, $48, $66
 
   controller_highlight_sprite_data:
   .byte $D9, $66, $00, $9E, $D9, $66, $00, $A5, $DB, $68, $00, $B4, $DB, $6A, $00, $C4
