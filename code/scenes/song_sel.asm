@@ -24,9 +24,6 @@
   ; update the pause when you fully select a song
   JSR update_pauses
 
-  ; update the X and Y scroll
-  JSR update_scrolling
-
   ; despite its name, update all sprites and their Y positions
   JSR update_controller_highlight
 
@@ -108,6 +105,13 @@ update_pauses:
   RTS
 
 update_START:
+	LDA song_sel_entry
+	BNE :+
+	LDA options_position
+	CMP #$0A
+	BCC :+
+	RTS
+	:
   LDA ts_ss_timer+1 ; load ts_ss_timer+1 to A
   BNE start_game ; if it isnt $00, jump to start_game
 
@@ -1090,7 +1094,7 @@ update_song_select_value:
 byte_01:
 .byte $01
 
-MAX_SONG_COUNT = $05
+MAX_SONG_COUNT = 12
 
 song_cursor:
   LDA song_sel_cursor_time ; load song_sel_cursor_time to A
@@ -1135,8 +1139,19 @@ song_cursor:
   LDA song_sel_position ; load song_sel_position to A
   CMP #$FF ; check if its $FF
   BNE :+ ; if its not, skip some code
-  LDA #MAX_SONG_COUNT ; set song_sel_position to MAX_SONG_COUNT ($05)
+  LDA #MAX_SONG_COUNT-(MAX_SONG_COUNT/2)-1 ; set song_sel_position to MAX_SONG_COUNT
   STA song_sel_position ; to prevent underflow (not BPL so there can be potentially more songs ig)
+  LDA song_sel_page
+  EOR #$01
+  STA song_sel_page
+  PHP
+  LDA #$07
+  PLP
+  BEQ set_scroll
+  ORA #$80
+  set_scroll:
+
+  STA song_sel_entry+2
   :
   DEC song_sel_cursor_time ; decrease song_sel_cursor_time
   JMP update_cursor_sprite ; jump to update_cursor_sprite
@@ -1161,7 +1176,25 @@ song_cursor:
 
   INC song_sel_position ; increase song_sel_position
   LDA song_sel_position ; load song_sel_position to A
-  CMP #MAX_SONG_COUNT+1 ; compare with MAX_SONG_COUNT+1
+  CMP #MAX_SONG_COUNT-(MAX_SONG_COUNT/2)
+  BCC dont_scroll_screen
+  LDA song_sel_page
+  EOR #$01
+  STA song_sel_page
+  PHP
+  LDA #$07
+  PLP
+  BEQ set_scroll_over
+  ORA #$80
+  set_scroll_over:
+
+  STA song_sel_entry+2
+
+  LDA #$00
+  STA song_sel_position
+
+  dont_scroll_screen:
+  CMP #MAX_SONG_COUNT ; compare with MAX_SONG_COUNT
   BCC :+ ; if its lower, skip some code
   LDA #$00 ; set song_sel_position to $00
   STA song_sel_position ; to prevent overflow
@@ -2174,6 +2207,8 @@ update_controller_highlight: ; and that donchan icon and the cursors
 
 song_sel_irq_init:
 	PHA
+	TXA
+	PHA
 
 	LDA #$00
 	STA $5800
@@ -2201,7 +2236,11 @@ song_sel_irq_init:
 	STA irq_address+1
 
 	:
+	; update the X and Y scroll
+	JSR update_scrolling
 
+	PLA
+	TAX
 	PLA
 	RTI
 
@@ -2210,7 +2249,11 @@ song_sel_scroll_1:
 
 	LDA #$00
 	STA $5000
-	LDA #$3C+$80
+	.if ROM_PAL
+	LDA #$40+$80
+	.else
+	LDA #$3B+$80
+	.endif
 	STA $5800
 
 	LDA PPUSCROLL_X

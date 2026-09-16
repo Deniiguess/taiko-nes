@@ -49,38 +49,41 @@ song_address_start_lo:
   .hibytes music_data_finned_frontier_2A03
 
 ; difficulty stars for the charts
+; (up to 10)
   song_stars:
-  .byte $02, $05, $05, $08
-  .byte $04, $04, $07, $07
-  .byte $02, $04, $07, $09
-  .byte $01, $03, $04, $06
-  .byte $03, $04, $06, $09
-  .byte $02, $04, $04, $06
+  .byte 2, 5, 5, 8
+  .byte 4, 4, 7, 7
+  .byte 2, 4, 7, 9
+  .byte 1, 3, 4, 6
+  .byte 3, 4, 6, 9
+  .byte 2, 4, 4, 6
 
 ; song creators
-  song_author_1: ; ADONETE
-  .byte $40, $43, $4E, $4D, $44, $53, $44, $02, $02, $02, $02, $02
-  song_author_2: ; DDRKIRBY ISQ
-  .byte $43, $43, $51, $4A, $48, $51, $41, $58, $02, $48, $52, $50
-  song_author_3: ; AYAKO SASO
-  .byte $40, $58, $40, $4A, $4E, $02, $52, $40, $52, $4E, $02, $02
-  song_author_4: ; ADONETE
-  .byte $40, $43, $4E, $4D, $44, $53, $44, $02, $02, $02, $02, $02
-  song_author_5: ; MASAMI YONE
-  .byte $4C, $40, $52, $40, $4C, $48, $02, $58, $4E, $4D, $44, $02
-  song_author_6: ; THEPURPLANON
-  .byte $53, $47, $44, $4F, $54, $51, $4F, $4B, $40, $4D, $4E, $4D
+; (must be 12 characters long)
+  song_author_1:
+  .byte "ADONETE     "
+  song_author_2:
+  .byte "DDRKIRBY ISQ"
+  song_author_3:
+  .byte "AYAKO SASO  "
+  song_author_4:
+  .byte "ADONETE     "
+  song_author_5:
+  .byte "MASAMI YONE "
+  song_author_6:
+  .byte "THEPURPLANON"
 
 ; chart creators
-  song_chartr_1: ; DIAMONDN1NJA
-  .byte $43, $48, $40, $4C, $4E, $4D, $43, $4D, $5B, $4D, $49, $40
-  song_chartr_2: ; EGGZ
-  .byte $44, $46, $46, $59, $02, $02, $02, $02, $02, $02, $02, $02
-  song_chartr_3: ; RYUTO
-  .byte $51, $58, $54, $53, $4E, $02, $02, $02, $02, $02, $02, $02
-  song_chartr_4: ; DIAMONDN1NJA
-  .byte $43, $48, $40, $4C, $4E, $4D, $43, $4D, $5B, $4D, $49, $40
-  song_chartr_5: ; TFD500
-  .byte $53, $45, $43, $5F, $5A, $5A, $02, $02, $02, $02, $02, $02
-  song_chartr_6: ; DENI_IGUESS (i made it!! i had no other choice-)
-  .byte $43, $44, $4D, $48, $67, $48, $46, $54, $44, $52, $52, $02
+; (must be 12 characters long)
+  song_chartr_1:
+  .byte "DIAMONDN1NJA"
+  song_chartr_2:
+  .byte "EGGZ        "
+  song_chartr_3:
+  .byte "RYUTO       "
+  song_chartr_4:
+  .byte "DIAMONDN1NJA"
+  song_chartr_5:
+  .byte "TFD500      "
+  song_chartr_6:
+  .byte "DENI_IGUESS "

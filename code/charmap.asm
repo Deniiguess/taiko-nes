@@ -1,0 +1,74 @@
+; first time using charmap
+.charmap 'A', $40
+.charmap 'B', $41
+.charmap 'C', $42
+.charmap 'D', $43
+.charmap 'E', $44
+.charmap 'F', $45
+.charmap 'G', $46
+.charmap 'H', $47
+.charmap 'I', $48
+.charmap 'J', $49
+.charmap 'K', $4A
+.charmap 'L', $4B
+.charmap 'M', $4C
+.charmap 'N', $4D
+.charmap 'O', $4E
+.charmap 'P', $4F
+.charmap 'Q', $50
+.charmap 'R', $51
+.charmap 'S', $52
+.charmap 'T', $53
+.charmap 'U', $54
+.charmap 'V', $55
+.charmap 'W', $56
+.charmap 'X', $57
+.charmap 'Y', $58
+.charmap 'Z', $59
+
+.charmap 'a', $40
+.charmap 'b', $41
+.charmap 'c', $42
+.charmap 'd', $43
+.charmap 'e', $44
+.charmap 'f', $45
+.charmap 'g', $46
+.charmap 'h', $47
+.charmap 'i', $48
+.charmap 'j', $49
+.charmap 'k', $4A
+.charmap 'l', $4B
+.charmap 'm', $4C
+.charmap 'n', $4D
+.charmap 'o', $4E
+.charmap 'p', $4F
+.charmap 'q', $50
+.charmap 'r', $51
+.charmap 's', $52
+.charmap 't', $53
+.charmap 'u', $54
+.charmap 'v', $55
+.charmap 'w', $56
+.charmap 'x', $57
+.charmap 'y', $58
+.charmap 'z', $59
+
+.charmap '0', $5A
+.charmap '1', $5B
+.charmap '2', $5C
+.charmap '3', $5D
+.charmap '4', $5E
+.charmap '5', $5F
+.charmap '6', $60
+.charmap '7', $61
+.charmap '8', $62
+.charmap '9', $63
+
+.charmap ':', $64
+.charmap '.', $65
+.charmap '-', $66
+.charmap '_', $67
+.charmap '!', $68
+.charmap ''', $69
+.charmap '*', $6F ; . on the top
+.charmap ' ', $02

@@ -486,6 +486,10 @@ music_data_song_sel:
 	.word @env91
 
 @samples:
+	.byte $EF,$20,$0e,$40 ; 00 don (Pitch:14)
+	.byte $F7,$1f,$0e,$40 ; 01 kat (Pitch:14)
+	.byte $EF,$20,$0e,$40 ; 00 don (Pitch:14)
+	.byte $F7,$1f,$0e,$40 ; 01 kat (Pitch:14)
 
 @tempo_env_1_mid:
 	.byte $03,$06,$80

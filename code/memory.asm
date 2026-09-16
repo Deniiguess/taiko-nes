@@ -233,3 +233,5 @@ controller: .res 1
 
 mods: .res 1
 don_color_pos: .res 2
+
+song_sel_page: .res 1

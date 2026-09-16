@@ -173,6 +173,7 @@
 
   LDA #$0C
   STA $C000
+  LDA #$23
   STA $C800
 
   LDA #<song_sel_irq_init
@@ -196,6 +197,7 @@
 
   LDA PPUCTRL
   ORA #%10000000
+  ORA song_sel_page
   STA PPUCTRL_kept
   STA PPUCTRL
   STA $2000

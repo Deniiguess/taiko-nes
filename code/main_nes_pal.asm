@@ -46,6 +46,7 @@ dmc_data:
 .endif
 
 .include "constants.asm"
+.include "charmap.asm"
 .include "memory.asm"
 .include "header.asm"
 .include "musicbnkpal.asm"
@@ -165,3 +166,6 @@ results_song:
 
 ; 2nd drum frame (1kB)
 .incbin "../CHR-ROM/gfx_drum_bg_smile.chr" ; includes the drum bg tiles (happi) and the main game background
+
+; 2nd song sel page (1kB)
+.include "../CHR-ROM/song_sel_2.asm"
