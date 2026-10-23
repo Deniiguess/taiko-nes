@@ -16,6 +16,9 @@
   ; update the cursor positions and selections and stuff
   JSR update_cursor_position
 
+  ; update the Y scroll
+  JSR update_scrolling_Y
+
   JSR update_donchan
 
   ; update the song selection song preview
@@ -23,9 +26,6 @@
 
   ; update the pause when you fully select a song
   JSR update_pauses
-
-  ; despite its name, update all sprites and their Y positions
-  JSR update_controller_highlight
 
   ; update the color palette of Drum
   JSR update_donchan_color
@@ -40,6 +40,10 @@
   ; so the main game controls match the selected control type
   ; without you entering the settings
   JSR update_controls
+
+
+  ; despite its name, update all sprites and their X and Y positions
+  JSR update_controller_highlight
 
   JMP stay_here
 .endproc
@@ -105,11 +109,14 @@ update_pauses:
   RTS
 
 update_START:
-	LDA song_sel_entry
+	LDA PPUSCROLL_X
 	BNE :+
+	LDA song_sel_entry
+	BNE :++
 	LDA options_position
 	CMP #$0A
-	BCC :+
+	BCC :++
+	:
 	RTS
 	:
   LDA ts_ss_timer+1 ; load ts_ss_timer+1 to A
@@ -235,6 +242,8 @@ update_B:
   RTS
 
 update_SEL:
+	LDA PPUSCROLL_X
+	BNE :-
   LDA song_sel_entry ; check if song_sel_entry is $01
   CMP #$01 ; (song select)
   BNE :- ; if its not, leave subroutine
@@ -319,11 +328,16 @@ update_song_select_value:
   ORA #$80 ; set bit 7 to 1
   STA song_sel_position+2 ; store the result in song_sel_position+2
   LDA song_sel_position ; play the proper song preview
+  LDX song_sel_page
+  BEQ dont_add_6
+  CLC
+  ADC #$06
+  dont_add_6:
   JSR famistudio_music_play
   :
   RTS ; leave subroutine
 
-.proc update_scrolling
+.proc update_scrolling_Y
   LDA song_sel_entry+1 ; load song_sel_entry+1 to A
   AND #$7F ; get rid of bit 7
   TAX ; copy the result to X
@@ -354,7 +368,10 @@ update_song_select_value:
   BPL :+ ; if its below $80
   INC PPUSCROLL_Y_speed ; increase it
   : ; otherwise dont
+  RTS ; leave subroutine
+.endproc
 
+.proc update_scrolling_X
   LDA song_sel_entry+2 ; load song_sel_entry+1 to A
   AND #$7F ; get rid of bit 7
   TAX ; copy the result to X
@@ -389,9 +406,12 @@ update_song_select_value:
 .endproc
 
 .proc update_cursor_position
+	LDA PPUSCROLL_X ; load PPUSCROLL_X to A
+  BNE :+
   LDA PPUSCROLL_Y ; load PPUSCROLL_Y to A
-  BEQ :+
-  RTS ; if its not $00, leave subroutine
+  BEQ :++
+  :
+  RTS ; if one is not $00, leave subroutine
   :
 
   ; jumptable stuff
@@ -1154,6 +1174,7 @@ song_cursor:
   STA song_sel_entry+2
   :
   DEC song_sel_cursor_time ; decrease song_sel_cursor_time
+  JSR move_song_cursor
   JMP update_cursor_sprite ; jump to update_cursor_sprite
 
   :
@@ -1201,13 +1222,17 @@ song_cursor:
   :
   DEC song_sel_cursor_time ; decrease song_sel_cursor_time
 
+  JSR move_song_cursor
+
   update_cursor_sprite:
   LDA #$6C
   STA $205 ; set tile to $6C (arrow pointing down)
   LDA #$00
   STA $206 ; potentially clear leftover attributes
+  RTS
 
-  LDA #BASE_CURSOR_X_POSITION_SONG_SEL ; load BASE_CURSOR_X_POSITION_SONG_SEL ($28) to A
+  move_song_cursor:
+  LDA #$28
   LDX song_sel_position ; load song_sel_position to X
   CLC ; clear carry just in case
 
@@ -1218,10 +1243,8 @@ song_cursor:
   BNE loop_ucs ; repeat, unless its $00
 
   leave_lucs:
-  STA $207 ; store result of A to $207 (X position)
+  STA cursor_song_X
   RTS
-
-  BASE_CURSOR_X_POSITION_SONG_SEL = $28
 
 .proc diff_cursor
   LDA diff_sel_cursor_time ; load diff_sel_cursor_time to A
@@ -1650,6 +1673,47 @@ update_controller_highlight: ; and that donchan icon and the cursors
   CPX #$0A ; repeat 10 times
   BNE scroll_selection_sprites
 
+  LDX #$00 ; set X to $00
+  scroll_selection_sprites_X:
+  ; prepare sprites for overflow/underflow
+  ;
+  LDY #$00 ; set Y to $00
+  LDA PPUSCROLL_X_speed ; load Y scroll speed to A
+  BEQ dont_change_screen_X ; if its 0, dont bother with underflow/overflow checking
+  BMI :+ ; if its scrolling up, run other code
+
+  ; code for if its scrolling down
+  LDA cursor_song_X, X ; load cursor_song_X + X to A
+  SEC
+  SBC PPUSCROLL_X_speed ; subtract Y scroll speed value from A
+  STA cursor_song_X, X ; store A to cursor_song_X + X
+  ; this is so the sprite moves when scrolling
+  BCS dont_change_screen_X ; if it didnt underflow, dont run underflow code
+  JMP :++ ; jump to screen changing code
+
+  ; code for if its scrolling up
+  :
+  LDA cursor_song_X, X ; load cursor_song_X + X to A
+  SEC
+  SBC PPUSCROLL_X_speed ; subtract Y scroll speed value from A
+  STA cursor_song_X, X ; store A to cursor_song_X + X
+  BCC dont_change_screen_X ; if it didnt overflow, dont run overflow code
+  :
+
+  ; code for screen value changing
+  LDA cursor_song_screen_X, X ; load cursor_diff_screen + X to A
+  EOR #$01
+  STA cursor_song_screen_X, X ; store A to load cursor_diff_screen + X
+
+  dont_change_screen_X:
+
+  INX ; increase X
+  CPX #$05 ; repeat 5 times
+  BNE scroll_selection_sprites_X
+
+  LDA cursor_song_X
+  STA $207 ; store result of A to $207 (X position)
+
   LDA beat_anim_frame ; load beat_anim_frame to A
   BNE :+ ; if its not $00, skip some code
   LDX #$00 ; load $00 to X (prepare loop)
@@ -1668,6 +1732,14 @@ update_controller_highlight: ; and that donchan icon and the cursors
   BPL :+ ; if its above $80
   INC PPUSCROLL_Y_speed ; increase PPUSCROLL_Y_speed
   :
+
+  LDA cursor_song_screen_X
+  CMP song_sel_page
+  BEQ :+
+  LDA #$F0
+  STA $204
+  :
+
 
   RTS
 
@@ -2236,8 +2308,8 @@ song_sel_irq_init:
 	STA irq_address+1
 
 	:
-	; update the X and Y scroll
-	JSR update_scrolling
+	; update the X scroll
+	JSR update_scrolling_X
 
 	PLA
 	TAX

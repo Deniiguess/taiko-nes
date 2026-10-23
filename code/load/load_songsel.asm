@@ -89,6 +89,21 @@
   LDA #$98
   STA crown_Y
 
+  LDA song_sel_page
+  STA cursor_song_screen_X
+
+  LDA #$28
+  LDX song_sel_position ; load song_sel_position to X
+  CLC ; clear carry just in case
+
+  loop_ucs:
+  BEQ leave_ucs ; if X is $00, leave loop
+  ADC #$20 ; add $20 to A
+  DEX ; decrease X
+  BNE loop_ucs ; repeat, unless its $00
+  leave_ucs:
+  STA cursor_song_X
+
   LDX #$00
   STX ts_ss_timer
   STX ts_ss_timer+1

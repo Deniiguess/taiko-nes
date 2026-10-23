@@ -1379,17 +1379,17 @@ double_drum_frame = 4
 
   dont_reset_dhpp1:
 
-  LDY drum_hit_pool_frame_pos+1
+  LDY $59A
   LDA #$00
-  STA drum_hit_pool_frame, Y
-  INC drum_hit_pool_frame_pos+1
+  STA $4B8, Y
+  INC $59A
   INY
   LDA #$00
-  STA drum_hit_pool_frame, Y
-  INC drum_hit_pool_frame_pos+1
+  STA $4B8, Y
+  INC $59A
   INY
   CPY #128
-  BNE dont_reset_dhpfp1
+  BNE $05
 
   LDA #$00
   STA drum_hit_pool_frame_pos+1

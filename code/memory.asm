@@ -173,6 +173,19 @@ drum_big_sprite_loop: .res 1
 temp_drum_type: .res 1
 
 temp_screen: .res 1
+
+cursor_song_X: .res 1
+cursor_sett_X: .res 1
+don_X: .res 1
+color_sqr_X: .res 1
+controller_t_X: .res 1
+
+cursor_song_screen_X: .res 1
+cursor_sett_screen_X: .res 1
+don_screen_X: .res 1
+color_sqr_screen_X: .res 1
+controller_screen_t_X: .res 1
+
 cursor_diff_screen: .res 1
 cursor_song_screen: .res 1
 cursor_sett_screen: .res 1
