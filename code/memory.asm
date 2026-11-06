@@ -39,7 +39,10 @@ bg_attr_position: .res 4
 bg_attr_placement: .res 1
 
 tiles_remaining: .res 1
-drum_bank_positon: .res 2
+drum_bank_position: .res 2
+drum_bank_position_start: .res 2
+total_inputs: .res 3
+
 
 tempo: .res 2
 tempo_input_ap: .res 1
@@ -76,9 +79,11 @@ sprite_flicker_toggle: .res 1
 
 clear_bar: .res 8
 clear_bar_inputs: .res 2
-clear_bar_inputs_modulo: .res 2
+clear_bar_inputs_decimal: .res 2
+clear_bar_inputs_decimal_of_decimal: .res 2
 clear_bar_input_miss: .res 2
-clear_bar_input_miss_modulo: .res 2
+clear_bar_input_miss_decimal: .res 2
+clear_bar_input_miss_decimal_of_decimal: .res 2
 clear_bar_results_inc: .res 1
 clear_bar_check_if_0: .res 1
 

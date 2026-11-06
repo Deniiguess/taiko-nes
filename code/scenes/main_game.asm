@@ -777,7 +777,7 @@ double_drum_frame = 4
   STA drum_inc
   :
 
-  JSR increase_clear_bar_miss
+  JSR decrease_clear_bar
 
   LDA #$00
   STA input_rate
@@ -1367,7 +1367,7 @@ double_drum_frame = 4
   INC bad_count+3
   JSR add_to_4_digit_score
 
-  JSR increase_clear_bar_miss
+  JSR decrease_clear_bar
 
   INC drum_hit_pool_pos+1
   LDX drum_hit_pool_pos+1
@@ -1379,17 +1379,17 @@ double_drum_frame = 4
 
   dont_reset_dhpp1:
 
-  LDY $59A
+  LDY drum_hit_pool_frame_pos+1
   LDA #$00
-  STA $4B8, Y
-  INC $59A
+  STA drum_hit_pool_frame, Y
+  INC drum_hit_pool_frame_pos+1
   INY
   LDA #$00
-  STA $4B8, Y
-  INC $59A
+  STA drum_hit_pool_frame, Y
+  INC drum_hit_pool_frame_pos+1
   INY
   CPY #128
-  BNE $05
+  BNE dont_reset_dhpfp1
 
   LDA #$00
   STA drum_hit_pool_frame_pos+1
@@ -1497,7 +1497,7 @@ update_drums:
 
   update_drums_p3:
   LDY #$00
-  LDA (drum_bank_positon), Y
+  LDA (drum_bank_position), Y
   BNE update_drums_p4
 
   RTS
@@ -1514,7 +1514,7 @@ update_drums:
   update_drums_p4:
 
   LDX #$00
-  LDA (drum_bank_positon, X)
+  LDA (drum_bank_position, X)
   AND #%11000000
 
   CMP #$40
@@ -1523,7 +1523,7 @@ update_drums:
   CMP #$80
   BNE :+
   JSR set_gogo_timer
-  LDA (drum_bank_positon, X)
+  LDA (drum_bank_position, X)
   AND #%00000011
   BEQ force_continue
   JMP :+++
@@ -1540,9 +1540,9 @@ update_drums:
   :
   STX end_timer
   LDA #<zero_byte
-  STA drum_bank_positon
+  STA drum_bank_position
   LDA #>zero_byte
-  STA drum_bank_positon+1
+  STA drum_bank_position+1
   RTS
   :
 
@@ -1575,7 +1575,7 @@ update_drums:
 
   dont_reset_dhpp:
 
-  LDA (drum_bank_positon, X)
+  LDA (drum_bank_position, X)
   PHA
   LDA mods
   AND #$04
@@ -1615,7 +1615,7 @@ update_drums:
   LDA #$01
   STA draw_bg_over_palette
 
-  LDA (drum_bank_positon, X)
+  LDA (drum_bank_position, X)
   AND #%00000100
   LSR A
   LSR A
@@ -1644,14 +1644,14 @@ update_drums:
   AND #%01000000
   TAY
 
-  LDA (drum_bank_positon, X)
+  LDA (drum_bank_position, X)
   AND #%00100000
   PHP
   LDA #$00
   PLP
   BNE :+
   JSR inc_dbp
-  LDA (drum_bank_positon, X)
+  LDA (drum_bank_position, X)
   :
   CPY #$00
   BEQ :+
@@ -1678,7 +1678,7 @@ update_drums:
   LDA #$01
   STA draw_bg_over_palette
 
-  LDA (drum_bank_positon, X)
+  LDA (drum_bank_position, X)
   AND #%00000100
   LSR A
   LSR A
@@ -1751,7 +1751,7 @@ update_drums:
   STA roll_time_before_input, Y
 
   LDX #$00
-  LDA (drum_bank_positon, X)
+  LDA (drum_bank_position, X)
   AND #%00000100
   LSR A
   LSR A
@@ -1799,14 +1799,14 @@ update_drums:
   AND #%01000000
   TAY
 
-  LDA (drum_bank_positon, X)
+  LDA (drum_bank_position, X)
   AND #%00100000
   PHP
   LDA #$00
   PLP
   BNE :+
   JSR inc_dbp
-  LDA (drum_bank_positon, X)
+  LDA (drum_bank_position, X)
   :
   CPY #$00
   BEQ :+
@@ -1820,7 +1820,7 @@ update_drums:
   LDA roll_slot
   AND #$01
   PHA
-  LDA (drum_bank_positon, X)
+  LDA (drum_bank_position, X)
   AND #$7F
   CPY #$00
   BEQ :+
@@ -2019,14 +2019,14 @@ update_drums:
   AND #%01000000
   TAY
 
-  LDA (drum_bank_positon, X)
+  LDA (drum_bank_position, X)
   AND #%00100000
   PHP
   LDA #$00
   PLP
   BNE :+
   JSR inc_dbp
-  LDA (drum_bank_positon, X)
+  LDA (drum_bank_position, X)
   :
   CPY #$00
   BEQ :+
@@ -2040,7 +2040,7 @@ update_drums:
   LDA roll_slot
   AND #$01
   PHA
-  LDA (drum_bank_positon, X)
+  LDA (drum_bank_position, X)
   CPY #$00
   BEQ :+
   ASL
@@ -2506,7 +2506,7 @@ update_drums:
 
 	LDA mods
 	AND #$10
-	BEQ N163_results
+	BNE N163_results
 	INX
 	N163_results:
 	TXA
@@ -3703,20 +3703,21 @@ drum_sprite_tile_big:
 
 .proc update_clear_bar
   LDA clear_bar_inputs
-  CMP clear_bar_inputs+1
+  BMI dont_increase_cb
+  CMP #100
   BCC dont_increase_cb
 
   INC clear_bar
-  SBC clear_bar_inputs+1
+  SBC #100
   STA clear_bar_inputs
 
   dont_increase_cb:
 
-  LDA clear_bar_input_miss
-  CMP clear_bar_input_miss+1
-  BCC :+
-  SBC clear_bar_input_miss+1
-  STA clear_bar_input_miss
+  LDA clear_bar_inputs
+  BPL :+
+  CLC
+  ADC #60
+  STA clear_bar_inputs
 
   LDX #$07
   dont_decrease_cb_loop:
@@ -3779,6 +3780,11 @@ drum_sprite_tile_big:
   STA clear_bar+5
   STA clear_bar+6
   STA clear_bar+7
+
+  LDA #$00
+  STA clear_bar_inputs
+  STA clear_bar_inputs_decimal
+  STA clear_bar_inputs_decimal_of_decimal
 
   escape_cbL:
 
@@ -3869,7 +3875,7 @@ drum_sprite_tile_big:
   CMP #$03
   BEQ clear_everything
   CMP #$02
-  BEQ clear_modulo
+  BEQ clear_decimal
 
   LDA clear_bar_check_if_0
   AND #$04
@@ -3901,10 +3907,10 @@ drum_sprite_tile_big:
   LDA #$00
   STA clear_bar_inputs
   STA clear_bar_input_miss
-  clear_modulo:
+  clear_decimal:
   LDA #$00
-  STA clear_bar_inputs_modulo
-  STA clear_bar_input_miss_modulo
+  STA clear_bar_inputs_decimal
+  STA clear_bar_input_miss_decimal
 
   leave_subroutine:
   LDA clear_bar_check_if_0
@@ -3914,34 +3920,50 @@ drum_sprite_tile_big:
 .endproc
 
 .proc increase_clear_bar
-  INC clear_bar_inputs
-  INC clear_bar_inputs_modulo
-  LDA clear_bar_inputs_modulo
-  CMP clear_bar_inputs_modulo+1
-  BCC :+
-  INC clear_bar_inputs
-  SBC clear_bar_inputs_modulo+1
-  STA clear_bar_inputs_modulo
-  LDA clear_bar_check_if_0
-  ORA #$04
-  STA clear_bar_check_if_0
-  :
+	LDA clear_bar_inputs_decimal_of_decimal
+	CLC
+	ADC clear_bar_inputs_decimal_of_decimal+1
+	STA clear_bar_inputs_decimal_of_decimal
+	CMP #100
+	BCC :+
+	SEC
+	SBC #100
+	STA clear_bar_inputs_decimal_of_decimal
+	:
+	LDA clear_bar_inputs_decimal
+	ADC clear_bar_inputs_decimal+1
+	STA clear_bar_inputs_decimal
+	CMP #100
+	BCC :+
+	SEC
+	SBC #100
+	STA clear_bar_inputs_decimal
+	:
+	LDA clear_bar_inputs
+	ADC clear_bar_inputs+1
+	STA clear_bar_inputs
   RTS
 .endproc
 
-.proc increase_clear_bar_miss
-	INC clear_bar_input_miss
-  INC clear_bar_input_miss_modulo
-  LDA clear_bar_input_miss_modulo
-  CMP clear_bar_input_miss_modulo+1
-  BCC :+
-  INC clear_bar_input_miss
-  SBC clear_bar_input_miss_modulo+1
-  STA clear_bar_input_miss_modulo
-  LDA clear_bar_check_if_0
-  ORA #$08
-  STA clear_bar_check_if_0
-  :
+.proc decrease_clear_bar
+	LDA clear_bar_inputs_decimal_of_decimal
+	SEC
+	SBC clear_bar_inputs_decimal_of_decimal+1
+	STA clear_bar_inputs_decimal_of_decimal
+	BCS :+
+	ADC #100
+	STA clear_bar_inputs_decimal_of_decimal
+	:
+	LDA clear_bar_inputs_decimal
+	SBC clear_bar_inputs_decimal+1
+	STA clear_bar_inputs_decimal
+	BCS :+
+	ADC #100
+	STA clear_bar_inputs_decimal
+	:
+	LDA clear_bar_inputs
+	SBC clear_bar_inputs+1
+	STA clear_bar_inputs
 	RTS
 .endproc
 
@@ -4116,13 +4138,13 @@ drum_sprite_tile_big:
 .endproc
 
 inc_dbp:
-  LDA drum_bank_positon
+  LDA drum_bank_position
   CLC
   ADC #$01
   BCC :+
-  INC drum_bank_positon+1
+  INC drum_bank_position+1
   :
-  STA drum_bank_positon
+  STA drum_bank_position
   RTS
 
 update_don:

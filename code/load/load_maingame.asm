@@ -1,12 +1,14 @@
-.proc load_main_game
+load_main_game:
 	SEI
 
 	LDX drum_bank_position_chart_backup
 	LDA song_address_start_lo, X
-  STA drum_bank_positon
+  STA drum_bank_position
+  STA drum_bank_position_start
 
   LDA song_address_start_hi, X
-  STA drum_bank_positon+1
+  STA drum_bank_position+1
+  STA drum_bank_position_start+1
 
   LDA drum_bank_list, X
   STA $E800
@@ -221,7 +223,7 @@
   TAX
 
   ; set tempo
-  LDA (drum_bank_positon, X)
+  LDA (drum_bank_position, X)
   STA tempo
 
   PHP
@@ -234,37 +236,8 @@
 
   JSR increase_dbp
 
-  CLC
-  LDA (drum_bank_positon, X)
-  BNE :+
-  LDA clear_bar_check_if_0
-  ORA #$01
-  STA clear_bar_check_if_0
-  LDA #$FF
-  SEC
-  :
-  STA clear_bar_inputs+1
-  ROR
-  BNE :+
-  LDA #$01
-  :
-  STA clear_bar_input_miss+1
-
+  JSR set_input_conditions
   JSR increase_dbp
-
-  CLC
-  LDA (drum_bank_positon, X)
-  BNE :+
-  LDA clear_bar_check_if_0
-  ORA #$02
-  STA clear_bar_check_if_0
-  LDA #$FF
-  SEC
-  :
-  STA clear_bar_inputs_modulo+1
-  ROR
-  STA clear_bar_input_miss_modulo+1
-
   JSR increase_dbp
 
   LDA #$00
@@ -387,8 +360,6 @@
   LDA song_bank_numbers, X
   STA $F000
 
-  .endproc
-
   LDA mods
   AND #%00010000
   BNE :+
@@ -424,13 +395,33 @@
   JMP stay_here
 
   increase_dbp:
-  LDA drum_bank_positon
+  LDA drum_bank_position
   CMP #$FF
   BNE :+
-  INC drum_bank_positon+1
+  INC drum_bank_position+1
   :
 
-  INC drum_bank_positon
+  INC drum_bank_position
+  RTS
+
+  increase_dbps:
+  LDA drum_bank_position_start
+  CMP #$FF
+  BNE :+
+  INC drum_bank_position_start+1
+  :
+
+  INC drum_bank_position_start
+  RTS
+
+  increase_total_inp:
+  LDA total_inputs+1
+  CMP #$FF
+  BNE :+
+  INC total_inputs
+  :
+
+  INC total_inputs+1
   RTS
 
   extra_tiles:
@@ -481,5 +472,165 @@ taiko_bg:
 	.byte $06, $03, $F0
 	.byte $10, $03, $FF
 	.byte $08, $03, $0F
+
+
+.proc set_input_conditions
+	LDA #$00
+	STA total_inputs
+	STA total_inputs+1
+
+	JSR increase_dbps
+	JSR increase_dbps
+	JSR increase_dbps
+	LDY #$00
+
+	count_inputs:
+	LDA (drum_bank_position_start), Y
+	TAX
+	AND #%11000000
+	CMP #%11000000
+	BEQ end
+	TXA
+	AND #%00000011
+	CMP #$03
+	BCS input_drum_roll
+	TXA
+	AND #%00100011
+	BEQ nothing
+	JMP input_don_kat
+
+	input_drum_roll:
+	JSR increase_dbps
+	JSR increase_dbps
+	JSR increase_dbps
+	JMP count_inputs
+
+	input_don_kat:
+	PHA
+	JSR increase_total_inp
+	PLA
+	AND #%00100000
+	BNE :+
+	nothing:
+	JSR increase_dbps
+	:
+	JSR increase_dbps
+	JMP count_inputs
+
+end:
+	LDY #$00
+	shift_left_4:
+	LSR total_inputs+1
+	LSR total_inputs
+	BCC :+
+	LDA total_inputs+1
+	EOR #$80
+	STA total_inputs+1
+	:
+	INY
+	CPY #$02
+	BNE shift_left_4
+
+	LDA total_inputs
+	CLC
+	ADC total_inputs
+	ADC total_inputs
+	BCC :+
+	CLC
+	INC total_inputs
+	:
+	STA total_inputs
+
+	LDA total_inputs+1
+	ADC total_inputs+1
+	BCC :+
+	INC total_inputs
+	CLC
+	:
+	ADC total_inputs+1
+	BCC :+
+	INC total_inputs
+	:
+	STA total_inputs+1
+	STA total_inputs+2
+	LDY #$00
+
+	shift_left_40:
+	LSR total_inputs+1
+	LSR total_inputs
+	BCC :+
+	LDA total_inputs+1
+	EOR #$80
+	STA total_inputs+1
+	:
+	INY
+	CPY #$06
+	BNE shift_left_40
+
+	LDA total_inputs+2
+	AND #$3F
+	STA total_inputs+2
+	PHP
+	LDY #$00
+	STY clear_bar_inputs_decimal ; inputs_division_remainder
+	TYA
+	PLP
+	BEQ dont_get_remainder
+	CLC
+
+	get_remainder:
+	INC clear_bar_inputs_decimal ; inputs_division_remainder
+	ADC #56
+	CMP #100
+	BCC :+
+	SBC #100
+	INC clear_bar_inputs_decimal ; inputs_division_remainder
+	:
+	INY
+	CPY total_inputs+2
+	BNE get_remainder
+	dont_get_remainder:
+
+	LDA #100
+	LDX total_inputs+1
+	JSR divide
+	STX clear_bar_inputs+1
+	STA clear_bar_inputs_decimal+1
+
+	LDA #100
+	LDX clear_bar_inputs_decimal ; inputs_division_remainder
+	JSR divide
+	CLC
+	ADC clear_bar_inputs_decimal+1
+	STA clear_bar_inputs_decimal_of_decimal+1
+
+	RTS
+
+.endproc
+
+.proc divide
+	STA total_inputs+2 ; divident
+	STX clear_bar_inputs_decimal_of_decimal ; divider
+
+	LDA #$00
+	STA clear_bar_input_miss_decimal_of_decimal ; result
+	LDY #$01
+	STY clear_bar_inputs_decimal_of_decimal+1 ; result_remainder
+	:
+	ASL total_inputs+2 ; divident
+	ROL
+	BCS :+
+	CMP clear_bar_inputs_decimal_of_decimal ; divider
+	BCC :++
+	:
+	SBC clear_bar_inputs_decimal_of_decimal ; divider
+	SEC
+	:
+	ROL clear_bar_input_miss_decimal_of_decimal ; result
+	ROL clear_bar_inputs_decimal_of_decimal+1 ; result_remainder
+	BCC :---
+	LDX clear_bar_input_miss_decimal_of_decimal ; result
+	RTS
+.endproc
 
 .segment "START"
